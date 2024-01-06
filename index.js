@@ -51,7 +51,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AuthCentreClient = exports.ValidationError = void 0;
+exports.CentralAuthClient = exports.ValidationError = void 0;
 var jwt = require("jsonwebtoken");
 //Private method for parsing a cookie string in a request header
 var parseCookie = function (cookieString) {
@@ -71,10 +71,10 @@ var ValidationError = /** @class */ (function (_super) {
     return ValidationError;
 }(Error));
 exports.ValidationError = ValidationError;
-//Client class for AuthCentre
-var AuthCentreClient = /** @class */ (function () {
+//Client class for CentralAuth
+var CentralAuthClient = /** @class */ (function () {
     //Constructor method to set all instance variable
-    function AuthCentreClient(_a) {
+    function CentralAuthClient(_a) {
         var organizationId = _a.organizationId, secret = _a.secret, authBaseUrl = _a.authBaseUrl, callbackUrl = _a.callbackUrl;
         var _this = this;
         //Private method to check whether all variable are set for a specific action
@@ -143,10 +143,10 @@ var AuthCentreClient = /** @class */ (function () {
             //The IP address might consist of multiple IP addresses, seperated by commas. Only return the first IP address
             return ip ? ip.split(",")[0] : "0.0.0.0";
         };
-        //Private method to get the user data from the AuthCentre server
+        //Private method to get the user data from the CentralAuth server
         //Will throw an error when the request fails
         this.getUser = function (sessionId, userAgent, ipAddress) { return __awaiter(_this, void 0, void 0, function () {
-            var headers, response, _a;
+            var headers, response, error, _a;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -161,12 +161,18 @@ var AuthCentreClient = /** @class */ (function () {
                         return [4 /*yield*/, fetch("".concat(this.authBaseUrl, "/api/v1/me/").concat(sessionId), { headers: headers })];
                     case 2:
                         response = _b.sent();
-                        _a = this;
+                        if (!!response.ok) return [3 /*break*/, 4];
                         return [4 /*yield*/, response.json()];
                     case 3:
+                        error = _b.sent();
+                        throw new ValidationError(error);
+                    case 4:
+                        _a = this;
+                        return [4 /*yield*/, response.json()];
+                    case 5:
                         _a.user = (_b.sent());
-                        _b.label = 4;
-                    case 4: return [2 /*return*/];
+                        _b.label = 6;
+                    case 6: return [2 /*return*/];
                 }
             });
         }); };
@@ -216,39 +222,45 @@ var AuthCentreClient = /** @class */ (function () {
                 return [2 /*return*/, Response.redirect(loginUrl.toString())];
             });
         }); };
-        //Public method for the callback procedure when returning from AuthCentre
+        //Public method for the callback procedure when returning from CentralAuth
         //This method will automatically verify the JWT and set the sessionToken cookie
         //Optionally calls a custom callback function when given with the user data as an argument
         //Returns a Response with a redirection to the returnTo URL
         //Will throw an error when the verification procedure fails or the user data could not be fetched
         this.callback = function (req, config) { return __awaiter(_this, void 0, void 0, function () {
-            var url, searchParams, returnTo, _a, sessionId, verificationState, headers, response, _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var url, searchParams, returnTo, sessionId, verificationState, headers, response, error, _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         url = new URL(req.url);
                         searchParams = url.searchParams;
                         returnTo = searchParams.get("returnTo") || url.origin;
-                        this.token = searchParams.get("token") || undefined;
+                        sessionId = searchParams.get("sessionId");
+                        verificationState = searchParams.get("verificationState");
+                        //Build the JWT with the session ID and verification state as payload
+                        this.token = jwt.sign({ sessionId: sessionId, verificationState: verificationState }, this.secret);
                         this.checkData("callback");
-                        return [4 /*yield*/, this.getDecodedToken()];
-                    case 1:
-                        _a = _c.sent(), sessionId = _a.sessionId, verificationState = _a.verificationState;
                         headers = new Headers();
                         headers.append("Authorization", "Bearer ".concat(this.token));
                         return [4 /*yield*/, fetch("".concat(this.authBaseUrl, "/api/v1/verify/").concat(sessionId, "/").concat(verificationState), { headers: headers })];
-                    case 2:
-                        response = _c.sent();
-                        _b = this;
+                    case 1:
+                        response = _b.sent();
+                        if (!!response.ok) return [3 /*break*/, 3];
                         return [4 /*yield*/, response.json()];
+                    case 2:
+                        error = _b.sent();
+                        throw new ValidationError(error);
                     case 3:
-                        _b.user = (_c.sent());
-                        if (!(config === null || config === void 0 ? void 0 : config.callback)) return [3 /*break*/, 5];
-                        return [4 /*yield*/, config.callback(this.user)];
+                        _a = this;
+                        return [4 /*yield*/, response.json()];
                     case 4:
-                        _c.sent();
-                        _c.label = 5;
-                    case 5: 
+                        _a.user = (_b.sent());
+                        if (!(config === null || config === void 0 ? void 0 : config.callback)) return [3 /*break*/, 6];
+                        return [4 /*yield*/, config.callback(this.user)];
+                    case 5:
+                        _b.sent();
+                        _b.label = 6;
+                    case 6: 
                     //Set a cookie with the JWT and redirect to the returnTo URL
                     return [2 /*return*/, new Response(null, {
                             status: 302,
@@ -300,6 +312,6 @@ var AuthCentreClient = /** @class */ (function () {
         this.authBaseUrl = authBaseUrl;
         this.callbackUrl = callbackUrl;
     }
-    return AuthCentreClient;
+    return CentralAuthClient;
 }());
-exports.AuthCentreClient = AuthCentreClient;
+exports.CentralAuthClient = CentralAuthClient;

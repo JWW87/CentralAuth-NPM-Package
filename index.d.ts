@@ -27,13 +27,13 @@ export type CallbackParams = {
 export type ErrorCode = "organizationIdMissing" | "secretMissing" | "authBaseUrlMissing" | "callbackUrlMissing" | "tokenMissing";
 export type ErrorObject = {
     error: ErrorCode;
-    message: string;
+    message?: string;
 };
 export declare class ValidationError extends Error {
     private errorCode;
     constructor(error: ErrorObject);
 }
-export declare class AuthCentreClient {
+export declare class CentralAuthClient {
     private organizationId;
     private secret;
     private authBaseUrl;

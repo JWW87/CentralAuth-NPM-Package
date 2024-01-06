@@ -42,7 +42,7 @@ export type ErrorCode = "organizationIdMissing" | "secretMissing" | "authBaseUrl
 //Type for the validation errors
 export type ErrorObject = {
   error: ErrorCode;
-  message: string;
+  message?: string;
 }
 
 //Private method for parsing a cookie string in a request header
@@ -64,8 +64,8 @@ export class ValidationError extends Error {
   }
 }
 
-//Client class for AuthCentre
-export class AuthCentreClient {
+//Client class for CentralAuth
+export class CentralAuthClient {
   private organizationId: string | null;
   private secret: string;
   private authBaseUrl: string;
@@ -153,7 +153,7 @@ export class AuthCentreClient {
     return ip ? ip.split(",")[0] : "0.0.0.0";
   }
 
-  //Private method to get the user data from the AuthCentre server
+  //Private method to get the user data from the CentralAuth server
   //Will throw an error when the request fails
   private getUser = async (sessionId: string, userAgent: string, ipAddress: string) => {
     if (this.user)
@@ -166,6 +166,10 @@ export class AuthCentreClient {
       headers.append("user-agent", userAgent);
       headers.append("x-real-ip", ipAddress);
       const response = await fetch(`${this.authBaseUrl}/api/v1/me/${sessionId}`, { headers });
+      if (!response.ok) {
+        const error = await response.json() as ErrorObject;
+        throw new ValidationError(error);
+      }
       this.user = await response.json() as User;
     }
   }
@@ -212,7 +216,7 @@ export class AuthCentreClient {
     return Response.redirect(loginUrl.toString());
   }
 
-  //Public method for the callback procedure when returning from AuthCentre
+  //Public method for the callback procedure when returning from CentralAuth
   //This method will automatically verify the JWT and set the sessionToken cookie
   //Optionally calls a custom callback function when given with the user data as an argument
   //Returns a Response with a redirection to the returnTo URL
@@ -221,15 +225,21 @@ export class AuthCentreClient {
     const url = new URL(req.url);
     const searchParams = url.searchParams;
     const returnTo = searchParams.get("returnTo") || url.origin;
-    this.token = searchParams.get("token") || undefined;
+    const sessionId = searchParams.get("sessionId");
+    const verificationState = searchParams.get("verificationState");
+
+    //Build the JWT with the session ID and verification state as payload
+    this.token = jwt.sign({ sessionId, verificationState }, this.secret);
     this.checkData("callback");
 
-    //Get the payload in the token
-    const { sessionId, verificationState } = await this.getDecodedToken();
-    //Use the verification state inside the decoded token to verify this user session and get the user data
+    //Make a request to the verification endpoint to verify this session at CentralAuth
     const headers = new Headers();
     headers.append("Authorization", `Bearer ${this.token}`);
     const response = await fetch(`${this.authBaseUrl}/api/v1/verify/${sessionId}/${verificationState}`, { headers });
+    if (!response.ok) {
+      const error = await response.json() as ErrorObject;
+      throw new ValidationError(error);
+    }
     this.user = await response.json() as User;
 
     //When a callback function is given, call it with the user data
