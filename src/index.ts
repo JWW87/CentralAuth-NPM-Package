@@ -274,6 +274,7 @@ export class CentralAuthClient {
       await this.getUserData(req);
       return Response.json(this.user);
     } catch (error) {
+      console.error(error);
       return Response.json(null)
     }
   }

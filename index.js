@@ -288,6 +288,7 @@ var CentralAuthClient = /** @class */ (function () {
                         return [2 /*return*/, Response.json(this.user)];
                     case 2:
                         error_1 = _a.sent();
+                        console.error(error_1);
                         return [2 /*return*/, Response.json(null)];
                     case 3: return [2 /*return*/];
                 }
