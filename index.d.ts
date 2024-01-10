@@ -59,3 +59,4 @@ export declare class CentralAuthClient {
     me: (req: Request) => Promise<Response>;
     logout: (req: Request, config?: LogoutParams) => Promise<Response>;
 }
+export declare const useUser: () => User;

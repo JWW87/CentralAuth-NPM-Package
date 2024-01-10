@@ -1,3 +1,4 @@
+import useSWR from "swr";
 const jwt = require("jsonwebtoken");
 
 //Type for the class constructor
@@ -292,4 +293,12 @@ export class CentralAuthClient {
       }
     );
   }
+}
+
+//React hook to declaratively get the currently logged in user via SWR. See https://swr.vercel.app for more info on SWR.
+//Will return null when the user is not logged in and undefined when the request is still active
+export const useUser = () => {
+  const { data: user } = useSWR<User | null>("/api/auth/me", (resource, init) => fetch(resource, init).then(res => res.json()), {});
+
+  return user;
 }

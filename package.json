@@ -1,6 +1,6 @@
 {
   "name": "@centralauth/client",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "description": "Client package for CentralAuth",
   "main": "index.js",
   "scripts": {
@@ -20,7 +20,8 @@
   "author": "West IT",
   "license": "ISC",
   "dependencies": {
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "swr": "^2.2.4"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.5",

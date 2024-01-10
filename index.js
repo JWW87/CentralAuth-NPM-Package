@@ -51,7 +51,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CentralAuthClient = exports.ValidationError = void 0;
+exports.useUser = exports.CentralAuthClient = exports.ValidationError = void 0;
+var swr_1 = require("swr");
 var jwt = require("jsonwebtoken");
 //Private method for parsing a cookie string in a request header
 var parseCookie = function (cookieString) {
@@ -315,3 +316,10 @@ var CentralAuthClient = /** @class */ (function () {
     return CentralAuthClient;
 }());
 exports.CentralAuthClient = CentralAuthClient;
+//React hook to declaratively get the currently logged in user via SWR. See https://swr.vercel.app for more info on SWR.
+//Will return null when the user is not logged in and undefined when the request is still active
+var useUser = function () {
+    var user = (0, swr_1.default)("/api/auth/me", function (resource, init) { return fetch(resource, init).then(function (res) { return res.json(); }); }, {}).data;
+    return user;
+};
+exports.useUser = useUser;
