@@ -17,13 +17,20 @@ export type User = {
   organizationId: string;
 }
 
+export type Translations = {
+  emailAddress?: string;
+  loginpageIntro?: string;
+  loginPageEmailError?: string;
+  emailLinkSubject?: string;
+  emailLinkBody?: string;
+  emailLinkBodyWarning?: string;
+  login?: string;
+}
+
 //Type for the parameters of the login method
 export type LoginParams = {
   returnTo?: string;
-  translations?: {
-    loginIntro?: string;
-    emailError?: string;
-  }
+  translations?: Translations
 }
 
 //Type for the parameters of the logout method

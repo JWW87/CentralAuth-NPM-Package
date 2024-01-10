@@ -11,12 +11,18 @@ export type User = {
     blocked: boolean;
     organizationId: string;
 };
+export type Translations = {
+    emailAddress?: string;
+    loginpageIntro?: string;
+    loginPageEmailError?: string;
+    emailLinkSubject?: string;
+    emailLinkBody?: string;
+    emailLinkBodyWarning?: string;
+    login?: string;
+};
 export type LoginParams = {
     returnTo?: string;
-    translations?: {
-        loginIntro?: string;
-        emailError?: string;
-    };
+    translations?: Translations;
 };
 export type LogoutParams = {
     returnTo?: string;
