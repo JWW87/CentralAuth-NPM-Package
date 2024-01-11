@@ -89,7 +89,7 @@ var CentralAuthClient = /** @class */ (function () {
             if (!_this.authBaseUrl)
                 error = { error: "authBaseUrlMissing", message: "The base URL for the organization is missing. The base URL is either the internal base URL or a custom domain for your organization." };
             if ((action == "callback" || action == "verify" || action == "me") && !_this.token)
-                error = { error: "tokenMissing", message: "The JSON Web Token is missing. A JWT will be appended to the callback URL when the callback is performed after a successful login attempt." };
+                error = { error: "tokenMissing", message: "The JSON Web Token is missing. A JWT must be created in the callback after a successful login attempt." };
             if (error)
                 throw new ValidationError(error);
         };
@@ -157,8 +157,10 @@ var CentralAuthClient = /** @class */ (function () {
                         this.checkData("me");
                         headers = new Headers();
                         headers.append("Authorization", "Bearer ".concat(this.token));
+                        //Set the user agent to the user agent of the current request
                         headers.append("user-agent", userAgent);
-                        headers.append("x-real-ip", ipAddress);
+                        //Set the custom auth-ip header with the IP address of the current request
+                        headers.append("auth-ip", ipAddress);
                         return [4 /*yield*/, fetch("".concat(this.authBaseUrl, "/api/v1/me/").concat(sessionId), { headers: headers })];
                     case 2:
                         response = _b.sent();
@@ -229,7 +231,7 @@ var CentralAuthClient = /** @class */ (function () {
         //Returns a Response with a redirection to the returnTo URL
         //Will throw an error when the verification procedure fails or the user data could not be fetched
         this.callback = function (req, config) { return __awaiter(_this, void 0, void 0, function () {
-            var url, searchParams, returnTo, sessionId, verificationState, headers, response, error, _a;
+            var url, searchParams, returnTo, sessionId, verificationState, errorCode, errorMessage, headers, response, error, _a;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -238,6 +240,13 @@ var CentralAuthClient = /** @class */ (function () {
                         returnTo = searchParams.get("returnTo") || url.origin;
                         sessionId = searchParams.get("sessionId");
                         verificationState = searchParams.get("verificationState");
+                        errorCode = searchParams.get("errorCode");
+                        errorMessage = searchParams.get("errorMessage");
+                        if (errorCode) {
+                            //When the error code is set, something went wrong in the login procedure
+                            //Throw a ValidationError
+                            throw new ValidationError({ error: errorCode, message: errorMessage || "" });
+                        }
                         //Build the JWT with the session ID and verification state as payload
                         this.token = jwt.sign({ sessionId: sessionId, verificationState: verificationState }, this.secret);
                         this.checkData("callback");

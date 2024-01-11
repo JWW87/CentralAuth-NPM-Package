@@ -45,7 +45,24 @@ export type CallbackParams = {
 }
 
 //Enum for the different error messages
-export type ErrorCode = "organizationIdMissing" | "secretMissing" | "authBaseUrlMissing" | "callbackUrlMissing" | "tokenMissing";
+export type ErrorCode = "genericError" |
+  "missingFields" |
+  "sessionMissing" |
+  "sessionNotVerified" |
+  "sessionInvalid" |
+  "verificationStateInvalid" |
+  "loginAttemptMissing" |
+  "loginAttemptExpired" |
+  "loginAttemptInvalid" |
+  "sessionExpired" |
+  "callbackUrlInvalid" |
+  "connectionMissing" |
+  "organizationIdMissing" |
+  "secretMissing" |
+  "authBaseUrlMissing" |
+  "callbackUrlMissing" |
+  "tokenMissing" |
+  "tokenInvalid";
 
 //Type for the validation errors
 export type ErrorObject = {
@@ -100,7 +117,7 @@ export class CentralAuthClient {
     if (!this.authBaseUrl)
       error = { error: "authBaseUrlMissing", message: "The base URL for the organization is missing. The base URL is either the internal base URL or a custom domain for your organization." };
     if ((action == "callback" || action == "verify" || action == "me") && !this.token)
-      error = { error: "tokenMissing", message: "The JSON Web Token is missing. A JWT will be appended to the callback URL when the callback is performed after a successful login attempt." };
+      error = { error: "tokenMissing", message: "The JSON Web Token is missing. A JWT must be created in the callback after a successful login attempt." };
 
     if (error)
       throw new ValidationError(error);
@@ -171,8 +188,10 @@ export class CentralAuthClient {
 
       const headers = new Headers();
       headers.append("Authorization", `Bearer ${this.token!}`);
+      //Set the user agent to the user agent of the current request
       headers.append("user-agent", userAgent);
-      headers.append("x-real-ip", ipAddress);
+      //Set the custom auth-ip header with the IP address of the current request
+      headers.append("auth-ip", ipAddress);
       const response = await fetch(`${this.authBaseUrl}/api/v1/me/${sessionId}`, { headers });
       if (!response.ok) {
         const error = await response.json() as ErrorObject;
@@ -235,6 +254,14 @@ export class CentralAuthClient {
     const returnTo = searchParams.get("returnTo") || url.origin;
     const sessionId = searchParams.get("sessionId");
     const verificationState = searchParams.get("verificationState");
+    const errorCode = searchParams.get("errorCode");
+    const errorMessage = searchParams.get("errorMessage");
+
+    if (errorCode) {
+      //When the error code is set, something went wrong in the login procedure
+      //Throw a ValidationError
+      throw new ValidationError({ error: errorCode as ErrorCode, message: errorMessage || "" })
+    }
 
     //Build the JWT with the session ID and verification state as payload
     this.token = jwt.sign({ sessionId, verificationState }, this.secret);
