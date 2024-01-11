@@ -32,7 +32,7 @@ export type CallbackParams = {
 };
 export type ErrorCode = "genericError" | "missingFields" | "sessionMissing" | "sessionNotVerified" | "sessionInvalid" | "verificationStateInvalid" | "loginAttemptMissing" | "loginAttemptExpired" | "loginAttemptInvalid" | "sessionExpired" | "callbackUrlInvalid" | "connectionMissing" | "organizationIdMissing" | "secretMissing" | "authBaseUrlMissing" | "callbackUrlMissing" | "tokenMissing" | "tokenInvalid";
 export type ErrorObject = {
-    error: ErrorCode;
+    errorCode: ErrorCode;
     message?: string;
 };
 export declare class ValidationError extends Error {

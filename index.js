@@ -66,7 +66,7 @@ var ValidationError = /** @class */ (function (_super) {
     __extends(ValidationError, _super);
     function ValidationError(error) {
         var _this = _super.call(this, error.message) || this;
-        _this.errorCode = error.error;
+        _this.errorCode = error.errorCode;
         return _this;
     }
     return ValidationError;
@@ -83,13 +83,13 @@ var CentralAuthClient = /** @class */ (function () {
         this.checkData = function (action) {
             var error = null;
             if (typeof _this.organizationId === "undefined")
-                error = { error: "organizationIdMissing", message: "The organization ID is missing. This ID can be found on the organization page in your admin console." };
+                error = { errorCode: "organizationIdMissing", message: "The organization ID is missing. This ID can be found on the organization page in your admin console." };
             if (!_this.secret)
-                error = { error: "secretMissing", message: "The secret is missing. The secret is shown only once at the creation of an organization and should never be exposed publicly or stored unsafely." };
+                error = { errorCode: "secretMissing", message: "The secret is missing. The secret is shown only once at the creation of an organization and should never be exposed publicly or stored unsafely." };
             if (!_this.authBaseUrl)
-                error = { error: "authBaseUrlMissing", message: "The base URL for the organization is missing. The base URL is either the internal base URL or a custom domain for your organization." };
+                error = { errorCode: "authBaseUrlMissing", message: "The base URL for the organization is missing. The base URL is either the internal base URL or a custom domain for your organization." };
             if ((action == "callback" || action == "verify" || action == "me") && !_this.token)
-                error = { error: "tokenMissing", message: "The JSON Web Token is missing. A JWT must be created in the callback after a successful login attempt." };
+                error = { errorCode: "tokenMissing", message: "The JSON Web Token is missing. A JWT must be created in the callback after a successful login attempt." };
             if (error)
                 throw new ValidationError(error);
         };
@@ -103,7 +103,7 @@ var CentralAuthClient = /** @class */ (function () {
                     return [2 /*return*/, decodedToken];
                 }
                 catch (error) {
-                    throw new ValidationError({ error: error === null || error === void 0 ? void 0 : error.name, message: error === null || error === void 0 ? void 0 : error.message });
+                    throw new ValidationError({ errorCode: error === null || error === void 0 ? void 0 : error.name, message: error === null || error === void 0 ? void 0 : error.message });
                 }
                 return [2 /*return*/];
             });
@@ -245,7 +245,7 @@ var CentralAuthClient = /** @class */ (function () {
                         if (errorCode) {
                             //When the error code is set, something went wrong in the login procedure
                             //Throw a ValidationError
-                            throw new ValidationError({ error: errorCode, message: errorMessage || "" });
+                            throw new ValidationError({ errorCode: errorCode, message: errorMessage || "" });
                         }
                         //Build the JWT with the session ID and verification state as payload
                         this.token = jwt.sign({ sessionId: sessionId, verificationState: verificationState }, this.secret);
@@ -297,7 +297,6 @@ var CentralAuthClient = /** @class */ (function () {
                         return [2 /*return*/, Response.json(this.user)];
                     case 2:
                         error_1 = _a.sent();
-                        console.error(error_1);
                         return [2 /*return*/, Response.json(null)];
                     case 3: return [2 /*return*/];
                 }

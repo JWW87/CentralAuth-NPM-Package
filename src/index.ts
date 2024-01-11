@@ -66,7 +66,7 @@ export type ErrorCode = "genericError" |
 
 //Type for the validation errors
 export type ErrorObject = {
-  error: ErrorCode;
+  errorCode: ErrorCode;
   message?: string;
 }
 
@@ -85,7 +85,7 @@ export class ValidationError extends Error {
 
   constructor(error: ErrorObject) {
     super(error.message);
-    this.errorCode = error.error;
+    this.errorCode = error.errorCode;
   }
 }
 
@@ -111,13 +111,13 @@ export class CentralAuthClient {
   private checkData = (action: "login" | "callback" | "verify" | "me") => {
     let error: ErrorObject | null = null;
     if (typeof this.organizationId === "undefined")
-      error = { error: "organizationIdMissing", message: "The organization ID is missing. This ID can be found on the organization page in your admin console." };
+      error = { errorCode: "organizationIdMissing", message: "The organization ID is missing. This ID can be found on the organization page in your admin console." };
     if (!this.secret)
-      error = { error: "secretMissing", message: "The secret is missing. The secret is shown only once at the creation of an organization and should never be exposed publicly or stored unsafely." };
+      error = { errorCode: "secretMissing", message: "The secret is missing. The secret is shown only once at the creation of an organization and should never be exposed publicly or stored unsafely." };
     if (!this.authBaseUrl)
-      error = { error: "authBaseUrlMissing", message: "The base URL for the organization is missing. The base URL is either the internal base URL or a custom domain for your organization." };
+      error = { errorCode: "authBaseUrlMissing", message: "The base URL for the organization is missing. The base URL is either the internal base URL or a custom domain for your organization." };
     if ((action == "callback" || action == "verify" || action == "me") && !this.token)
-      error = { error: "tokenMissing", message: "The JSON Web Token is missing. A JWT must be created in the callback after a successful login attempt." };
+      error = { errorCode: "tokenMissing", message: "The JSON Web Token is missing. A JWT must be created in the callback after a successful login attempt." };
 
     if (error)
       throw new ValidationError(error);
@@ -133,7 +133,7 @@ export class CentralAuthClient {
 
       return decodedToken;
     } catch (error: any) {
-      throw new ValidationError({ error: error?.name, message: error?.message });
+      throw new ValidationError({ errorCode: error?.name, message: error?.message });
     }
   }
 
@@ -260,7 +260,7 @@ export class CentralAuthClient {
     if (errorCode) {
       //When the error code is set, something went wrong in the login procedure
       //Throw a ValidationError
-      throw new ValidationError({ error: errorCode as ErrorCode, message: errorMessage || "" })
+      throw new ValidationError({ errorCode: errorCode as ErrorCode, message: errorMessage || "" })
     }
 
     //Build the JWT with the session ID and verification state as payload
@@ -301,7 +301,6 @@ export class CentralAuthClient {
       await this.getUserData(req);
       return Response.json(this.user);
     } catch (error) {
-      console.error(error);
       return Response.json(null)
     }
   }
