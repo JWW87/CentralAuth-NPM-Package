@@ -179,25 +179,38 @@ var CentralAuthClient = /** @class */ (function () {
                 }
             });
         }); };
+        //Private method to populate the token argument from the cookie in the session
+        this.setTokenFromCookie = function (req) { return __awaiter(_this, void 0, void 0, function () {
+            var headers, cookies;
+            return __generator(this, function (_a) {
+                headers = req.headers;
+                cookies = parseCookie(headers.get("cookie"));
+                //Check for a sessionToken in the cookies
+                if (cookies["sessionToken"])
+                    this.token = cookies["sessionToken"];
+                return [2 /*return*/];
+            });
+        }); };
         //Public method to get the user data from the current request
         //The JWT will be set based on the sessionToken cookie in the request header
         //Will throw an error when the request fails or the token could not be decoded
         this.getUserData = function (req) { return __awaiter(_this, void 0, void 0, function () {
-            var headers, cookies, sessionId;
+            var headers, sessionId;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         headers = req.headers;
-                        cookies = parseCookie(headers.get("cookie"));
-                        //Check for a sessionToken in the cookies
-                        if (cookies["sessionToken"])
-                            this.token = cookies["sessionToken"];
-                        return [4 /*yield*/, this.getDecodedToken()];
+                        //Populate the token
+                        return [4 /*yield*/, this.setTokenFromCookie(req)];
                     case 1:
+                        //Populate the token
+                        _a.sent();
+                        return [4 /*yield*/, this.getDecodedToken()];
+                    case 2:
                         sessionId = (_a.sent()).sessionId;
                         //Get the user data
                         return [4 /*yield*/, this.getUser(sessionId, this.getUserAgent(headers), this.getIPAddress(headers))];
-                    case 2:
+                    case 3:
                         //Get the user data
                         _a.sent();
                         return [2 /*return*/, this.user];
@@ -226,7 +239,7 @@ var CentralAuthClient = /** @class */ (function () {
             });
         }); };
         //Public method for the callback procedure when returning from CentralAuth
-        //This method will automatically verify the JWT and set the sessionToken cookie
+        //This method will automatically verify the JWT payload and set the sessionToken cookie
         //Optionally calls a custom callback function when given with the user data as an argument
         //Returns a Response with a redirection to the returnTo URL
         //Will throw an error when the verification procedure fails or the user data could not be fetched
@@ -304,17 +317,45 @@ var CentralAuthClient = /** @class */ (function () {
         }); };
         //Public method to logout
         this.logout = function (req, config) { return __awaiter(_this, void 0, void 0, function () {
-            var returnTo;
+            var returnTo, sessionId, headers, error_2;
             return __generator(this, function (_a) {
-                returnTo = this.getReturnToURL(req, config);
-                //Unset the cookie and redirect to the returnTo URL
-                return [2 /*return*/, new Response(null, {
-                        status: 302,
-                        headers: {
-                            "Location": returnTo,
-                            "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
-                        }
-                    })];
+                switch (_a.label) {
+                    case 0:
+                        returnTo = this.getReturnToURL(req, config);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 6, 7, 8]);
+                        if (!(config === null || config === void 0 ? void 0 : config.LogoutSessionWide)) return [3 /*break*/, 5];
+                        //To log out session wide, invalidate the session at CentralAuth
+                        return [4 /*yield*/, this.setTokenFromCookie(req)];
+                    case 2:
+                        //To log out session wide, invalidate the session at CentralAuth
+                        _a.sent();
+                        return [4 /*yield*/, this.getDecodedToken()];
+                    case 3:
+                        sessionId = (_a.sent()).sessionId;
+                        headers = new Headers();
+                        headers.append("Authorization", "Bearer ".concat(this.token));
+                        return [4 /*yield*/, fetch("".concat(this.authBaseUrl, "/api/v1/logout/").concat(sessionId), { headers: headers })];
+                    case 4:
+                        _a.sent();
+                        _a.label = 5;
+                    case 5: return [3 /*break*/, 8];
+                    case 6:
+                        error_2 = _a.sent();
+                        console.error("Error logging out session-wide", error_2);
+                        return [3 /*break*/, 8];
+                    case 7: 
+                    //Unset the cookie and redirect to the returnTo URL
+                    return [2 /*return*/, new Response(null, {
+                            status: 302,
+                            headers: {
+                                "Location": returnTo,
+                                "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+                            }
+                        })];
+                    case 8: return [2 /*return*/];
+                }
             });
         }); };
         this.organizationId = organizationId;

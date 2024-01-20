@@ -19,13 +19,15 @@ export type User = {
 }
 
 export type Translations = {
-  emailAddress?: string;
-  loginpageIntro?: string;
-  loginPageEmailError?: string;
-  emailLinkSubject?: string;
-  emailLinkBody?: string;
-  emailLinkBodyWarning?: string;
-  login?: string;
+  emailAddress: string;
+  loginpageIntro: string;
+  loginPageEmailError: string;
+  emailLinkSubject: string;
+  emailLinkBody: string;
+  emailLinkBodyWarning: string;
+  login: string;
+  loginLocal: string;
+  loginRemote: string;
 }
 
 //Type for the parameters of the login method
@@ -36,7 +38,8 @@ export type LoginParams = {
 
 //Type for the parameters of the logout method
 export type LogoutParams = {
-  returnTo?: string
+  returnTo?: string;
+  LogoutSessionWide?: boolean
 }
 
 //Type for the parameters of the callback method
@@ -201,15 +204,22 @@ export class CentralAuthClient {
     }
   }
 
+  //Private method to populate the token argument from the cookie in the session
+  private setTokenFromCookie = async (req: Request) => {
+    const headers = req.headers;
+    const cookies = parseCookie(headers.get("cookie"));
+    //Check for a sessionToken in the cookies
+    if (cookies["sessionToken"])
+      this.token = cookies["sessionToken"];
+  }
+
   //Public method to get the user data from the current request
   //The JWT will be set based on the sessionToken cookie in the request header
   //Will throw an error when the request fails or the token could not be decoded
   public getUserData = async (req: Request) => {
     const headers = req.headers;
-    const cookies = parseCookie(headers.get("cookie"));
-    //Check for a sessionToken in the cookies
-    if (cookies["sessionToken"])
-      this.token = cookies["sessionToken"]
+    //Populate the token
+    await this.setTokenFromCookie(req);
     //Decode the token to get the session ID
     const { sessionId } = await this.getDecodedToken();
     //Get the user data
@@ -244,7 +254,7 @@ export class CentralAuthClient {
   }
 
   //Public method for the callback procedure when returning from CentralAuth
-  //This method will automatically verify the JWT and set the sessionToken cookie
+  //This method will automatically verify the JWT payload and set the sessionToken cookie
   //Optionally calls a custom callback function when given with the user data as an argument
   //Returns a Response with a redirection to the returnTo URL
   //Will throw an error when the verification procedure fails or the user data could not be fetched
@@ -309,16 +319,31 @@ export class CentralAuthClient {
   public logout = async (req: Request, config?: LogoutParams) => {
     const returnTo = this.getReturnToURL(req, config);
 
-    //Unset the cookie and redirect to the returnTo URL
-    return new Response(null,
-      {
-        status: 302,
-        headers: {
-          "Location": returnTo,
-          "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
-        }
+    try {
+      if (config?.LogoutSessionWide) {
+        //To log out session wide, invalidate the session at CentralAuth
+        await this.setTokenFromCookie(req);
+        //Get the session ID from the token
+        const { sessionId } = await this.getDecodedToken();
+        //Make a request to the log out endpoint to invalidate this session at CentralAuth
+        const headers = new Headers();
+        headers.append("Authorization", `Bearer ${this.token}`);
+        await fetch(`${this.authBaseUrl}/api/v1/logout/${sessionId}`, { headers });
       }
-    );
+    } catch (error) {
+      console.error("Error logging out session-wide", error);
+    } finally {
+      //Unset the cookie and redirect to the returnTo URL
+      return new Response(null,
+        {
+          status: 302,
+          headers: {
+            "Location": returnTo,
+            "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+          }
+        }
+      );
+    }
   }
 }
 

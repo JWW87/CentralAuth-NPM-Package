@@ -12,13 +12,15 @@ export type User = {
     organizationId: string;
 };
 export type Translations = {
-    emailAddress?: string;
-    loginpageIntro?: string;
-    loginPageEmailError?: string;
-    emailLinkSubject?: string;
-    emailLinkBody?: string;
-    emailLinkBodyWarning?: string;
-    login?: string;
+    emailAddress: string;
+    loginpageIntro: string;
+    loginPageEmailError: string;
+    emailLinkSubject: string;
+    emailLinkBody: string;
+    emailLinkBodyWarning: string;
+    login: string;
+    loginLocal: string;
+    loginRemote: string;
 };
 export type LoginParams = {
     returnTo?: string;
@@ -26,6 +28,7 @@ export type LoginParams = {
 };
 export type LogoutParams = {
     returnTo?: string;
+    LogoutSessionWide?: boolean;
 };
 export type CallbackParams = {
     callback?: (user: User) => Promise<void>;
@@ -53,6 +56,7 @@ export declare class CentralAuthClient {
     private getUserAgent;
     private getIPAddress;
     private getUser;
+    private setTokenFromCookie;
     getUserData: (req: Request) => Promise<User>;
     login: (req: Request, config?: LoginParams) => Promise<Response>;
     callback: (req: Request, config?: CallbackParams) => Promise<Response>;
