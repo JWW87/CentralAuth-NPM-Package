@@ -1,7 +1,7 @@
 {
-  "name": "@centralauth/client",
-  "version": "1.0.12",
-  "description": "Client package for CentralAuth",
+  "name": "centralauth",
+  "version": "0.1.0",
+  "description": "Official package for CentralAuth",
   "main": "index.js",
   "scripts": {
     "build": "tsc ./src/index.ts --declaration --outDir ./"

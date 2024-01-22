@@ -92,8 +92,8 @@ export class ValidationError extends Error {
   }
 }
 
-//Client class for CentralAuth
-export class CentralAuthClient {
+//Class for CentralAuth
+export class CentralAuthClass {
   private organizationId: string | null;
   private secret: string;
   private authBaseUrl: string;

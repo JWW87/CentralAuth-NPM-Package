@@ -42,7 +42,7 @@ export declare class ValidationError extends Error {
     private errorCode;
     constructor(error: ErrorObject);
 }
-export declare class CentralAuthClient {
+export declare class CentralAuthClass {
     private organizationId;
     private secret;
     private authBaseUrl;
