@@ -11,7 +11,7 @@ export type User = {
     blocked: boolean;
     organizationId: string;
 };
-export type Translations = {
+export type Translations = Partial<{
     emailAddress: string;
     loginpageIntro: string;
     loginPageEmailError: string;
@@ -21,7 +21,7 @@ export type Translations = {
     login: string;
     loginLocal: string;
     loginRemote: string;
-};
+}>;
 export type LoginParams = {
     returnTo?: string;
     translations?: Translations;

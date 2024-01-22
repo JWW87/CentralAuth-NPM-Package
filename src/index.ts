@@ -18,7 +18,7 @@ export type User = {
   organizationId: string;
 }
 
-export type Translations = {
+export type Translations = Partial<{
   emailAddress: string;
   loginpageIntro: string;
   loginPageEmailError: string;
@@ -28,7 +28,7 @@ export type Translations = {
   login: string;
   loginLocal: string;
   loginRemote: string;
-}
+}>
 
 //Type for the parameters of the login method
 export type LoginParams = {
