@@ -1,3 +1,4 @@
+import { ComponentType, FC } from "react";
 export type ConstructorParams = {
     organizationId: string | null;
     secret: string;
@@ -10,6 +11,11 @@ export type User = {
     email: string;
     blocked: boolean;
     organizationId: string;
+};
+export type BasePaths = {
+    loginPath?: string;
+    logoutPath?: string;
+    profilePath?: string;
 };
 export type Translations = Partial<{
     emailAddress: string;
@@ -31,7 +37,7 @@ export type LogoutParams = {
     LogoutSessionWide?: boolean;
 };
 export type CallbackParams = {
-    callback?: (user: User) => Promise<void>;
+    callback?: (req: Request, user: User) => Promise<void>;
 };
 export type ErrorCode = "genericError" | "missingFields" | "sessionMissing" | "sessionNotVerified" | "sessionInvalid" | "verificationStateInvalid" | "loginAttemptMissing" | "loginAttemptExpired" | "loginAttemptInvalid" | "sessionExpired" | "callbackUrlInvalid" | "connectionMissing" | "organizationIdMissing" | "secretMissing" | "authBaseUrlMissing" | "callbackUrlMissing" | "tokenMissing" | "tokenInvalid";
 export type ErrorObject = {
@@ -63,4 +69,11 @@ export declare class CentralAuthClass {
     me: (req: Request) => Promise<Response>;
     logout: (req: Request, config?: LogoutParams) => Promise<Response>;
 }
-export declare const useUser: () => User;
+export declare const useUser: (config?: Pick<BasePaths, "loginPath">) => {
+    user: User;
+    error: any;
+};
+export type WithCentralAuthAutomaticLogin = <T extends {
+    [key: string]: any;
+}>(Component: ComponentType<T>, config?: Pick<BasePaths, "loginPath" | "profilePath">) => FC<T>;
+export declare const withCentralAuthAutomaticLogin: WithCentralAuthAutomaticLogin;

@@ -1,4 +1,5 @@
 import useSWR from "swr";
+import React, { ComponentType, FC, ReactNode, useEffect, useState } from "react";
 const jwt = require("jsonwebtoken");
 
 //Type for the class constructor
@@ -16,6 +17,13 @@ export type User = {
   email: string;
   blocked: boolean;
   organizationId: string;
+}
+
+//Type for the base paths
+export type BasePaths = {
+  loginPath?: string;
+  logoutPath?: string;
+  profilePath?: string;
 }
 
 export type Translations = Partial<{
@@ -44,7 +52,7 @@ export type LogoutParams = {
 
 //Type for the parameters of the callback method
 export type CallbackParams = {
-  callback?: (user: User) => Promise<void>;
+  callback?: (req: Request, user: User) => Promise<void>;
 }
 
 //Enum for the different error messages
@@ -117,6 +125,8 @@ export class CentralAuthClass {
       error = { errorCode: "organizationIdMissing", message: "The organization ID is missing. This ID can be found on the organization page in your admin console." };
     if (!this.secret)
       error = { errorCode: "secretMissing", message: "The secret is missing. The secret is shown only once at the creation of an organization and should never be exposed publicly or stored unsafely." };
+    if (!this.callbackUrl)
+      error = { errorCode: "callbackUrlMissing", message: "The callback URL is missing." };
     if (!this.authBaseUrl)
       error = { errorCode: "authBaseUrlMissing", message: "The base URL for the organization is missing. The base URL is either the internal base URL or a custom domain for your organization." };
     if ((action == "callback" || action == "verify" || action == "me") && !this.token)
@@ -195,7 +205,13 @@ export class CentralAuthClass {
       headers.append("user-agent", userAgent);
       //Set the custom auth-ip header with the IP address of the current request
       headers.append("auth-ip", ipAddress);
-      const response = await fetch(`${this.authBaseUrl}/api/v1/me/${sessionId}`, { headers });
+
+      //Construct the URL
+      const requestUrl = new URL(`${this.authBaseUrl}/api/v1/me/${sessionId}`);
+      const callbackUrl = new URL(this.callbackUrl!);
+      requestUrl.searchParams.append("domain", callbackUrl.origin);
+
+      const response = await fetch(requestUrl.toString(), { headers });
       if (!response.ok) {
         const error = await response.json() as ErrorObject;
         throw new ValidationError(error);
@@ -225,7 +241,7 @@ export class CentralAuthClass {
     //Get the user data
     await this.getUser(sessionId, this.getUserAgent(headers), this.getIPAddress(headers));
 
-    return this.user;
+    return this.user || null;
   }
 
   //Public method to start the login procedure
@@ -280,7 +296,12 @@ export class CentralAuthClass {
     //Make a request to the verification endpoint to verify this session at CentralAuth
     const headers = new Headers();
     headers.append("Authorization", `Bearer ${this.token}`);
-    const response = await fetch(`${this.authBaseUrl}/api/v1/verify/${sessionId}/${verificationState}`, { headers });
+
+    //Construct the URL
+    const requestUrl = new URL(`${this.authBaseUrl}/api/v1/verify/${sessionId}/${verificationState}`);
+    const callbackUrl = new URL(this.callbackUrl!);
+    requestUrl.searchParams.append("domain", callbackUrl.origin);
+    const response = await fetch(requestUrl, { headers });
     if (!response.ok) {
       const error = await response.json() as ErrorObject;
       throw new ValidationError(error);
@@ -289,7 +310,7 @@ export class CentralAuthClass {
 
     //When a callback function is given, call it with the user data
     if (config?.callback)
-      await config.callback(this.user!);
+      await config.callback(req, this.user!);
 
     //Set a cookie with the JWT and redirect to the returnTo URL
     return new Response(null,
@@ -348,9 +369,44 @@ export class CentralAuthClass {
 }
 
 //React hook to declaratively get the currently logged in user via SWR. See https://swr.vercel.app for more info on SWR.
-//Will return null when the user is not logged in and undefined when the request is still active
-export const useUser = () => {
-  const { data: user } = useSWR<User | null>("/api/auth/me", (resource, init) => fetch(resource, init).then(res => res.json()), {});
+//Param basePath can be used when the API route for /me is different from the default /api/auth/me
+//Will return null when the user is not logged in or on error, and undefined when the request is still active
+//The error object will be populated with the fetcher error when the request failed
+export const useUser = (config?: Pick<BasePaths, "loginPath">) => {
+  const { data: user, error } = useSWR<User | null>(config?.loginPath || "/api/auth/me", (resource, init) => fetch(resource, init).then(res => res.json()), {});
 
-  return user;
+  return { user: !error ? user : null, error };
 }
+
+export type WithCentralAuthAutomaticLogin = <T extends { [key: string]: any }>(
+  Component: ComponentType<T>,
+  config?: Pick<BasePaths, "loginPath" | "profilePath">
+) => FC<T>;
+
+
+//Wrapper for a React based client to redirect an anonymous user to CentralAuth when visiting a page that requires authentication
+export const withCentralAuthAutomaticLogin: WithCentralAuthAutomaticLogin = (Component, config = {}) => {
+  return function withCentralAuthAutomaticLogin(props): ReactNode {
+    const { loginPath, profilePath } = config;
+    const [user, setUser] = useState<User>();
+
+    useEffect(() => {
+      fetch(profilePath || "/api/auth/me")
+        .then(response => {
+          response.json()
+            .then((userData: User) => {
+              if (userData == null)
+                window.location.replace(loginPath || "/api/auth/login");
+              else
+                setUser(userData);
+            })
+        })
+
+    }, [loginPath, profilePath]);
+
+    if (user)
+      return <Component {...props} />;
+
+    return null;
+  };
+};

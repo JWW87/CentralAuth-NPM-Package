@@ -14,17 +14,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -124,8 +113,6 @@ var CentralAuthClass = /** @class */ (function () {
                 error = { errorCode: "organizationIdMissing", message: "The organization ID is missing. This ID can be found on the organization page in your admin console." };
             if (!_this.secret)
                 error = { errorCode: "secretMissing", message: "The secret is missing. The secret is shown only once at the creation of an organization and should never be exposed publicly or stored unsafely." };
-            if (!_this.callbackUrl)
-                error = { errorCode: "callbackUrlMissing", message: "The callback URL is missing." };
             if (!_this.authBaseUrl)
                 error = { errorCode: "authBaseUrlMissing", message: "The base URL for the organization is missing. The base URL is either the internal base URL or a custom domain for your organization." };
             if ((action == "callback" || action == "verify" || action == "me") && !_this.token)
@@ -187,7 +174,7 @@ var CentralAuthClass = /** @class */ (function () {
         //Private method to get the user data from the CentralAuth server
         //Will throw an error when the request fails
         this.getUser = function (sessionId, userAgent, ipAddress) { return __awaiter(_this, void 0, void 0, function () {
-            var headers, requestUrl, callbackUrl, response, error, _a;
+            var headers, response, error, _a;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -201,10 +188,7 @@ var CentralAuthClass = /** @class */ (function () {
                         headers.append("user-agent", userAgent);
                         //Set the custom auth-ip header with the IP address of the current request
                         headers.append("auth-ip", ipAddress);
-                        requestUrl = new URL("".concat(this.authBaseUrl, "/api/v1/me/").concat(sessionId));
-                        callbackUrl = new URL(this.callbackUrl);
-                        requestUrl.searchParams.append("domain", callbackUrl.origin);
-                        return [4 /*yield*/, fetch(requestUrl.toString(), { headers: headers })];
+                        return [4 /*yield*/, fetch("".concat(this.authBaseUrl, "/api/v1/me/").concat(sessionId), { headers: headers })];
                     case 2:
                         response = _b.sent();
                         if (!!response.ok) return [3 /*break*/, 4];
@@ -256,7 +240,7 @@ var CentralAuthClass = /** @class */ (function () {
                     case 3:
                         //Get the user data
                         _a.sent();
-                        return [2 /*return*/, this.user || null];
+                        return [2 /*return*/, this.user];
                 }
             });
         }); };
@@ -287,7 +271,7 @@ var CentralAuthClass = /** @class */ (function () {
         //Returns a Response with a redirection to the returnTo URL
         //Will throw an error when the verification procedure fails or the user data could not be fetched
         this.callback = function (req, config) { return __awaiter(_this, void 0, void 0, function () {
-            var url, searchParams, returnTo, sessionId, verificationState, errorCode, errorMessage, headers, requestUrl, callbackUrl, response, error, _a;
+            var url, searchParams, returnTo, sessionId, verificationState, errorCode, errorMessage, headers, response, error, _a;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -308,10 +292,7 @@ var CentralAuthClass = /** @class */ (function () {
                         this.checkData("callback");
                         headers = new Headers();
                         headers.append("Authorization", "Bearer ".concat(this.token));
-                        requestUrl = new URL("".concat(this.authBaseUrl, "/api/v1/verify/").concat(sessionId, "/").concat(verificationState));
-                        callbackUrl = new URL(this.callbackUrl);
-                        requestUrl.searchParams.append("domain", callbackUrl.origin);
-                        return [4 /*yield*/, fetch(requestUrl, { headers: headers })];
+                        return [4 /*yield*/, fetch("".concat(this.authBaseUrl, "/api/v1/verify/").concat(sessionId, "/").concat(verificationState), { headers: headers })];
                     case 1:
                         response = _b.sent();
                         if (!!response.ok) return [3 /*break*/, 3];
@@ -417,7 +398,7 @@ exports.CentralAuthClass = CentralAuthClass;
 //Will return null when the user is not logged in or on error, and undefined when the request is still active
 //The error object will be populated with the fetcher error when the request failed
 var useUser = function (config) {
-    var _a = (0, swr_1.default)((config === null || config === void 0 ? void 0 : config.loginPath) || "/api/auth/me", function (resource, init) { return fetch(resource, init).then(function (res) { return res.json(); }); }, {}), user = _a.data, error = _a.error;
+    var _a = (0, swr_1.default)((config === null || config === void 0 ? void 0 : config.basePath) || "/api/auth/me", function (resource, init) { return fetch(resource, init).then(function (res) { return res.json(); }); }, {}), user = _a.data, error = _a.error;
     return { user: !error ? user : null, error: error };
 };
 exports.useUser = useUser;
@@ -425,22 +406,14 @@ exports.useUser = useUser;
 var withCentralAuthAutomaticLogin = function (Component, config) {
     if (config === void 0) { config = {}; }
     return function withCentralAuthAutomaticLogin(props) {
-        var loginPath = config.loginPath, profilePath = config.profilePath;
-        var _a = (0, react_1.useState)(), user = _a[0], setUser = _a[1];
+        var basePath = config.basePath;
+        var user = (0, exports.useUser)().user;
         (0, react_1.useEffect)(function () {
-            fetch(profilePath || "/api/auth/me")
-                .then(function (response) {
-                response.json()
-                    .then(function (userData) {
-                    if (userData == null)
-                        window.location.replace(loginPath || "/api/auth/login");
-                    else
-                        setUser(userData);
-                });
-            });
-        }, [loginPath, profilePath]);
+            if (user === null)
+                window.location.replace(basePath || "/api/auth/login");
+        }, [user]);
         if (user)
-            return react_1.default.createElement(Component, __assign({}, props));
+            return <Component {...props}/>;
         return null;
     };
 };

@@ -1,10 +1,10 @@
 {
   "name": "centralauth",
-  "version": "0.1.1",
+  "version": "0.1.7",
   "description": "Official package for CentralAuth",
   "main": "index.js",
   "scripts": {
-    "build": "tsc ./src/index.ts --declaration --outDir ./"
+    "build": "tsc ./src/index.tsx --jsx react --esModuleInterop --declaration --outDir ./"
   },
   "repository": {
     "type": "git",
@@ -21,10 +21,12 @@
   "license": "ISC",
   "dependencies": {
     "jsonwebtoken": "^9.0.2",
+    "react": "^18.2.0",
     "swr": "^2.2.4"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.5",
+    "@types/react": "^18.2.48",
     "typescript": "^5.3.2"
   }
 }
