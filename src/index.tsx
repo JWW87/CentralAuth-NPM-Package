@@ -52,7 +52,7 @@ export type LogoutParams = {
 
 //Type for the parameters of the callback method
 export type CallbackParams = {
-  callback?: (req: Request, user: User) => Promise<void>;
+  callback?: (req: Request, res: Response, user: User) => Promise<Response | void>;
 }
 
 //Enum for the different error messages
@@ -301,19 +301,15 @@ export class CentralAuthClass {
     const requestUrl = new URL(`${this.authBaseUrl}/api/v1/verify/${sessionId}/${verificationState}`);
     const callbackUrl = new URL(this.callbackUrl!);
     requestUrl.searchParams.append("domain", callbackUrl.origin);
-    const response = await fetch(requestUrl, { headers });
-    if (!response.ok) {
-      const error = await response.json() as ErrorObject;
+    const verifyResponse = await fetch(requestUrl, { headers });
+    if (!verifyResponse.ok) {
+      const error = await verifyResponse.json() as ErrorObject;
       throw new ValidationError(error);
     }
-    this.user = await response.json() as User;
+    this.user = await verifyResponse.json() as User;
 
-    //When a callback function is given, call it with the user data
-    if (config?.callback)
-      await config.callback(req, this.user!);
-
-    //Set a cookie with the JWT and redirect to the returnTo URL
-    return new Response(null,
+    //Set the default response object
+    let res = new Response(null,
       {
         status: 302,
         headers: {
@@ -322,6 +318,15 @@ export class CentralAuthClass {
         }
       }
     );
+
+    //When a callback function is given, call it with the user data
+    //The callback function may return a new/altered response, which will be returned instead of the default response object
+    let callbackResponse: Response | void | null = null;
+    if (config?.callback)
+      callbackResponse = await config.callback(req, res, this.user!);
+
+    //Set a cookie with the JWT and redirect to the returnTo URL
+    return callbackResponse || res;
   }
 
   //Public method to get the user data from the current request
@@ -332,7 +337,13 @@ export class CentralAuthClass {
       await this.getUserData(req);
       return Response.json(this.user);
     } catch (error) {
-      return Response.json(null)
+      //When an error occurs, assume the user session is not valid anymore
+      //Delete the cookie
+      return Response.json(null, {
+        headers: {
+          "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+        }
+      })
     }
   }
 
@@ -373,9 +384,9 @@ export class CentralAuthClass {
 //Will return null when the user is not logged in or on error, and undefined when the request is still active
 //The error object will be populated with the fetcher error when the request failed
 export const useUser = (config?: Pick<BasePaths, "loginPath">) => {
-  const { data: user, error } = useSWR<User | null>(config?.loginPath || "/api/auth/me", (resource, init) => fetch(resource, init).then(res => res.json()), {});
+  const { data: user, error, isLoading, isValidating } = useSWR<User | null>(config?.loginPath || "/api/auth/me", (resource, init) => fetch(resource, init).then(res => res.json()), {});
 
-  return { user: !error ? user : null, error };
+  return { user: !error ? user : null, error, isLoading, isValidating };
 }
 
 export type WithCentralAuthAutomaticLogin = <T extends { [key: string]: any }>(

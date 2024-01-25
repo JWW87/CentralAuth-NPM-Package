@@ -37,7 +37,7 @@ export type LogoutParams = {
     LogoutSessionWide?: boolean;
 };
 export type CallbackParams = {
-    callback?: (req: Request, user: User) => Promise<void>;
+    callback?: (req: Request, res: Response, user: User) => Promise<Response | void>;
 };
 export type ErrorCode = "genericError" | "missingFields" | "sessionMissing" | "sessionNotVerified" | "sessionInvalid" | "verificationStateInvalid" | "loginAttemptMissing" | "loginAttemptExpired" | "loginAttemptInvalid" | "sessionExpired" | "callbackUrlInvalid" | "connectionMissing" | "organizationIdMissing" | "secretMissing" | "authBaseUrlMissing" | "callbackUrlMissing" | "tokenMissing" | "tokenInvalid";
 export type ErrorObject = {
@@ -72,6 +72,8 @@ export declare class CentralAuthClass {
 export declare const useUser: (config?: Pick<BasePaths, "loginPath">) => {
     user: User;
     error: any;
+    isLoading: boolean;
+    isValidating: boolean;
 };
 export type WithCentralAuthAutomaticLogin = <T extends {
     [key: string]: any;

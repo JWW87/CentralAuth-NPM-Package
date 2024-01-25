@@ -287,7 +287,7 @@ var CentralAuthClass = /** @class */ (function () {
         //Returns a Response with a redirection to the returnTo URL
         //Will throw an error when the verification procedure fails or the user data could not be fetched
         this.callback = function (req, config) { return __awaiter(_this, void 0, void 0, function () {
-            var url, searchParams, returnTo, sessionId, verificationState, errorCode, errorMessage, headers, requestUrl, callbackUrl, response, error, _a;
+            var url, searchParams, returnTo, sessionId, verificationState, errorCode, errorMessage, headers, requestUrl, callbackUrl, verifyResponse, error, _a, res, callbackResponse;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -313,31 +313,33 @@ var CentralAuthClass = /** @class */ (function () {
                         requestUrl.searchParams.append("domain", callbackUrl.origin);
                         return [4 /*yield*/, fetch(requestUrl, { headers: headers })];
                     case 1:
-                        response = _b.sent();
-                        if (!!response.ok) return [3 /*break*/, 3];
-                        return [4 /*yield*/, response.json()];
+                        verifyResponse = _b.sent();
+                        if (!!verifyResponse.ok) return [3 /*break*/, 3];
+                        return [4 /*yield*/, verifyResponse.json()];
                     case 2:
                         error = _b.sent();
                         throw new ValidationError(error);
                     case 3:
                         _a = this;
-                        return [4 /*yield*/, response.json()];
+                        return [4 /*yield*/, verifyResponse.json()];
                     case 4:
                         _a.user = (_b.sent());
-                        if (!(config === null || config === void 0 ? void 0 : config.callback)) return [3 /*break*/, 6];
-                        return [4 /*yield*/, config.callback(req, this.user)];
-                    case 5:
-                        _b.sent();
-                        _b.label = 6;
-                    case 6: 
-                    //Set a cookie with the JWT and redirect to the returnTo URL
-                    return [2 /*return*/, new Response(null, {
+                        res = new Response(null, {
                             status: 302,
                             headers: {
                                 "Location": returnTo,
                                 "Set-Cookie": "sessionToken=".concat(this.token, "; Path=/; HttpOnly; Max-Age=100000000; Secure")
                             }
-                        })];
+                        });
+                        callbackResponse = null;
+                        if (!(config === null || config === void 0 ? void 0 : config.callback)) return [3 /*break*/, 6];
+                        return [4 /*yield*/, config.callback(req, res, this.user)];
+                    case 5:
+                        callbackResponse = _b.sent();
+                        _b.label = 6;
+                    case 6: 
+                    //Set a cookie with the JWT and redirect to the returnTo URL
+                    return [2 /*return*/, callbackResponse || res];
                 }
             });
         }); };
@@ -356,7 +358,13 @@ var CentralAuthClass = /** @class */ (function () {
                         return [2 /*return*/, Response.json(this.user)];
                     case 2:
                         error_1 = _a.sent();
-                        return [2 /*return*/, Response.json(null)];
+                        //When an error occurs, assume the user session is not valid anymore
+                        //Delete the cookie
+                        return [2 /*return*/, Response.json(null, {
+                                headers: {
+                                    "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+                                }
+                            })];
                     case 3: return [2 /*return*/];
                 }
             });
@@ -417,8 +425,8 @@ exports.CentralAuthClass = CentralAuthClass;
 //Will return null when the user is not logged in or on error, and undefined when the request is still active
 //The error object will be populated with the fetcher error when the request failed
 var useUser = function (config) {
-    var _a = (0, swr_1.default)((config === null || config === void 0 ? void 0 : config.loginPath) || "/api/auth/me", function (resource, init) { return fetch(resource, init).then(function (res) { return res.json(); }); }, {}), user = _a.data, error = _a.error;
-    return { user: !error ? user : null, error: error };
+    var _a = (0, swr_1.default)((config === null || config === void 0 ? void 0 : config.loginPath) || "/api/auth/me", function (resource, init) { return fetch(resource, init).then(function (res) { return res.json(); }); }, {}), user = _a.data, error = _a.error, isLoading = _a.isLoading, isValidating = _a.isValidating;
+    return { user: !error ? user : null, error: error, isLoading: isLoading, isValidating: isValidating };
 };
 exports.useUser = useUser;
 //Wrapper for a React based client to redirect an anonymous user to CentralAuth when visiting a page that requires authentication
