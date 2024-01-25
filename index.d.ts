@@ -27,6 +27,9 @@ export type Translations = Partial<{
     login: string;
     loginLocal: string;
     loginRemote: string;
+    loginAttemptBody: string;
+    loginAttemptSuccess: string;
+    loginAttemptError: string;
 }>;
 export type LoginParams = {
     returnTo?: string;
