@@ -196,14 +196,14 @@ var CentralAuthClass = /** @class */ (function () {
                     case 1:
                         this.checkData("me");
                         headers = new Headers();
-                        headers.append("Authorization", "Bearer ".concat(this.token));
+                        headers.set("Authorization", "Bearer ".concat(this.token));
                         //Set the user agent to the user agent of the current request
-                        headers.append("user-agent", userAgent);
+                        headers.set("user-agent", userAgent);
                         //Set the custom auth-ip header with the IP address of the current request
-                        headers.append("auth-ip", ipAddress);
+                        headers.set("auth-ip", ipAddress);
                         requestUrl = new URL("".concat(this.authBaseUrl, "/api/v1/me/").concat(sessionId));
                         callbackUrl = new URL(this.callbackUrl);
-                        requestUrl.searchParams.append("domain", callbackUrl.origin);
+                        requestUrl.searchParams.set("domain", callbackUrl.origin);
                         return [4 /*yield*/, fetch(requestUrl.toString(), { headers: headers })];
                     case 2:
                         response = _b.sent();
@@ -269,15 +269,18 @@ var CentralAuthClass = /** @class */ (function () {
                 returnTo = this.getReturnToURL(req, config);
                 callbackUrl = new URL(this.callbackUrl);
                 if (returnTo)
-                    callbackUrl.searchParams.append("returnTo", returnTo);
+                    callbackUrl.searchParams.set("returnTo", returnTo);
                 translations = (config === null || config === void 0 ? void 0 : config.translations) ? btoa(JSON.stringify(config.translations)) : null;
                 loginUrl = new URL("".concat(this.authBaseUrl, "/login"));
                 if (this.organizationId)
-                    loginUrl.searchParams.append("organizationId", this.organizationId);
+                    loginUrl.searchParams.set("organizationId", this.organizationId);
+                //Add an error message when given
+                if (config === null || config === void 0 ? void 0 : config.errorMessage)
+                    loginUrl.searchParams.set("errorMessage", config === null || config === void 0 ? void 0 : config.errorMessage);
                 //Add translations when given
                 if (translations)
-                    loginUrl.searchParams.append("translations", translations);
-                loginUrl.searchParams.append("callbackUrl", callbackUrl.toString());
+                    loginUrl.searchParams.set("translations", translations);
+                loginUrl.searchParams.set("callbackUrl", callbackUrl.toString());
                 return [2 /*return*/, Response.redirect(loginUrl.toString())];
             });
         }); };
@@ -307,10 +310,10 @@ var CentralAuthClass = /** @class */ (function () {
                         this.token = jwt.sign({ sessionId: sessionId, verificationState: verificationState }, this.secret);
                         this.checkData("callback");
                         headers = new Headers();
-                        headers.append("Authorization", "Bearer ".concat(this.token));
+                        headers.set("Authorization", "Bearer ".concat(this.token));
                         requestUrl = new URL("".concat(this.authBaseUrl, "/api/v1/verify/").concat(sessionId, "/").concat(verificationState));
                         callbackUrl = new URL(this.callbackUrl);
-                        requestUrl.searchParams.append("domain", callbackUrl.origin);
+                        requestUrl.searchParams.set("domain", callbackUrl.origin);
                         return [4 /*yield*/, fetch(requestUrl, { headers: headers })];
                     case 1:
                         verifyResponse = _b.sent();
@@ -389,7 +392,7 @@ var CentralAuthClass = /** @class */ (function () {
                     case 3:
                         sessionId = (_a.sent()).sessionId;
                         headers = new Headers();
-                        headers.append("Authorization", "Bearer ".concat(this.token));
+                        headers.set("Authorization", "Bearer ".concat(this.token));
                         return [4 /*yield*/, fetch("".concat(this.authBaseUrl, "/api/v1/logout/").concat(sessionId), { headers: headers })];
                     case 4:
                         _a.sent();

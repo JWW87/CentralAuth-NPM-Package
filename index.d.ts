@@ -32,11 +32,12 @@ export type Translations = Partial<{
     loginAttemptError: string;
 }>;
 export type LoginParams = {
-    returnTo?: string;
-    translations?: Translations;
+    returnTo?: string | null;
+    errorMessage?: string | null;
+    translations?: Translations | null;
 };
 export type LogoutParams = {
-    returnTo?: string;
+    returnTo?: string | null;
     LogoutSessionWide?: boolean;
 };
 export type CallbackParams = {

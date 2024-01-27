@@ -43,13 +43,14 @@ export type Translations = Partial<{
 
 //Type for the parameters of the login method
 export type LoginParams = {
-  returnTo?: string;
-  translations?: Translations
+  returnTo?: string | null;
+  errorMessage?: string | null;
+  translations?: Translations | null
 }
 
 //Type for the parameters of the logout method
 export type LogoutParams = {
-  returnTo?: string;
+  returnTo?: string | null;
   LogoutSessionWide?: boolean
 }
 
@@ -203,16 +204,16 @@ export class CentralAuthClass {
       this.checkData("me");
 
       const headers = new Headers();
-      headers.append("Authorization", `Bearer ${this.token!}`);
+      headers.set("Authorization", `Bearer ${this.token!}`);
       //Set the user agent to the user agent of the current request
-      headers.append("user-agent", userAgent);
+      headers.set("user-agent", userAgent);
       //Set the custom auth-ip header with the IP address of the current request
-      headers.append("auth-ip", ipAddress);
+      headers.set("auth-ip", ipAddress);
 
       //Construct the URL
       const requestUrl = new URL(`${this.authBaseUrl}/api/v1/me/${sessionId}`);
       const callbackUrl = new URL(this.callbackUrl!);
-      requestUrl.searchParams.append("domain", callbackUrl.origin);
+      requestUrl.searchParams.set("domain", callbackUrl.origin);
 
       const response = await fetch(requestUrl.toString(), { headers });
       if (!response.ok) {
@@ -255,7 +256,7 @@ export class CentralAuthClass {
     const returnTo = this.getReturnToURL(req, config);
     const callbackUrl = new URL(this.callbackUrl);
     if (returnTo)
-      callbackUrl.searchParams.append("returnTo", returnTo);
+      callbackUrl.searchParams.set("returnTo", returnTo);
 
     //Check for custom translations in the config
     const translations = config?.translations ? btoa(JSON.stringify(config.translations)) : null;
@@ -263,11 +264,14 @@ export class CentralAuthClass {
     //Redirect to the login page
     const loginUrl = new URL(`${this.authBaseUrl}/login`);
     if (this.organizationId)
-      loginUrl.searchParams.append("organizationId", this.organizationId);
+      loginUrl.searchParams.set("organizationId", this.organizationId);
+    //Add an error message when given
+    if (config?.errorMessage)
+      loginUrl.searchParams.set("errorMessage", config?.errorMessage);
     //Add translations when given
     if (translations)
-      loginUrl.searchParams.append("translations", translations);
-    loginUrl.searchParams.append("callbackUrl", callbackUrl.toString());
+      loginUrl.searchParams.set("translations", translations);
+    loginUrl.searchParams.set("callbackUrl", callbackUrl.toString());
 
     return Response.redirect(loginUrl.toString());
   }
@@ -298,12 +302,12 @@ export class CentralAuthClass {
 
     //Make a request to the verification endpoint to verify this session at CentralAuth
     const headers = new Headers();
-    headers.append("Authorization", `Bearer ${this.token}`);
+    headers.set("Authorization", `Bearer ${this.token}`);
 
     //Construct the URL
     const requestUrl = new URL(`${this.authBaseUrl}/api/v1/verify/${sessionId}/${verificationState}`);
     const callbackUrl = new URL(this.callbackUrl!);
-    requestUrl.searchParams.append("domain", callbackUrl.origin);
+    requestUrl.searchParams.set("domain", callbackUrl.origin);
     const verifyResponse = await fetch(requestUrl, { headers });
     if (!verifyResponse.ok) {
       const error = await verifyResponse.json() as ErrorObject;
@@ -362,7 +366,7 @@ export class CentralAuthClass {
         const { sessionId } = await this.getDecodedToken();
         //Make a request to the log out endpoint to invalidate this session at CentralAuth
         const headers = new Headers();
-        headers.append("Authorization", `Bearer ${this.token}`);
+        headers.set("Authorization", `Bearer ${this.token}`);
         await fetch(`${this.authBaseUrl}/api/v1/logout/${sessionId}`, { headers });
       }
     } catch (error) {
