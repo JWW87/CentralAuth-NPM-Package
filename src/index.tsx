@@ -33,6 +33,7 @@ export type Translations = Partial<{
   emailLinkSubject: string;
   emailLinkBody: string;
   emailLinkBodyWarning: string;
+  emailChallengeText: string;
   login: string;
   loginLocal: string;
   loginRemote: string;
