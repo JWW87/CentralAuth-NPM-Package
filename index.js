@@ -365,7 +365,7 @@ var CentralAuthClass = /** @class */ (function () {
                         //Delete the cookie
                         return [2 /*return*/, Response.json(null, {
                                 headers: {
-                                    "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+                                    "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict; Secure"
                                 }
                             })];
                     case 3: return [2 /*return*/];
@@ -408,7 +408,7 @@ var CentralAuthClass = /** @class */ (function () {
                             status: 302,
                             headers: {
                                 "Location": returnTo,
-                                "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+                                "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict; Secure"
                             }
                         })];
                     case 8: return [2 /*return*/];

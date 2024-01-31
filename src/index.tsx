@@ -352,7 +352,7 @@ export class CentralAuthClass {
       //Delete the cookie
       return Response.json(null, {
         headers: {
-          "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+          "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict; Secure"
         }
       })
     }
@@ -382,7 +382,7 @@ export class CentralAuthClass {
           status: 302,
           headers: {
             "Location": returnTo,
-            "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+            "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict; Secure"
           }
         }
       );
