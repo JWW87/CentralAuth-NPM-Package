@@ -22,13 +22,16 @@ export type Translations = Partial<{
     loginpageIntro: string;
     loginPageEmailError: string;
     emailLinkSubject: string;
+    emailCodeSubject: string;
     emailLinkBody: string;
-    emailLinkBodyWarning: string;
+    emailCodeBody: string;
+    emailBodyWarning: string;
     emailChallengeText: string;
     login: string;
     loginLocal: string;
     loginRemote: string;
     loginAttemptBody: string;
+    loginAttemptCodeBody: string;
     loginAttemptSuccess: string;
     loginAttemptError: string;
 }>;

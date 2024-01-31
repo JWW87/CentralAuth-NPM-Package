@@ -1,6 +1,6 @@
 {
   "name": "centralauth",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "Official package for CentralAuth",
   "main": "index.js",
   "scripts": {

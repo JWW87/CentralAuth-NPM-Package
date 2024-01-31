@@ -331,7 +331,7 @@ var CentralAuthClass = /** @class */ (function () {
                             status: 302,
                             headers: {
                                 "Location": returnTo,
-                                "Set-Cookie": "sessionToken=".concat(this.token, "; Path=/; HttpOnly; Max-Age=100000000; Secure")
+                                "Set-Cookie": "sessionToken=".concat(this.token, "; Path=/; HttpOnly; Max-Age=100000000; SameSite=Strict; Secure")
                             }
                         });
                         callbackResponse = null;
