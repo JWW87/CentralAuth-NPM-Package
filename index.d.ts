@@ -7,10 +7,12 @@ export type ConstructorParams = {
 };
 export type User = {
     id: string;
-    verified: boolean;
     email: string;
+    verified: boolean;
     blocked: boolean;
-    organizationId: string;
+    organizationId: string | null;
+    created: Date;
+    updated: Date;
 };
 export type BasePaths = {
     loginPath?: string;

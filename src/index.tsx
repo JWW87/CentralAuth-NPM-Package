@@ -13,10 +13,12 @@ export type ConstructorParams = {
 //Type for the user data
 export type User = {
   id: string;
-  verified: boolean;
   email: string;
+  verified: boolean;
   blocked: boolean;
-  organizationId: string;
+  organizationId: string | null;
+  created: Date;
+  updated: Date;
 }
 
 //Type for the base paths
