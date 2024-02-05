@@ -8,6 +8,7 @@ export type ConstructorParams = {
   secret: string;
   authBaseUrl: string;
   callbackUrl: string;
+  cacheUserData?: boolean;
 }
 
 //Type for the user data
@@ -19,6 +20,13 @@ export type User = {
   organizationId: string | null;
   created: Date;
   updated: Date;
+}
+
+//Type for the payload of the JWT
+export type JWTPayload = {
+  sessionId: string,
+  verificationState: string,
+  user?: User
 }
 
 //Type for the base paths
@@ -116,15 +124,17 @@ export class CentralAuthClass {
   private secret: string;
   private authBaseUrl: string;
   private callbackUrl: string;
+  private cacheUserData: boolean = false;
   private token?: string;
   private user?: User;
 
   //Constructor method to set all instance variable
-  constructor({ organizationId, secret, authBaseUrl, callbackUrl }: ConstructorParams) {
+  constructor({ organizationId, secret, authBaseUrl, callbackUrl, cacheUserData }: ConstructorParams) {
     this.organizationId = organizationId;
     this.secret = secret;
     this.authBaseUrl = authBaseUrl;
     this.callbackUrl = callbackUrl;
+    this.cacheUserData = cacheUserData || false;
   }
 
   //Private method to check whether all variable are set for a specific action
@@ -152,7 +162,7 @@ export class CentralAuthClass {
 
     try {
       //Decode the JWT
-      const decodedToken = jwt.verify(this.token!, this.secret) as { sessionId: string, verificationState: string };
+      const decodedToken = jwt.verify(this.token!, this.secret) as JWTPayload;
 
       return decodedToken;
     } catch (error: any) {
@@ -247,9 +257,15 @@ export class CentralAuthClass {
     //Populate the token
     await this.setTokenFromCookie(req);
     //Decode the token to get the session ID
-    const { sessionId } = await this.getDecodedToken();
-    //Get the user data
-    await this.getUser(sessionId, this.getUserAgent(headers), this.getIPAddress(headers));
+    const { sessionId, user } = await this.getDecodedToken();
+
+    if (this.cacheUserData && user) {
+      //Get the user data from the cached data in the JWT when available
+      this.user = user;
+    } else {
+      //Get the user data from CentralAuth
+      await this.getUser(sessionId, this.getUserAgent(headers), this.getIPAddress(headers));
+    }
 
     return this.user || null;
   }
@@ -303,7 +319,7 @@ export class CentralAuthClass {
     }
 
     //Build the JWT with the session ID and verification state as payload
-    this.token = jwt.sign({ sessionId, verificationState }, this.secret);
+    this.token = jwt.sign({ sessionId, verificationState } as JWTPayload, this.secret);
     this.checkData("callback");
 
     //Make a request to the verification endpoint to verify this session at CentralAuth
@@ -320,6 +336,11 @@ export class CentralAuthClass {
       throw new ValidationError(error);
     }
     this.user = await verifyResponse.json() as User;
+
+    if (this.cacheUserData) {
+      //Add the user data to the JWT
+      this.token = jwt.sign({ sessionId, verificationState, user: this.user } as JWTPayload, this.secret);
+    }
 
     //Set the default response object
     let res = new Response(null,

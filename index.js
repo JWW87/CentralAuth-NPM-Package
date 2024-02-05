@@ -114,8 +114,9 @@ exports.ValidationError = ValidationError;
 var CentralAuthClass = /** @class */ (function () {
     //Constructor method to set all instance variable
     function CentralAuthClass(_a) {
-        var organizationId = _a.organizationId, secret = _a.secret, authBaseUrl = _a.authBaseUrl, callbackUrl = _a.callbackUrl;
+        var organizationId = _a.organizationId, secret = _a.secret, authBaseUrl = _a.authBaseUrl, callbackUrl = _a.callbackUrl, cacheUserData = _a.cacheUserData;
         var _this = this;
+        this.cacheUserData = false;
         //Private method to check whether all variable are set for a specific action
         //Will throw a ValidationError when a check fails
         this.checkData = function (action) {
@@ -238,25 +239,31 @@ var CentralAuthClass = /** @class */ (function () {
         //The JWT will be set based on the sessionToken cookie in the request header
         //Will throw an error when the request fails or the token could not be decoded
         this.getUserData = function (req) { return __awaiter(_this, void 0, void 0, function () {
-            var headers, sessionId;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var headers, _a, sessionId, user;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         headers = req.headers;
                         //Populate the token
                         return [4 /*yield*/, this.setTokenFromCookie(req)];
                     case 1:
                         //Populate the token
-                        _a.sent();
+                        _b.sent();
                         return [4 /*yield*/, this.getDecodedToken()];
                     case 2:
-                        sessionId = (_a.sent()).sessionId;
-                        //Get the user data
-                        return [4 /*yield*/, this.getUser(sessionId, this.getUserAgent(headers), this.getIPAddress(headers))];
-                    case 3:
-                        //Get the user data
-                        _a.sent();
-                        return [2 /*return*/, this.user || null];
+                        _a = _b.sent(), sessionId = _a.sessionId, user = _a.user;
+                        if (!(this.cacheUserData && user)) return [3 /*break*/, 3];
+                        //Get the user data from the cached data in the JWT when available
+                        this.user = user;
+                        return [3 /*break*/, 5];
+                    case 3: 
+                    //Get the user data from CentralAuth
+                    return [4 /*yield*/, this.getUser(sessionId, this.getUserAgent(headers), this.getIPAddress(headers))];
+                    case 4:
+                        //Get the user data from CentralAuth
+                        _b.sent();
+                        _b.label = 5;
+                    case 5: return [2 /*return*/, this.user || null];
                 }
             });
         }); };
@@ -327,6 +334,10 @@ var CentralAuthClass = /** @class */ (function () {
                         return [4 /*yield*/, verifyResponse.json()];
                     case 4:
                         _a.user = (_b.sent());
+                        if (this.cacheUserData) {
+                            //Add the user data to the JWT
+                            this.token = jwt.sign({ sessionId: sessionId, verificationState: verificationState, user: this.user }, this.secret);
+                        }
                         res = new Response(null, {
                             status: 302,
                             headers: {
@@ -419,6 +430,7 @@ var CentralAuthClass = /** @class */ (function () {
         this.secret = secret;
         this.authBaseUrl = authBaseUrl;
         this.callbackUrl = callbackUrl;
+        this.cacheUserData = cacheUserData || false;
     }
     return CentralAuthClass;
 }());

@@ -4,6 +4,7 @@ export type ConstructorParams = {
     secret: string;
     authBaseUrl: string;
     callbackUrl: string;
+    cacheUserData?: boolean;
 };
 export type User = {
     id: string;
@@ -13,6 +14,11 @@ export type User = {
     organizationId: string | null;
     created: Date;
     updated: Date;
+};
+export type JWTPayload = {
+    sessionId: string;
+    verificationState: string;
+    user?: User;
 };
 export type BasePaths = {
     loginPath?: string;
@@ -63,9 +69,10 @@ export declare class CentralAuthClass {
     private secret;
     private authBaseUrl;
     private callbackUrl;
+    private cacheUserData;
     private token?;
     private user?;
-    constructor({ organizationId, secret, authBaseUrl, callbackUrl }: ConstructorParams);
+    constructor({ organizationId, secret, authBaseUrl, callbackUrl, cacheUserData }: ConstructorParams);
     private checkData;
     private getDecodedToken;
     private getReturnToURL;
