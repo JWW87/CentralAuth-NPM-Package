@@ -134,7 +134,7 @@ export class CentralAuthClass {
     this.secret = secret;
     this.authBaseUrl = authBaseUrl;
     this.callbackUrl = callbackUrl;
-    this.cacheUserData = cacheUserData || false;
+    this.cacheUserData = !!cacheUserData;
   }
 
   //Private method to check whether all variable are set for a specific action
@@ -387,6 +387,9 @@ export class CentralAuthClass {
 
     try {
       if (config?.LogoutSessionWide) {
+        if (this.cacheUserData)
+          console.warn("Session-wide logging out not supported when caching user data.");
+
         //To log out session wide, invalidate the session at CentralAuth
         await this.setTokenFromCookie(req);
         //Get the session ID from the token
@@ -394,7 +397,11 @@ export class CentralAuthClass {
         //Make a request to the log out endpoint to invalidate this session at CentralAuth
         const headers = new Headers();
         headers.set("Authorization", `Bearer ${this.token}`);
-        await fetch(`${this.authBaseUrl}/api/v1/logout/${sessionId}`, { headers });
+        const logoutResponse = await fetch(`${this.authBaseUrl}/api/v1/logout/${sessionId}`, { headers });
+        if (!logoutResponse.ok) {
+          const error = await logoutResponse.json() as ErrorObject;
+          throw new ValidationError(error);
+        }
       }
     } catch (error) {
       console.error("Error logging out session-wide", error);

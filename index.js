@@ -385,15 +385,17 @@ var CentralAuthClass = /** @class */ (function () {
         }); };
         //Public method to logout
         this.logout = function (req, config) { return __awaiter(_this, void 0, void 0, function () {
-            var returnTo, sessionId, headers, error_2;
+            var returnTo, sessionId, headers, logoutResponse, error, error_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         returnTo = this.getReturnToURL(req, config);
                         _a.label = 1;
                     case 1:
-                        _a.trys.push([1, 6, 7, 8]);
-                        if (!(config === null || config === void 0 ? void 0 : config.LogoutSessionWide)) return [3 /*break*/, 5];
+                        _a.trys.push([1, 7, 8, 9]);
+                        if (!(config === null || config === void 0 ? void 0 : config.LogoutSessionWide)) return [3 /*break*/, 6];
+                        if (this.cacheUserData)
+                            console.warn("Session-wide logging out not supported when caching user data.");
                         //To log out session wide, invalidate the session at CentralAuth
                         return [4 /*yield*/, this.setTokenFromCookie(req)];
                     case 2:
@@ -406,14 +408,18 @@ var CentralAuthClass = /** @class */ (function () {
                         headers.set("Authorization", "Bearer ".concat(this.token));
                         return [4 /*yield*/, fetch("".concat(this.authBaseUrl, "/api/v1/logout/").concat(sessionId), { headers: headers })];
                     case 4:
-                        _a.sent();
-                        _a.label = 5;
-                    case 5: return [3 /*break*/, 8];
-                    case 6:
+                        logoutResponse = _a.sent();
+                        if (!!logoutResponse.ok) return [3 /*break*/, 6];
+                        return [4 /*yield*/, logoutResponse.json()];
+                    case 5:
+                        error = _a.sent();
+                        throw new ValidationError(error);
+                    case 6: return [3 /*break*/, 9];
+                    case 7:
                         error_2 = _a.sent();
                         console.error("Error logging out session-wide", error_2);
-                        return [3 /*break*/, 8];
-                    case 7: 
+                        return [3 /*break*/, 9];
+                    case 8: 
                     //Unset the cookie and redirect to the returnTo URL
                     return [2 /*return*/, new Response(null, {
                             status: 302,
@@ -422,7 +428,7 @@ var CentralAuthClass = /** @class */ (function () {
                                 "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict; Secure"
                             }
                         })];
-                    case 8: return [2 /*return*/];
+                    case 9: return [2 /*return*/];
                 }
             });
         }); };
@@ -430,7 +436,7 @@ var CentralAuthClass = /** @class */ (function () {
         this.secret = secret;
         this.authBaseUrl = authBaseUrl;
         this.callbackUrl = callbackUrl;
-        this.cacheUserData = cacheUserData || false;
+        this.cacheUserData = !!cacheUserData;
     }
     return CentralAuthClass;
 }());
