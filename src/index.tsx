@@ -39,11 +39,13 @@ export type BasePaths = {
 export type Translations = Partial<{
   emailAddress: string;
   loginpageIntro: string;
+  loginpageEmailIntro: string;
   loginPageEmailError: string;
   emailLinkSubject: string;
   emailCodeSubject: string;
   emailLinkBody: string;
   emailCodeBody: string;
+  emailWaitUntil: string;
   emailBodyWarning: string;
   emailChallengeText: string;
   login: string;
@@ -424,8 +426,8 @@ export class CentralAuthClass {
 //Param basePath can be used when the API route for /me is different from the default /api/auth/me
 //Will return null when the user is not logged in or on error, and undefined when the request is still active
 //The error object will be populated with the fetcher error when the request failed
-export const useUser = (config?: Pick<BasePaths, "loginPath">) => {
-  const { data: user, error, isLoading, isValidating } = useSWR<User | null>(config?.loginPath || "/api/auth/me", (resource, init) => fetch(resource, init).then(res => res.json()), {});
+export const useUser = (config?: Pick<BasePaths, "profilePath">) => {
+  const { data: user, error, isLoading, isValidating } = useSWR<User | null>(config?.profilePath || "/api/auth/me", (resource, init) => fetch(resource, init).then(res => res.json()), {});
 
   return { user: !error ? user : null, error, isLoading, isValidating };
 }

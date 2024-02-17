@@ -28,11 +28,13 @@ export type BasePaths = {
 export type Translations = Partial<{
     emailAddress: string;
     loginpageIntro: string;
+    loginpageEmailIntro: string;
     loginPageEmailError: string;
     emailLinkSubject: string;
     emailCodeSubject: string;
     emailLinkBody: string;
     emailCodeBody: string;
+    emailWaitUntil: string;
     emailBodyWarning: string;
     emailChallengeText: string;
     login: string;
@@ -86,7 +88,7 @@ export declare class CentralAuthClass {
     me: (req: Request) => Promise<Response>;
     logout: (req: Request, config?: LogoutParams) => Promise<Response>;
 }
-export declare const useUser: (config?: Pick<BasePaths, "loginPath">) => {
+export declare const useUser: (config?: Pick<BasePaths, "profilePath">) => {
     user: User;
     error: any;
     isLoading: boolean;

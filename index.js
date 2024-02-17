@@ -446,7 +446,7 @@ exports.CentralAuthClass = CentralAuthClass;
 //Will return null when the user is not logged in or on error, and undefined when the request is still active
 //The error object will be populated with the fetcher error when the request failed
 var useUser = function (config) {
-    var _a = (0, swr_1.default)((config === null || config === void 0 ? void 0 : config.loginPath) || "/api/auth/me", function (resource, init) { return fetch(resource, init).then(function (res) { return res.json(); }); }, {}), user = _a.data, error = _a.error, isLoading = _a.isLoading, isValidating = _a.isValidating;
+    var _a = (0, swr_1.default)((config === null || config === void 0 ? void 0 : config.profilePath) || "/api/auth/me", function (resource, init) { return fetch(resource, init).then(function (res) { return res.json(); }); }, {}), user = _a.data, error = _a.error, isLoading = _a.isLoading, isValidating = _a.isValidating;
     return { user: !error ? user : null, error: error, isLoading: isLoading, isValidating: isValidating };
 };
 exports.useUser = useUser;
