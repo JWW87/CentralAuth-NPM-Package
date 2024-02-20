@@ -41,6 +41,8 @@ export type Translations = Partial<{
   loginpageIntro: string;
   loginpageEmailIntro: string;
   loginPageEmailError: string;
+  loginPageCaptcha: string;
+  loginPageCaptchaError: string;
   emailLinkSubject: string;
   emailCodeSubject: string;
   emailLinkBody: string;
@@ -80,7 +82,9 @@ export type ErrorCode = "genericError" |
   "missingFields" |
   "sessionMissing" |
   "sessionNotVerified" |
+  "sessionInactive" |
   "sessionInvalid" |
+  "domainInvalid" |
   "verificationStateInvalid" |
   "loginAttemptMissing" |
   "loginAttemptExpired" |
@@ -93,7 +97,8 @@ export type ErrorCode = "genericError" |
   "authBaseUrlMissing" |
   "callbackUrlMissing" |
   "tokenMissing" |
-  "tokenInvalid";
+  "tokenInvalid" |
+  "captchaInvalid";
 
 //Type for the validation errors
 export type ErrorObject = {

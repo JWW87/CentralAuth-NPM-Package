@@ -30,6 +30,8 @@ export type Translations = Partial<{
     loginpageIntro: string;
     loginpageEmailIntro: string;
     loginPageEmailError: string;
+    loginPageCaptcha: string;
+    loginPageCaptchaError: string;
     emailLinkSubject: string;
     emailCodeSubject: string;
     emailLinkBody: string;
@@ -57,7 +59,7 @@ export type LogoutParams = {
 export type CallbackParams = {
     callback?: (req: Request, res: Response, user: User) => Promise<Response | void>;
 };
-export type ErrorCode = "genericError" | "missingFields" | "sessionMissing" | "sessionNotVerified" | "sessionInvalid" | "verificationStateInvalid" | "loginAttemptMissing" | "loginAttemptExpired" | "loginAttemptInvalid" | "sessionExpired" | "callbackUrlInvalid" | "connectionMissing" | "organizationIdMissing" | "secretMissing" | "authBaseUrlMissing" | "callbackUrlMissing" | "tokenMissing" | "tokenInvalid";
+export type ErrorCode = "genericError" | "missingFields" | "sessionMissing" | "sessionNotVerified" | "sessionInactive" | "sessionInvalid" | "domainInvalid" | "verificationStateInvalid" | "loginAttemptMissing" | "loginAttemptExpired" | "loginAttemptInvalid" | "sessionExpired" | "callbackUrlInvalid" | "connectionMissing" | "organizationIdMissing" | "secretMissing" | "authBaseUrlMissing" | "callbackUrlMissing" | "tokenMissing" | "tokenInvalid" | "captchaInvalid";
 export type ErrorObject = {
     errorCode: ErrorCode;
     message?: string;
