@@ -28,6 +28,11 @@ export type BasePaths = {
 export type Translations = Partial<{
     emailAddress: string;
     loginpageIntro: string;
+    loginPagePasskeyAuthentication: string;
+    loginPagePasskeyRegistration: string;
+    loginPagePasskeyIntro: string;
+    loginPagePasskeyOrganizationWarning: string;
+    loginPagePasskeyError: string;
     loginpageEmailIntro: string;
     loginPageEmailError: string;
     loginPageCaptcha: string;
