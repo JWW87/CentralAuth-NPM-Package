@@ -1,6 +1,4 @@
 /// <reference types="node" />
-import { Request as ExpressRequest, Response as ExpressResponse } from "express";
-import { ComponentType, FC } from "react";
 import { IncomingMessage, ServerResponse } from "http";
 export type ConstructorParams = {
     organizationId: string | null;
@@ -101,22 +99,12 @@ export declare class CentralAuthClass {
     me: (req: Request) => Promise<Response>;
     logout: (req: Request, config?: LogoutParams) => Promise<Response>;
 }
-export declare class CentralAuthExpressClass extends CentralAuthClass {
-    private expressRequestToFetchRequest;
-    private fetchResponseToExpressResponse;
-    getUserDataExpress: (req: ExpressRequest | IncomingMessage) => Promise<User | null>;
-    loginExpress: (req: ExpressRequest | IncomingMessage, res: ExpressResponse | ServerResponse, config?: LoginParams) => Promise<void>;
-    callbackExpress: (req: ExpressRequest | IncomingMessage, res: ExpressResponse | ServerResponse, config?: CallbackParams) => Promise<void>;
-    logoutExpress: (req: ExpressRequest | IncomingMessage, res: ExpressResponse | ServerResponse, config?: LogoutParams) => Promise<void>;
-    meExpress: (req: ExpressRequest | IncomingMessage, res: ExpressResponse | ServerResponse) => Promise<void>;
+export declare class CentralAuthHTTPClass extends CentralAuthClass {
+    private httpRequestToFetchRequest;
+    private fetchResponseToHttpResponse;
+    getUserDataHTTP: (req: IncomingMessage) => Promise<User | null>;
+    loginHTTP: (req: IncomingMessage, res: ServerResponse, config?: LoginParams) => Promise<void>;
+    callbackHTTP: (req: IncomingMessage, res: ServerResponse, config?: CallbackParams) => Promise<void>;
+    logoutHTTP: (req: IncomingMessage, res: ServerResponse, config?: LogoutParams) => Promise<void>;
+    meHTTP: (req: IncomingMessage, res: ServerResponse) => Promise<void>;
 }
-export declare const useUser: (config?: Pick<BasePaths, "profilePath">) => {
-    user: User | null | undefined;
-    error: any;
-    isLoading: boolean;
-    isValidating: boolean;
-};
-export type WithCentralAuthAutomaticLogin = <T extends {
-    [key: string]: any;
-}>(Component: ComponentType<T>, config?: Pick<BasePaths, "loginPath" | "profilePath">) => FC<T>;
-export declare const withCentralAuthAutomaticLogin: WithCentralAuthAutomaticLogin;

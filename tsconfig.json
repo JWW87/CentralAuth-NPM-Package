@@ -19,7 +19,7 @@
     "declaration": true
   },
   "include": [
-    "src/index.tsx",
+    "src/**.tsx",
   ],
   "exclude": [
     "node_modules"

@@ -7,8 +7,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import React, { useEffect, useState } from "react";
-import useSWR from "swr";
 const jwt = require("jsonwebtoken");
 //Private method for parsing a cookie string in a request header
 const parseCookie = (cookieString) => ((cookieString === null || cookieString === void 0 ? void 0 : cookieString.split(';').map(v => v.split('=')).reduce((acc, v) => {
@@ -284,76 +282,46 @@ export class CentralAuthClass {
         this.cacheUserData = !!cacheUserData;
     }
 }
-//Define a subclass for Express based servers
-export class CentralAuthExpressClass extends CentralAuthClass {
+//Define a subclass for HTTP based servers
+export class CentralAuthHTTPClass extends CentralAuthClass {
     constructor() {
         super(...arguments);
-        this.expressRequestToFetchRequest = (expressRequest) => {
-            const fetchRequest = new Request(expressRequest.url, {
-                headers: new Headers(expressRequest.headers)
+        this.httpRequestToFetchRequest = (httpRequest) => {
+            const fetchRequest = new Request(httpRequest.url, {
+                headers: new Headers(httpRequest.headers)
             });
             return fetchRequest;
         };
-        this.fetchResponseToExpressResponse = (fetchResponse, expressResponse) => {
+        this.fetchResponseToHttpResponse = (fetchResponse, httpResponse) => {
             const entries = fetchResponse.headers.entries();
-            const expressHeaders = {};
+            const httpHeaders = {};
             for (const entry of entries)
-                expressHeaders[entry[0]] = entry[1];
-            expressResponse.writeHead(fetchResponse.status, expressHeaders).end(fetchResponse.body);
+                httpHeaders[entry[0]] = entry[1];
+            httpResponse.writeHead(fetchResponse.status, httpHeaders).end(fetchResponse.body);
         };
         //Overloaded method for getUserData
-        this.getUserDataExpress = (req) => __awaiter(this, void 0, void 0, function* () {
+        this.getUserDataHTTP = (req) => __awaiter(this, void 0, void 0, function* () {
             return yield this.getUserData(new Headers(req.headers));
         });
         //Overloaded method for login
-        this.loginExpress = (req, res, config) => __awaiter(this, void 0, void 0, function* () {
-            const fetchResponse = yield this.login(this.expressRequestToFetchRequest(req), config);
-            this.fetchResponseToExpressResponse(fetchResponse, res);
+        this.loginHTTP = (req, res, config) => __awaiter(this, void 0, void 0, function* () {
+            const fetchResponse = yield this.login(this.httpRequestToFetchRequest(req), config);
+            this.fetchResponseToHttpResponse(fetchResponse, res);
         });
         //Overloaded method for callback
-        this.callbackExpress = (req, res, config) => __awaiter(this, void 0, void 0, function* () {
-            const fetchResponse = yield this.callback(this.expressRequestToFetchRequest(req), config);
-            this.fetchResponseToExpressResponse(fetchResponse, res);
+        this.callbackHTTP = (req, res, config) => __awaiter(this, void 0, void 0, function* () {
+            const fetchResponse = yield this.callback(this.httpRequestToFetchRequest(req), config);
+            this.fetchResponseToHttpResponse(fetchResponse, res);
         });
         //Overloaded method for logout
-        this.logoutExpress = (req, res, config) => __awaiter(this, void 0, void 0, function* () {
-            const fetchResponse = yield this.logout(this.expressRequestToFetchRequest(req), config);
-            this.fetchResponseToExpressResponse(fetchResponse, res);
+        this.logoutHTTP = (req, res, config) => __awaiter(this, void 0, void 0, function* () {
+            const fetchResponse = yield this.logout(this.httpRequestToFetchRequest(req), config);
+            this.fetchResponseToHttpResponse(fetchResponse, res);
         });
         //Overloaded method for me
-        this.meExpress = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            const fetchResponse = yield this.me(this.expressRequestToFetchRequest(req));
-            this.fetchResponseToExpressResponse(fetchResponse, res);
+        this.meHTTP = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            const fetchResponse = yield this.me(this.httpRequestToFetchRequest(req));
+            this.fetchResponseToHttpResponse(fetchResponse, res);
         });
     }
 }
-//React hook to declaratively get the currently logged in user via SWR. See https://swr.vercel.app for more info on SWR.
-//Param basePath can be used when the API route for /me is different from the default /api/auth/me
-//Will return null when the user is not logged in or on error, and undefined when the request is still active
-//The error object will be populated with the fetcher error when the request failed
-export const useUser = (config) => {
-    const { data: user, error, isLoading, isValidating } = useSWR((config === null || config === void 0 ? void 0 : config.profilePath) || "/api/auth/me", (resource, init) => fetch(resource, init).then(res => res.json()), {});
-    return { user: !error ? user : null, error, isLoading, isValidating };
-};
-//Wrapper for a React based client to redirect an anonymous user to CentralAuth when visiting a page that requires authentication
-export const withCentralAuthAutomaticLogin = (Component, config = {}) => {
-    return function withCentralAuthAutomaticLogin(props) {
-        const { loginPath, profilePath } = config;
-        const [user, setUser] = useState();
-        useEffect(() => {
-            fetch(profilePath || "/api/auth/me")
-                .then(response => {
-                response.json()
-                    .then((userData) => {
-                    if (userData == null)
-                        window.location.replace(loginPath || "/api/auth/login");
-                    else
-                        setUser(userData);
-                });
-            });
-        }, [loginPath, profilePath]);
-        if (user)
-            return React.createElement(Component, Object.assign({}, props));
-        return null;
-    };
-};

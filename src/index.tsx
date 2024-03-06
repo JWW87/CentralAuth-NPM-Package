@@ -1,6 +1,3 @@
-import { Request as ExpressRequest, Response as ExpressResponse } from "express";
-import React, { ComponentType, FC, ReactElement, useEffect, useState } from "react";
-import useSWR from "swr";
 import { IncomingMessage, ServerResponse } from "http";
 const jwt = require("jsonwebtoken");
 
@@ -440,97 +437,54 @@ export class CentralAuthClass {
   }
 }
 
-//Define a subclass for Express based servers
-export class CentralAuthExpressClass extends CentralAuthClass {
-  private expressRequestToFetchRequest = (expressRequest: ExpressRequest | IncomingMessage) => {
-    const fetchRequest = new Request(expressRequest.url!, {
-      headers: new Headers(expressRequest.headers as HeadersInit)
+//Define a subclass for HTTP based servers
+export class CentralAuthHTTPClass extends CentralAuthClass {
+  private httpRequestToFetchRequest = (httpRequest: IncomingMessage) => {
+    const fetchRequest = new Request(httpRequest.url!, {
+      headers: new Headers(httpRequest.headers as HeadersInit)
     });
 
     return fetchRequest;
   }
 
-  private fetchResponseToExpressResponse = (fetchResponse: Response, expressResponse: ExpressResponse | ServerResponse) => {
+  private fetchResponseToHttpResponse = (fetchResponse: Response, httpResponse: ServerResponse) => {
     const entries = fetchResponse.headers.entries();
-    const expressHeaders: Record<string, string> = {};
+    const httpHeaders: Record<string, string> = {};
     for (const entry of entries)
-      expressHeaders[entry[0]] = entry[1];
-    expressResponse.writeHead(fetchResponse.status, expressHeaders).end(fetchResponse.body);
+      httpHeaders[entry[0]] = entry[1];
+    httpResponse.writeHead(fetchResponse.status, httpHeaders).end(fetchResponse.body);
   }
 
   //Overloaded method for getUserData
-  public getUserDataExpress = async (req: ExpressRequest | IncomingMessage) => {
+  public getUserDataHTTP = async (req: IncomingMessage) => {
     return await this.getUserData(new Headers(req.headers as HeadersInit));
   }
 
   //Overloaded method for login
-  public loginExpress = async (req: ExpressRequest | IncomingMessage, res: ExpressResponse | ServerResponse, config?: LoginParams) => {
-    const fetchResponse = await this.login(this.expressRequestToFetchRequest(req), config);
+  public loginHTTP = async (req: IncomingMessage, res: ServerResponse, config?: LoginParams) => {
+    const fetchResponse = await this.login(this.httpRequestToFetchRequest(req), config);
 
-    this.fetchResponseToExpressResponse(fetchResponse, res);
+    this.fetchResponseToHttpResponse(fetchResponse, res);
   }
 
   //Overloaded method for callback
-  public callbackExpress = async (req: ExpressRequest | IncomingMessage, res: ExpressResponse | ServerResponse, config?: CallbackParams) => {
-    const fetchResponse = await this.callback(this.expressRequestToFetchRequest(req), config);
+  public callbackHTTP = async (req: IncomingMessage, res: ServerResponse, config?: CallbackParams) => {
+    const fetchResponse = await this.callback(this.httpRequestToFetchRequest(req), config);
 
-    this.fetchResponseToExpressResponse(fetchResponse, res);
+    this.fetchResponseToHttpResponse(fetchResponse, res);
   }
 
   //Overloaded method for logout
-  public logoutExpress = async (req: ExpressRequest | IncomingMessage, res: ExpressResponse | ServerResponse, config?: LogoutParams) => {
-    const fetchResponse = await this.logout(this.expressRequestToFetchRequest(req), config);
+  public logoutHTTP = async (req: IncomingMessage, res: ServerResponse, config?: LogoutParams) => {
+    const fetchResponse = await this.logout(this.httpRequestToFetchRequest(req), config);
 
-    this.fetchResponseToExpressResponse(fetchResponse, res);
+    this.fetchResponseToHttpResponse(fetchResponse, res);
   }
 
   //Overloaded method for me
-  public meExpress = async (req: ExpressRequest | IncomingMessage, res: ExpressResponse | ServerResponse) => {
-    const fetchResponse = await this.me(this.expressRequestToFetchRequest(req));
+  public meHTTP = async (req: IncomingMessage, res: ServerResponse) => {
+    const fetchResponse = await this.me(this.httpRequestToFetchRequest(req));
 
-    this.fetchResponseToExpressResponse(fetchResponse, res);
+    this.fetchResponseToHttpResponse(fetchResponse, res);
   }
 }
-
-//React hook to declaratively get the currently logged in user via SWR. See https://swr.vercel.app for more info on SWR.
-//Param basePath can be used when the API route for /me is different from the default /api/auth/me
-//Will return null when the user is not logged in or on error, and undefined when the request is still active
-//The error object will be populated with the fetcher error when the request failed
-export const useUser = (config?: Pick<BasePaths, "profilePath">) => {
-  const { data: user, error, isLoading, isValidating } = useSWR<User | null>(config?.profilePath || "/api/auth/me", (resource, init) => fetch(resource, init).then(res => res.json()), {});
-
-  return { user: !error ? user : null, error, isLoading, isValidating };
-}
-
-export type WithCentralAuthAutomaticLogin = <T extends { [key: string]: any }>(
-  Component: ComponentType<T>,
-  config?: Pick<BasePaths, "loginPath" | "profilePath">
-) => FC<T>;
-
-
-//Wrapper for a React based client to redirect an anonymous user to CentralAuth when visiting a page that requires authentication
-export const withCentralAuthAutomaticLogin: WithCentralAuthAutomaticLogin = (Component, config = {}) => {
-  return function withCentralAuthAutomaticLogin(props): ReactElement<any, any> | null {
-    const { loginPath, profilePath } = config;
-    const [user, setUser] = useState<User>();
-
-    useEffect(() => {
-      fetch(profilePath || "/api/auth/me")
-        .then(response => {
-          response.json()
-            .then((userData: User) => {
-              if (userData == null)
-                window.location.replace(loginPath || "/api/auth/login");
-              else
-                setUser(userData);
-            })
-        })
-
-    }, [loginPath, profilePath]);
-
-    if (user)
-      return <Component {...props} />;
-
-    return null;
-  };
-};
