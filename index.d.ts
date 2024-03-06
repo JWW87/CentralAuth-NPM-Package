@@ -1,3 +1,4 @@
+import { Request as ExpressRequest, Response as ExpressResponse } from "express";
 import { ComponentType, FC } from "react";
 export type ConstructorParams = {
     organizationId: string | null;
@@ -45,16 +46,19 @@ export type Translations = Partial<{
     emailBodyWarning: string;
     emailChallengeText: string;
     login: string;
+    loginWithPasskey: string;
     loginLocal: string;
     loginRemote: string;
     loginAttemptBody: string;
     loginAttemptCodeBody: string;
     loginAttemptSuccess: string;
     loginAttemptError: string;
+    undo: string;
 }>;
 export type LoginParams = {
     returnTo?: string | null;
     errorMessage?: string | null;
+    emailAddress?: string | null;
     translations?: Translations | null;
 };
 export type LogoutParams = {
@@ -89,14 +93,23 @@ export declare class CentralAuthClass {
     private getIPAddress;
     private getUser;
     private setTokenFromCookie;
-    getUserData: (req: Request) => Promise<User>;
+    getUserData: (headers: Headers) => Promise<User | null>;
     login: (req: Request, config?: LoginParams) => Promise<Response>;
     callback: (req: Request, config?: CallbackParams) => Promise<Response>;
     me: (req: Request) => Promise<Response>;
     logout: (req: Request, config?: LogoutParams) => Promise<Response>;
 }
+export declare class CentralAuthExpressClass extends CentralAuthClass {
+    private expressRequestToFetchRequest;
+    private fetchResponseToExpressResponse;
+    getUserDataExpress: (req: ExpressRequest) => Promise<User | null>;
+    loginExpress: (req: ExpressRequest, res: ExpressResponse, config?: LoginParams) => Promise<void>;
+    callbackExpress: (req: ExpressRequest, res: ExpressResponse, config?: CallbackParams) => Promise<void>;
+    logoutExpress: (req: ExpressRequest, res: ExpressResponse, config?: LogoutParams) => Promise<void>;
+    meExpress: (req: ExpressRequest, res: ExpressResponse) => Promise<void>;
+}
 export declare const useUser: (config?: Pick<BasePaths, "profilePath">) => {
-    user: User;
+    user: User | null | undefined;
     error: any;
     isLoading: boolean;
     isValidating: boolean;

@@ -1,11 +1,8 @@
 {
   "name": "centralauth",
-  "version": "0.1.22",
+  "version": "0.1.24",
   "description": "Official package for CentralAuth",
   "main": "index.js",
-  "scripts": {
-    "build": "tsc ./src/index.tsx --jsx react --esModuleInterop --declaration --outDir ./"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/JWW87/CentralAuth-NPM-Package.git"
@@ -25,8 +22,8 @@
     "swr": "^2.2.4"
   },
   "devDependencies": {
+    "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.5",
-    "@types/react": "^18.2.48",
-    "typescript": "^5.3.2"
+    "@types/react": "^18.2.48"
   }
 }

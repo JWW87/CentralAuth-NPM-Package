@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "skipLibCheck": true,
+    "strict": true,
+    "outDir": "./",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "downlevelIteration": true,
+    "isolatedModules": true,
+    "jsx": "react",
+    "incremental": true,
+    "declaration": true
+  },
+  "include": [
+    "src/index.tsx",
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

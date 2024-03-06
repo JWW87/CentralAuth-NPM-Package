@@ -1,5 +1,6 @@
+import { Request as ExpressRequest, Response as ExpressResponse } from "express";
+import React, { ComponentType, FC, ReactElement, useEffect, useState } from "react";
 import useSWR from "swr";
-import React, { ComponentType, FC, ReactNode, useEffect, useState } from "react";
 const jwt = require("jsonwebtoken");
 
 //Type for the class constructor
@@ -56,19 +57,22 @@ export type Translations = Partial<{
   emailBodyWarning: string;
   emailChallengeText: string;
   login: string;
+  loginWithPasskey: string;
   loginLocal: string;
   loginRemote: string;
   loginAttemptBody: string;
   loginAttemptCodeBody: string;
   loginAttemptSuccess: string;
   loginAttemptError: string;
+  undo: string;
 }>
 
 //Type for the parameters of the login method
 export type LoginParams = {
   returnTo?: string | null;
   errorMessage?: string | null;
-  translations?: Translations | null
+  emailAddress?: string | null;
+  translations?: Translations | null;
 }
 
 //Type for the parameters of the logout method
@@ -253,21 +257,19 @@ export class CentralAuthClass {
   }
 
   //Private method to populate the token argument from the cookie in the session
-  private setTokenFromCookie = async (req: Request) => {
-    const headers = req.headers;
+  private setTokenFromCookie = async (headers: Headers) => {
     const cookies = parseCookie(headers.get("cookie"));
     //Check for a sessionToken in the cookies
     if (cookies["sessionToken"])
       this.token = cookies["sessionToken"];
   }
 
-  //Public method to get the user data from the current request
+  //Public method to get the user data from the current request headers
   //The JWT will be set based on the sessionToken cookie in the request header
   //Will throw an error when the request fails or the token could not be decoded
-  public getUserData = async (req: Request) => {
-    const headers = req.headers;
+  public getUserData = async (headers: Headers) => {
     //Populate the token
-    await this.setTokenFromCookie(req);
+    await this.setTokenFromCookie(headers);
     //Decode the token to get the session ID
     const { sessionId, user } = await this.getDecodedToken();
 
@@ -302,6 +304,9 @@ export class CentralAuthClass {
     //Add an error message when given
     if (config?.errorMessage)
       loginUrl.searchParams.set("errorMessage", config?.errorMessage);
+    //Add a default email address when given
+    if (config?.emailAddress)
+      loginUrl.searchParams.set("emailAddress", config?.emailAddress);
     //Add translations when given
     if (translations)
       loginUrl.searchParams.set("translations", translations);
@@ -380,7 +385,8 @@ export class CentralAuthClass {
   //Will return a NULL response on error
   public me = async (req: Request) => {
     try {
-      await this.getUserData(req);
+      const headers = req.headers;
+      await this.getUserData(headers);
       return Response.json(this.user);
     } catch (error) {
       //When an error occurs, assume the user session is not valid anymore
@@ -396,6 +402,7 @@ export class CentralAuthClass {
   //Public method to logout
   public logout = async (req: Request, config?: LogoutParams) => {
     const returnTo = this.getReturnToURL(req, config);
+    const headerList = req.headers;
 
     try {
       if (config?.LogoutSessionWide) {
@@ -403,7 +410,7 @@ export class CentralAuthClass {
           console.warn("Session-wide logging out not supported when caching user data.");
 
         //To log out session wide, invalidate the session at CentralAuth
-        await this.setTokenFromCookie(req);
+        await this.setTokenFromCookie(headerList);
         //Get the session ID from the token
         const { sessionId } = await this.getDecodedToken();
         //Make a request to the log out endpoint to invalidate this session at CentralAuth
@@ -432,6 +439,57 @@ export class CentralAuthClass {
   }
 }
 
+export class CentralAuthExpressClass extends CentralAuthClass {
+  private expressRequestToFetchRequest = (expressRequest: ExpressRequest) => {
+    const fetchRequest = new Request(expressRequest.url, {
+      headers: new Headers(expressRequest.headers as HeadersInit)
+    });
+
+    return fetchRequest;
+  }
+
+  private fetchResponseToExpressResponse = (fetchResponse: Response, expressResponse: ExpressResponse) => {
+    const entries = fetchResponse.headers.entries();
+    const expressHeaders: Record<string, string> = {};
+    for (const entry of entries)
+      expressHeaders[entry[0]] = entry[1];
+    expressResponse.writeHead(fetchResponse.status, expressHeaders).send(fetchResponse.body).end();
+  }
+
+  //Overloaded method for getUserData
+  public getUserDataExpress = async (req: ExpressRequest) => {
+    return await this.getUserData(new Headers(req.headers as HeadersInit));
+  }
+
+  //Overloaded method for login
+  public loginExpress = async (req: ExpressRequest, res: ExpressResponse, config?: LoginParams) => {
+    const fetchResponse = await this.login(this.expressRequestToFetchRequest(req), config);
+
+    this.fetchResponseToExpressResponse(fetchResponse, res);
+  }
+
+  //Overloaded method for callback
+  public callbackExpress = async (req: ExpressRequest, res: ExpressResponse, config?: CallbackParams) => {
+    const fetchResponse = await this.callback(this.expressRequestToFetchRequest(req), config);
+
+    this.fetchResponseToExpressResponse(fetchResponse, res);
+  }
+
+  //Overloaded method for logout
+  public logoutExpress = async (req: ExpressRequest, res: ExpressResponse, config?: LogoutParams) => {
+    const fetchResponse = await this.logout(this.expressRequestToFetchRequest(req), config);
+
+    this.fetchResponseToExpressResponse(fetchResponse, res);
+  }
+
+  //Overloaded method for me
+  public meExpress = async (req: ExpressRequest, res: ExpressResponse) => {
+    const fetchResponse = await this.me(this.expressRequestToFetchRequest(req));
+
+    this.fetchResponseToExpressResponse(fetchResponse, res);
+  }
+}
+
 //React hook to declaratively get the currently logged in user via SWR. See https://swr.vercel.app for more info on SWR.
 //Param basePath can be used when the API route for /me is different from the default /api/auth/me
 //Will return null when the user is not logged in or on error, and undefined when the request is still active
@@ -450,7 +508,7 @@ export type WithCentralAuthAutomaticLogin = <T extends { [key: string]: any }>(
 
 //Wrapper for a React based client to redirect an anonymous user to CentralAuth when visiting a page that requires authentication
 export const withCentralAuthAutomaticLogin: WithCentralAuthAutomaticLogin = (Component, config = {}) => {
-  return function withCentralAuthAutomaticLogin(props): ReactNode {
+  return function withCentralAuthAutomaticLogin(props): ReactElement<any, any> | null {
     const { loginPath, profilePath } = config;
     const [user, setUser] = useState<User>();
 

@@ -1,53 +1,3 @@
-"use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -57,111 +7,68 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (g && (g = 0, op[0] && (_ = 0)), _) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.withCentralAuthAutomaticLogin = exports.useUser = exports.CentralAuthClass = exports.ValidationError = void 0;
-var swr_1 = __importDefault(require("swr"));
-var react_1 = __importStar(require("react"));
-var jwt = require("jsonwebtoken");
+import React, { useEffect, useState } from "react";
+import useSWR from "swr";
+const jwt = require("jsonwebtoken");
 //Private method for parsing a cookie string in a request header
-var parseCookie = function (cookieString) {
-    return ((cookieString === null || cookieString === void 0 ? void 0 : cookieString.split(';').map(function (v) { return v.split('='); }).reduce(function (acc, v) {
-        acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
-        return acc;
-    }, {})) || {});
-};
+const parseCookie = (cookieString) => ((cookieString === null || cookieString === void 0 ? void 0 : cookieString.split(';').map(v => v.split('=')).reduce((acc, v) => {
+    acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
+    return acc;
+}, {})) || {});
 //Extension of the Error object to throw a validation error
-var ValidationError = /** @class */ (function (_super) {
-    __extends(ValidationError, _super);
-    function ValidationError(error) {
-        var _this = _super.call(this, error.message) || this;
-        _this.errorCode = error.errorCode;
-        return _this;
+export class ValidationError extends Error {
+    constructor(error) {
+        super(error.message);
+        this.errorCode = error.errorCode;
     }
-    return ValidationError;
-}(Error));
-exports.ValidationError = ValidationError;
+}
 //Class for CentralAuth
-var CentralAuthClass = /** @class */ (function () {
+export class CentralAuthClass {
     //Constructor method to set all instance variable
-    function CentralAuthClass(_a) {
-        var organizationId = _a.organizationId, secret = _a.secret, authBaseUrl = _a.authBaseUrl, callbackUrl = _a.callbackUrl, cacheUserData = _a.cacheUserData;
-        var _this = this;
+    constructor({ organizationId, secret, authBaseUrl, callbackUrl, cacheUserData }) {
         this.cacheUserData = false;
         //Private method to check whether all variable are set for a specific action
         //Will throw a ValidationError when a check fails
-        this.checkData = function (action) {
-            var error = null;
-            if (typeof _this.organizationId === "undefined")
+        this.checkData = (action) => {
+            let error = null;
+            if (typeof this.organizationId === "undefined")
                 error = { errorCode: "organizationIdMissing", message: "The organization ID is missing. This ID can be found on the organization page in your admin console." };
-            if (!_this.secret)
+            if (!this.secret)
                 error = { errorCode: "secretMissing", message: "The secret is missing. The secret is shown only once at the creation of an organization and should never be exposed publicly or stored unsafely." };
-            if (!_this.callbackUrl)
+            if (!this.callbackUrl)
                 error = { errorCode: "callbackUrlMissing", message: "The callback URL is missing." };
-            if (!_this.authBaseUrl)
+            if (!this.authBaseUrl)
                 error = { errorCode: "authBaseUrlMissing", message: "The base URL for the organization is missing. The base URL is either the internal base URL or a custom domain for your organization." };
-            if ((action == "callback" || action == "verify" || action == "me") && !_this.token)
+            if ((action == "callback" || action == "verify" || action == "me") && !this.token)
                 error = { errorCode: "tokenMissing", message: "The JSON Web Token is missing. A JWT must be created in the callback after a successful login attempt." };
             if (error)
                 throw new ValidationError(error);
         };
         //Private method to get the decoded token
-        this.getDecodedToken = function () { return __awaiter(_this, void 0, void 0, function () {
-            var decodedToken;
-            return __generator(this, function (_a) {
-                this.checkData("callback");
-                try {
-                    decodedToken = jwt.verify(this.token, this.secret);
-                    return [2 /*return*/, decodedToken];
-                }
-                catch (error) {
-                    throw new ValidationError({ errorCode: error === null || error === void 0 ? void 0 : error.name, message: error === null || error === void 0 ? void 0 : error.message });
-                }
-                return [2 /*return*/];
-            });
-        }); };
+        this.getDecodedToken = () => __awaiter(this, void 0, void 0, function* () {
+            this.checkData("callback");
+            try {
+                //Decode the JWT
+                const decodedToken = jwt.verify(this.token, this.secret);
+                return decodedToken;
+            }
+            catch (error) {
+                throw new ValidationError({ errorCode: error === null || error === void 0 ? void 0 : error.name, message: error === null || error === void 0 ? void 0 : error.message });
+            }
+        });
         //Private method to get the returnTo URL from the config object or current request
-        this.getReturnToURL = function (req, config) {
-            var url = new URL(req.url);
-            var returnToParam = url.searchParams.get("returnTo");
-            var headers = req.headers;
-            var returnTo = "";
+        this.getReturnToURL = (req, config) => {
+            const url = new URL(req.url);
+            const returnToParam = url.searchParams.get("returnTo");
+            const headers = req.headers;
+            let returnTo = "";
             //Set returnTo when explicitly given in the config object
             if (config === null || config === void 0 ? void 0 : config.returnTo)
                 returnTo = config.returnTo;
             else if (returnToParam)
                 returnTo = returnToParam; //Set returnTo to any returnTo query param in the URL
             else {
-                var referrer = headers.get("referer");
+                const referrer = headers.get("referer");
                 //Set returnTo to the referrer in the request when present
                 if (referrer && !referrer.startsWith("about"))
                     returnTo = referrer;
@@ -173,294 +80,270 @@ var CentralAuthClass = /** @class */ (function () {
             return returnTo;
         };
         //Private method to return the client user agent from request headers
-        this.getUserAgent = function (headers) {
-            var userAgent = headers.get("user-agent");
+        this.getUserAgent = (headers) => {
+            const userAgent = headers.get("user-agent");
             return userAgent || "native";
         };
         //Private method to return the client IP address from request headers
-        this.getIPAddress = function (headers) {
-            var realIp = headers.get("x-real-ip");
-            var forwardedFor = headers.get("x-forwarded-for");
-            var ip = realIp || forwardedFor || null;
+        this.getIPAddress = (headers) => {
+            const realIp = headers.get("x-real-ip");
+            const forwardedFor = headers.get("x-forwarded-for");
+            const ip = realIp || forwardedFor || null;
             //The IP address might consist of multiple IP addresses, seperated by commas. Only return the first IP address
             return ip ? ip.split(",")[0] : "0.0.0.0";
         };
         //Private method to get the user data from the CentralAuth server
         //Will throw an error when the request fails
-        this.getUser = function (sessionId, userAgent, ipAddress) { return __awaiter(_this, void 0, void 0, function () {
-            var headers, requestUrl, callbackUrl, response, error, _a;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        if (!this.user) return [3 /*break*/, 1];
-                        return [2 /*return*/, this.user];
-                    case 1:
-                        this.checkData("me");
-                        headers = new Headers();
-                        headers.set("Authorization", "Bearer ".concat(this.token));
-                        //Set the user agent to the user agent of the current request
-                        headers.set("user-agent", userAgent);
-                        //Set the custom auth-ip header with the IP address of the current request
-                        headers.set("auth-ip", ipAddress);
-                        requestUrl = new URL("".concat(this.authBaseUrl, "/api/v1/me/").concat(sessionId));
-                        callbackUrl = new URL(this.callbackUrl);
-                        requestUrl.searchParams.set("domain", callbackUrl.origin);
-                        return [4 /*yield*/, fetch(requestUrl.toString(), { headers: headers })];
-                    case 2:
-                        response = _b.sent();
-                        if (!!response.ok) return [3 /*break*/, 4];
-                        return [4 /*yield*/, response.json()];
-                    case 3:
-                        error = _b.sent();
-                        throw new ValidationError(error);
-                    case 4:
-                        _a = this;
-                        return [4 /*yield*/, response.json()];
-                    case 5:
-                        _a.user = (_b.sent());
-                        _b.label = 6;
-                    case 6: return [2 /*return*/];
+        this.getUser = (sessionId, userAgent, ipAddress) => __awaiter(this, void 0, void 0, function* () {
+            if (this.user)
+                return this.user;
+            else {
+                this.checkData("me");
+                const headers = new Headers();
+                headers.set("Authorization", `Bearer ${this.token}`);
+                //Set the user agent to the user agent of the current request
+                headers.set("user-agent", userAgent);
+                //Set the custom auth-ip header with the IP address of the current request
+                headers.set("auth-ip", ipAddress);
+                //Construct the URL
+                const requestUrl = new URL(`${this.authBaseUrl}/api/v1/me/${sessionId}`);
+                const callbackUrl = new URL(this.callbackUrl);
+                requestUrl.searchParams.set("domain", callbackUrl.origin);
+                const response = yield fetch(requestUrl.toString(), { headers });
+                if (!response.ok) {
+                    const error = yield response.json();
+                    throw new ValidationError(error);
                 }
-            });
-        }); };
+                this.user = (yield response.json());
+            }
+        });
         //Private method to populate the token argument from the cookie in the session
-        this.setTokenFromCookie = function (req) { return __awaiter(_this, void 0, void 0, function () {
-            var headers, cookies;
-            return __generator(this, function (_a) {
-                headers = req.headers;
-                cookies = parseCookie(headers.get("cookie"));
-                //Check for a sessionToken in the cookies
-                if (cookies["sessionToken"])
-                    this.token = cookies["sessionToken"];
-                return [2 /*return*/];
-            });
-        }); };
-        //Public method to get the user data from the current request
+        this.setTokenFromCookie = (headers) => __awaiter(this, void 0, void 0, function* () {
+            const cookies = parseCookie(headers.get("cookie"));
+            //Check for a sessionToken in the cookies
+            if (cookies["sessionToken"])
+                this.token = cookies["sessionToken"];
+        });
+        //Public method to get the user data from the current request headers
         //The JWT will be set based on the sessionToken cookie in the request header
         //Will throw an error when the request fails or the token could not be decoded
-        this.getUserData = function (req) { return __awaiter(_this, void 0, void 0, function () {
-            var headers, _a, sessionId, user;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        headers = req.headers;
-                        //Populate the token
-                        return [4 /*yield*/, this.setTokenFromCookie(req)];
-                    case 1:
-                        //Populate the token
-                        _b.sent();
-                        return [4 /*yield*/, this.getDecodedToken()];
-                    case 2:
-                        _a = _b.sent(), sessionId = _a.sessionId, user = _a.user;
-                        if (!(this.cacheUserData && user)) return [3 /*break*/, 3];
-                        //Get the user data from the cached data in the JWT when available
-                        this.user = user;
-                        return [3 /*break*/, 5];
-                    case 3: 
-                    //Get the user data from CentralAuth
-                    return [4 /*yield*/, this.getUser(sessionId, this.getUserAgent(headers), this.getIPAddress(headers))];
-                    case 4:
-                        //Get the user data from CentralAuth
-                        _b.sent();
-                        _b.label = 5;
-                    case 5: return [2 /*return*/, this.user || null];
-                }
-            });
-        }); };
+        this.getUserData = (headers) => __awaiter(this, void 0, void 0, function* () {
+            //Populate the token
+            yield this.setTokenFromCookie(headers);
+            //Decode the token to get the session ID
+            const { sessionId, user } = yield this.getDecodedToken();
+            if (this.cacheUserData && user) {
+                //Get the user data from the cached data in the JWT when available
+                this.user = user;
+            }
+            else {
+                //Get the user data from CentralAuth
+                yield this.getUser(sessionId, this.getUserAgent(headers), this.getIPAddress(headers));
+            }
+            return this.user || null;
+        });
         //Public method to start the login procedure
         //Will throw an error when the procedure could not be started
-        this.login = function (req, config) { return __awaiter(_this, void 0, void 0, function () {
-            var returnTo, callbackUrl, translations, loginUrl;
-            return __generator(this, function (_a) {
-                this.checkData("login");
-                returnTo = this.getReturnToURL(req, config);
-                callbackUrl = new URL(this.callbackUrl);
-                if (returnTo)
-                    callbackUrl.searchParams.set("returnTo", returnTo);
-                translations = (config === null || config === void 0 ? void 0 : config.translations) ? btoa(JSON.stringify(config.translations)) : null;
-                loginUrl = new URL("".concat(this.authBaseUrl, "/login"));
-                if (this.organizationId)
-                    loginUrl.searchParams.set("organizationId", this.organizationId);
-                //Add an error message when given
-                if (config === null || config === void 0 ? void 0 : config.errorMessage)
-                    loginUrl.searchParams.set("errorMessage", config === null || config === void 0 ? void 0 : config.errorMessage);
-                //Add translations when given
-                if (translations)
-                    loginUrl.searchParams.set("translations", translations);
-                loginUrl.searchParams.set("callbackUrl", callbackUrl.toString());
-                return [2 /*return*/, Response.redirect(loginUrl.toString())];
-            });
-        }); };
+        this.login = (req, config) => __awaiter(this, void 0, void 0, function* () {
+            this.checkData("login");
+            const returnTo = this.getReturnToURL(req, config);
+            const callbackUrl = new URL(this.callbackUrl);
+            if (returnTo)
+                callbackUrl.searchParams.set("returnTo", returnTo);
+            //Check for custom translations in the config
+            const translations = (config === null || config === void 0 ? void 0 : config.translations) ? btoa(JSON.stringify(config.translations)) : null;
+            //Redirect to the login page
+            const loginUrl = new URL(`${this.authBaseUrl}/login`);
+            if (this.organizationId)
+                loginUrl.searchParams.set("organizationId", this.organizationId);
+            //Add an error message when given
+            if (config === null || config === void 0 ? void 0 : config.errorMessage)
+                loginUrl.searchParams.set("errorMessage", config === null || config === void 0 ? void 0 : config.errorMessage);
+            //Add a default email address when given
+            if (config === null || config === void 0 ? void 0 : config.emailAddress)
+                loginUrl.searchParams.set("emailAddress", config === null || config === void 0 ? void 0 : config.emailAddress);
+            //Add translations when given
+            if (translations)
+                loginUrl.searchParams.set("translations", translations);
+            loginUrl.searchParams.set("callbackUrl", callbackUrl.toString());
+            return Response.redirect(loginUrl.toString());
+        });
         //Public method for the callback procedure when returning from CentralAuth
         //This method will automatically verify the JWT payload and set the sessionToken cookie
         //Optionally calls a custom callback function when given with the user data as an argument
         //Returns a Response with a redirection to the returnTo URL
         //Will throw an error when the verification procedure fails or the user data could not be fetched
-        this.callback = function (req, config) { return __awaiter(_this, void 0, void 0, function () {
-            var url, searchParams, returnTo, sessionId, verificationState, errorCode, errorMessage, headers, requestUrl, callbackUrl, verifyResponse, error, _a, res, callbackResponse;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        url = new URL(req.url);
-                        searchParams = url.searchParams;
-                        returnTo = searchParams.get("returnTo") || url.origin;
-                        sessionId = searchParams.get("sessionId");
-                        verificationState = searchParams.get("verificationState");
-                        errorCode = searchParams.get("errorCode");
-                        errorMessage = searchParams.get("errorMessage");
-                        if (errorCode) {
-                            //When the error code is set, something went wrong in the login procedure
-                            //Throw a ValidationError
-                            throw new ValidationError({ errorCode: errorCode, message: errorMessage || "" });
-                        }
-                        //Build the JWT with the session ID and verification state as payload
-                        this.token = jwt.sign({ sessionId: sessionId, verificationState: verificationState }, this.secret);
-                        this.checkData("callback");
-                        headers = new Headers();
-                        headers.set("Authorization", "Bearer ".concat(this.token));
-                        requestUrl = new URL("".concat(this.authBaseUrl, "/api/v1/verify/").concat(sessionId, "/").concat(verificationState));
-                        callbackUrl = new URL(this.callbackUrl);
-                        requestUrl.searchParams.set("domain", callbackUrl.origin);
-                        return [4 /*yield*/, fetch(requestUrl, { headers: headers })];
-                    case 1:
-                        verifyResponse = _b.sent();
-                        if (!!verifyResponse.ok) return [3 /*break*/, 3];
-                        return [4 /*yield*/, verifyResponse.json()];
-                    case 2:
-                        error = _b.sent();
-                        throw new ValidationError(error);
-                    case 3:
-                        _a = this;
-                        return [4 /*yield*/, verifyResponse.json()];
-                    case 4:
-                        _a.user = (_b.sent());
-                        if (this.cacheUserData) {
-                            //Add the user data to the JWT
-                            this.token = jwt.sign({ sessionId: sessionId, verificationState: verificationState, user: this.user }, this.secret);
-                        }
-                        res = new Response(null, {
-                            status: 302,
-                            headers: {
-                                "Location": returnTo,
-                                "Set-Cookie": "sessionToken=".concat(this.token, "; Path=/; HttpOnly; Max-Age=100000000; SameSite=Strict; Secure")
-                            }
-                        });
-                        callbackResponse = null;
-                        if (!(config === null || config === void 0 ? void 0 : config.callback)) return [3 /*break*/, 6];
-                        return [4 /*yield*/, config.callback(req, res, this.user)];
-                    case 5:
-                        callbackResponse = _b.sent();
-                        _b.label = 6;
-                    case 6: 
-                    //Set a cookie with the JWT and redirect to the returnTo URL
-                    return [2 /*return*/, callbackResponse || res];
+        this.callback = (req, config) => __awaiter(this, void 0, void 0, function* () {
+            const url = new URL(req.url);
+            const searchParams = url.searchParams;
+            const returnTo = searchParams.get("returnTo") || url.origin;
+            const sessionId = searchParams.get("sessionId");
+            const verificationState = searchParams.get("verificationState");
+            const errorCode = searchParams.get("errorCode");
+            const errorMessage = searchParams.get("errorMessage");
+            if (errorCode) {
+                //When the error code is set, something went wrong in the login procedure
+                //Throw a ValidationError
+                throw new ValidationError({ errorCode: errorCode, message: errorMessage || "" });
+            }
+            //Build the JWT with the session ID and verification state as payload
+            this.token = jwt.sign({ sessionId, verificationState }, this.secret);
+            this.checkData("callback");
+            //Make a request to the verification endpoint to verify this session at CentralAuth
+            const headers = new Headers();
+            headers.set("Authorization", `Bearer ${this.token}`);
+            //Construct the URL
+            const requestUrl = new URL(`${this.authBaseUrl}/api/v1/verify/${sessionId}/${verificationState}`);
+            const callbackUrl = new URL(this.callbackUrl);
+            requestUrl.searchParams.set("domain", callbackUrl.origin);
+            const verifyResponse = yield fetch(requestUrl, { headers });
+            if (!verifyResponse.ok) {
+                const error = yield verifyResponse.json();
+                throw new ValidationError(error);
+            }
+            this.user = (yield verifyResponse.json());
+            if (this.cacheUserData) {
+                //Add the user data to the JWT
+                this.token = jwt.sign({ sessionId, verificationState, user: this.user }, this.secret);
+            }
+            //Set the default response object
+            let res = new Response(null, {
+                status: 302,
+                headers: {
+                    "Location": returnTo,
+                    "Set-Cookie": `sessionToken=${this.token}; Path=/; HttpOnly; Max-Age=100000000; SameSite=Strict; Secure`
                 }
             });
-        }); };
+            //When a callback function is given, call it with the user data
+            //The callback function may return a new/altered response, which will be returned instead of the default response object
+            let callbackResponse = null;
+            if (config === null || config === void 0 ? void 0 : config.callback)
+                callbackResponse = yield config.callback(req, res, this.user);
+            //Set a cookie with the JWT and redirect to the returnTo URL
+            return callbackResponse || res;
+        });
         //Public method to get the user data from the current request
         //This method wraps getUserData and returns a Response with the user data as JSON in the body
         //Will return a NULL response on error
-        this.me = function (req) { return __awaiter(_this, void 0, void 0, function () {
-            var error_1;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.getUserData(req)];
-                    case 1:
-                        _a.sent();
-                        return [2 /*return*/, Response.json(this.user)];
-                    case 2:
-                        error_1 = _a.sent();
-                        //When an error occurs, assume the user session is not valid anymore
-                        //Delete the cookie
-                        return [2 /*return*/, Response.json(null, {
-                                headers: {
-                                    "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict; Secure"
-                                }
-                            })];
-                    case 3: return [2 /*return*/];
-                }
-            });
-        }); };
+        this.me = (req) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const headers = req.headers;
+                yield this.getUserData(headers);
+                return Response.json(this.user);
+            }
+            catch (error) {
+                //When an error occurs, assume the user session is not valid anymore
+                //Delete the cookie
+                return Response.json(null, {
+                    headers: {
+                        "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict; Secure"
+                    }
+                });
+            }
+        });
         //Public method to logout
-        this.logout = function (req, config) { return __awaiter(_this, void 0, void 0, function () {
-            var returnTo, sessionId, headers, logoutResponse, error, error_2;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        returnTo = this.getReturnToURL(req, config);
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 7, 8, 9]);
-                        if (!(config === null || config === void 0 ? void 0 : config.LogoutSessionWide)) return [3 /*break*/, 6];
-                        if (this.cacheUserData)
-                            console.warn("Session-wide logging out not supported when caching user data.");
-                        //To log out session wide, invalidate the session at CentralAuth
-                        return [4 /*yield*/, this.setTokenFromCookie(req)];
-                    case 2:
-                        //To log out session wide, invalidate the session at CentralAuth
-                        _a.sent();
-                        return [4 /*yield*/, this.getDecodedToken()];
-                    case 3:
-                        sessionId = (_a.sent()).sessionId;
-                        headers = new Headers();
-                        headers.set("Authorization", "Bearer ".concat(this.token));
-                        return [4 /*yield*/, fetch("".concat(this.authBaseUrl, "/api/v1/logout/").concat(sessionId), { headers: headers })];
-                    case 4:
-                        logoutResponse = _a.sent();
-                        if (!!logoutResponse.ok) return [3 /*break*/, 6];
-                        return [4 /*yield*/, logoutResponse.json()];
-                    case 5:
-                        error = _a.sent();
+        this.logout = (req, config) => __awaiter(this, void 0, void 0, function* () {
+            const returnTo = this.getReturnToURL(req, config);
+            const headerList = req.headers;
+            try {
+                if (config === null || config === void 0 ? void 0 : config.LogoutSessionWide) {
+                    if (this.cacheUserData)
+                        console.warn("Session-wide logging out not supported when caching user data.");
+                    //To log out session wide, invalidate the session at CentralAuth
+                    yield this.setTokenFromCookie(headerList);
+                    //Get the session ID from the token
+                    const { sessionId } = yield this.getDecodedToken();
+                    //Make a request to the log out endpoint to invalidate this session at CentralAuth
+                    const headers = new Headers();
+                    headers.set("Authorization", `Bearer ${this.token}`);
+                    const logoutResponse = yield fetch(`${this.authBaseUrl}/api/v1/logout/${sessionId}`, { headers });
+                    if (!logoutResponse.ok) {
+                        const error = yield logoutResponse.json();
                         throw new ValidationError(error);
-                    case 6: return [3 /*break*/, 9];
-                    case 7:
-                        error_2 = _a.sent();
-                        console.error("Error logging out session-wide", error_2);
-                        return [3 /*break*/, 9];
-                    case 8: 
-                    //Unset the cookie and redirect to the returnTo URL
-                    return [2 /*return*/, new Response(null, {
-                            status: 302,
-                            headers: {
-                                "Location": returnTo,
-                                "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict; Secure"
-                            }
-                        })];
-                    case 9: return [2 /*return*/];
+                    }
                 }
-            });
-        }); };
+            }
+            catch (error) {
+                console.error("Error logging out session-wide", error);
+            }
+            finally {
+                //Unset the cookie and redirect to the returnTo URL
+                return new Response(null, {
+                    status: 302,
+                    headers: {
+                        "Location": returnTo,
+                        "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict; Secure"
+                    }
+                });
+            }
+        });
         this.organizationId = organizationId;
         this.secret = secret;
         this.authBaseUrl = authBaseUrl;
         this.callbackUrl = callbackUrl;
         this.cacheUserData = !!cacheUserData;
     }
-    return CentralAuthClass;
-}());
-exports.CentralAuthClass = CentralAuthClass;
+}
+export class CentralAuthExpressClass extends CentralAuthClass {
+    constructor() {
+        super(...arguments);
+        this.expressRequestToFetchRequest = (expressRequest) => {
+            const fetchRequest = new Request(expressRequest.url, {
+                headers: new Headers(expressRequest.headers)
+            });
+            return fetchRequest;
+        };
+        this.fetchResponseToExpressResponse = (fetchResponse, expressResponse) => {
+            const entries = fetchResponse.headers.entries();
+            const expressHeaders = {};
+            for (const entry of entries)
+                expressHeaders[entry[0]] = entry[1];
+            expressResponse.writeHead(fetchResponse.status, expressHeaders).send(fetchResponse.body).end();
+        };
+        //Overloaded method for getUserData
+        this.getUserDataExpress = (req) => __awaiter(this, void 0, void 0, function* () {
+            return yield this.getUserData(new Headers(req.headers));
+        });
+        //Overloaded method for login
+        this.loginExpress = (req, res, config) => __awaiter(this, void 0, void 0, function* () {
+            const fetchResponse = yield this.login(this.expressRequestToFetchRequest(req), config);
+            this.fetchResponseToExpressResponse(fetchResponse, res);
+        });
+        //Overloaded method for callback
+        this.callbackExpress = (req, res, config) => __awaiter(this, void 0, void 0, function* () {
+            const fetchResponse = yield this.callback(this.expressRequestToFetchRequest(req), config);
+            this.fetchResponseToExpressResponse(fetchResponse, res);
+        });
+        //Overloaded method for logout
+        this.logoutExpress = (req, res, config) => __awaiter(this, void 0, void 0, function* () {
+            const fetchResponse = yield this.logout(this.expressRequestToFetchRequest(req), config);
+            this.fetchResponseToExpressResponse(fetchResponse, res);
+        });
+        //Overloaded method for me
+        this.meExpress = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            const fetchResponse = yield this.me(this.expressRequestToFetchRequest(req));
+            this.fetchResponseToExpressResponse(fetchResponse, res);
+        });
+    }
+}
 //React hook to declaratively get the currently logged in user via SWR. See https://swr.vercel.app for more info on SWR.
 //Param basePath can be used when the API route for /me is different from the default /api/auth/me
 //Will return null when the user is not logged in or on error, and undefined when the request is still active
 //The error object will be populated with the fetcher error when the request failed
-var useUser = function (config) {
-    var _a = (0, swr_1.default)((config === null || config === void 0 ? void 0 : config.profilePath) || "/api/auth/me", function (resource, init) { return fetch(resource, init).then(function (res) { return res.json(); }); }, {}), user = _a.data, error = _a.error, isLoading = _a.isLoading, isValidating = _a.isValidating;
-    return { user: !error ? user : null, error: error, isLoading: isLoading, isValidating: isValidating };
+export const useUser = (config) => {
+    const { data: user, error, isLoading, isValidating } = useSWR((config === null || config === void 0 ? void 0 : config.profilePath) || "/api/auth/me", (resource, init) => fetch(resource, init).then(res => res.json()), {});
+    return { user: !error ? user : null, error, isLoading, isValidating };
 };
-exports.useUser = useUser;
 //Wrapper for a React based client to redirect an anonymous user to CentralAuth when visiting a page that requires authentication
-var withCentralAuthAutomaticLogin = function (Component, config) {
-    if (config === void 0) { config = {}; }
+export const withCentralAuthAutomaticLogin = (Component, config = {}) => {
     return function withCentralAuthAutomaticLogin(props) {
-        var loginPath = config.loginPath, profilePath = config.profilePath;
-        var _a = (0, react_1.useState)(), user = _a[0], setUser = _a[1];
-        (0, react_1.useEffect)(function () {
+        const { loginPath, profilePath } = config;
+        const [user, setUser] = useState();
+        useEffect(() => {
             fetch(profilePath || "/api/auth/me")
-                .then(function (response) {
+                .then(response => {
                 response.json()
-                    .then(function (userData) {
+                    .then((userData) => {
                     if (userData == null)
                         window.location.replace(loginPath || "/api/auth/login");
                     else
@@ -469,8 +352,7 @@ var withCentralAuthAutomaticLogin = function (Component, config) {
             });
         }, [loginPath, profilePath]);
         if (user)
-            return react_1.default.createElement(Component, __assign({}, props));
+            return React.createElement(Component, Object.assign({}, props));
         return null;
     };
 };
-exports.withCentralAuthAutomaticLogin = withCentralAuthAutomaticLogin;
