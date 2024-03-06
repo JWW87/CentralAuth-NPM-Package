@@ -284,6 +284,7 @@ export class CentralAuthClass {
         this.cacheUserData = !!cacheUserData;
     }
 }
+//Define a subclass for Express based servers
 export class CentralAuthExpressClass extends CentralAuthClass {
     constructor() {
         super(...arguments);
@@ -298,7 +299,7 @@ export class CentralAuthExpressClass extends CentralAuthClass {
             const expressHeaders = {};
             for (const entry of entries)
                 expressHeaders[entry[0]] = entry[1];
-            expressResponse.writeHead(fetchResponse.status, expressHeaders).send(fetchResponse.body).end();
+            expressResponse.writeHead(fetchResponse.status, expressHeaders).end(fetchResponse.body);
         };
         //Overloaded method for getUserData
         this.getUserDataExpress = (req) => __awaiter(this, void 0, void 0, function* () {

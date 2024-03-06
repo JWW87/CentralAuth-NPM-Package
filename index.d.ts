@@ -1,5 +1,7 @@
+/// <reference types="node" />
 import { Request as ExpressRequest, Response as ExpressResponse } from "express";
 import { ComponentType, FC } from "react";
+import { IncomingMessage, ServerResponse } from "http";
 export type ConstructorParams = {
     organizationId: string | null;
     secret: string;
@@ -102,11 +104,11 @@ export declare class CentralAuthClass {
 export declare class CentralAuthExpressClass extends CentralAuthClass {
     private expressRequestToFetchRequest;
     private fetchResponseToExpressResponse;
-    getUserDataExpress: (req: ExpressRequest) => Promise<User | null>;
-    loginExpress: (req: ExpressRequest, res: ExpressResponse, config?: LoginParams) => Promise<void>;
-    callbackExpress: (req: ExpressRequest, res: ExpressResponse, config?: CallbackParams) => Promise<void>;
-    logoutExpress: (req: ExpressRequest, res: ExpressResponse, config?: LogoutParams) => Promise<void>;
-    meExpress: (req: ExpressRequest, res: ExpressResponse) => Promise<void>;
+    getUserDataExpress: (req: ExpressRequest | IncomingMessage) => Promise<User | null>;
+    loginExpress: (req: ExpressRequest | IncomingMessage, res: ExpressResponse | ServerResponse, config?: LoginParams) => Promise<void>;
+    callbackExpress: (req: ExpressRequest | IncomingMessage, res: ExpressResponse | ServerResponse, config?: CallbackParams) => Promise<void>;
+    logoutExpress: (req: ExpressRequest | IncomingMessage, res: ExpressResponse | ServerResponse, config?: LogoutParams) => Promise<void>;
+    meExpress: (req: ExpressRequest | IncomingMessage, res: ExpressResponse | ServerResponse) => Promise<void>;
 }
 export declare const useUser: (config?: Pick<BasePaths, "profilePath">) => {
     user: User | null | undefined;

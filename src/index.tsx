@@ -1,6 +1,7 @@
 import { Request as ExpressRequest, Response as ExpressResponse } from "express";
 import React, { ComponentType, FC, ReactElement, useEffect, useState } from "react";
 import useSWR from "swr";
+import { IncomingMessage, ServerResponse } from "http";
 const jwt = require("jsonwebtoken");
 
 //Type for the class constructor
@@ -439,51 +440,52 @@ export class CentralAuthClass {
   }
 }
 
+//Define a subclass for Express based servers
 export class CentralAuthExpressClass extends CentralAuthClass {
-  private expressRequestToFetchRequest = (expressRequest: ExpressRequest) => {
-    const fetchRequest = new Request(expressRequest.url, {
+  private expressRequestToFetchRequest = (expressRequest: ExpressRequest | IncomingMessage) => {
+    const fetchRequest = new Request(expressRequest.url!, {
       headers: new Headers(expressRequest.headers as HeadersInit)
     });
 
     return fetchRequest;
   }
 
-  private fetchResponseToExpressResponse = (fetchResponse: Response, expressResponse: ExpressResponse) => {
+  private fetchResponseToExpressResponse = (fetchResponse: Response, expressResponse: ExpressResponse | ServerResponse) => {
     const entries = fetchResponse.headers.entries();
     const expressHeaders: Record<string, string> = {};
     for (const entry of entries)
       expressHeaders[entry[0]] = entry[1];
-    expressResponse.writeHead(fetchResponse.status, expressHeaders).send(fetchResponse.body).end();
+    expressResponse.writeHead(fetchResponse.status, expressHeaders).end(fetchResponse.body);
   }
 
   //Overloaded method for getUserData
-  public getUserDataExpress = async (req: ExpressRequest) => {
+  public getUserDataExpress = async (req: ExpressRequest | IncomingMessage) => {
     return await this.getUserData(new Headers(req.headers as HeadersInit));
   }
 
   //Overloaded method for login
-  public loginExpress = async (req: ExpressRequest, res: ExpressResponse, config?: LoginParams) => {
+  public loginExpress = async (req: ExpressRequest | IncomingMessage, res: ExpressResponse | ServerResponse, config?: LoginParams) => {
     const fetchResponse = await this.login(this.expressRequestToFetchRequest(req), config);
 
     this.fetchResponseToExpressResponse(fetchResponse, res);
   }
 
   //Overloaded method for callback
-  public callbackExpress = async (req: ExpressRequest, res: ExpressResponse, config?: CallbackParams) => {
+  public callbackExpress = async (req: ExpressRequest | IncomingMessage, res: ExpressResponse | ServerResponse, config?: CallbackParams) => {
     const fetchResponse = await this.callback(this.expressRequestToFetchRequest(req), config);
 
     this.fetchResponseToExpressResponse(fetchResponse, res);
   }
 
   //Overloaded method for logout
-  public logoutExpress = async (req: ExpressRequest, res: ExpressResponse, config?: LogoutParams) => {
+  public logoutExpress = async (req: ExpressRequest | IncomingMessage, res: ExpressResponse | ServerResponse, config?: LogoutParams) => {
     const fetchResponse = await this.logout(this.expressRequestToFetchRequest(req), config);
 
     this.fetchResponseToExpressResponse(fetchResponse, res);
   }
 
   //Overloaded method for me
-  public meExpress = async (req: ExpressRequest, res: ExpressResponse) => {
+  public meExpress = async (req: ExpressRequest | IncomingMessage, res: ExpressResponse | ServerResponse) => {
     const fetchResponse = await this.me(this.expressRequestToFetchRequest(req));
 
     this.fetchResponseToExpressResponse(fetchResponse, res);
