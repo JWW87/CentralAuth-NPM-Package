@@ -1,7 +1,7 @@
 import { IncomingMessage, ServerResponse } from "http";
+import jwt from "jsonwebtoken";
 import { ComponentType, FC, ReactElement, createElement, useEffect, useState } from "react";
 import useSWR from "swr";
-const jwt = require("jsonwebtoken");
 
 //Type for the class constructor
 export type ConstructorParams = {
