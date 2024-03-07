@@ -1,9 +1,8 @@
 {
   "name": "centralauth",
-  "version": "0.1.35",
+  "version": "0.1.37",
   "description": "Official package for CentralAuth",
   "type": "module",
-  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/JWW87/CentralAuth-NPM-Package.git"
@@ -11,7 +10,7 @@
   "homepage": "https://github.com/JWW87/CentralAuth-NPM-Package.git",
   "keywords": [
     "Authentication",
-    "CentralAuth",
+    "centralauth",
     "OAuth",
     "JWT"
   ],

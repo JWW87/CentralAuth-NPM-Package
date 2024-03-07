@@ -1,13 +1,8 @@
 "use client"
 
-import { ComponentType, FC, ReactElement, createElement, useEffect, useState } from "react";
+import { ReactElement, createElement, useEffect, useState } from "react";
 import useSWR from "swr";
-import type { BasePaths, User } from "./server";
-
-export type WithCentralAuthAutomaticLogin = <T extends { [key: string]: any }>(
-  Component: ComponentType<T>,
-  config?: Pick<BasePaths, "loginPath" | "profilePath">
-) => FC<T>;
+import type { BasePaths, User, WithCentralAuthAutomaticLogin } from "./types";
 
 //React hook to declaratively get the currently logged in user via SWR. See https://swr.vercel.app for more info on SWR.
 //Param basePath can be used when the API route for /me is different from the default /api/auth/me

@@ -1,8 +1,4 @@
-import { ComponentType, FC } from "react";
-import type { BasePaths, User } from "./server";
-export type WithCentralAuthAutomaticLogin = <T extends {
-    [key: string]: any;
-}>(Component: ComponentType<T>, config?: Pick<BasePaths, "loginPath" | "profilePath">) => FC<T>;
+import type { BasePaths, User, WithCentralAuthAutomaticLogin } from "./types";
 export declare const useUser: (config?: Pick<BasePaths, "profilePath">) => {
     user: User | null | undefined;
     error: any;
