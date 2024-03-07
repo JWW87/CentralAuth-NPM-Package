@@ -9,7 +9,6 @@ export type ConstructorParams = {
   secret: string;
   authBaseUrl: string;
   callbackUrl: string;
-  cacheUserData?: boolean;
 }
 
 //Type for the user data
@@ -26,8 +25,7 @@ export type User = {
 //Type for the payload of the JWT
 export type JWTPayload = {
   sessionId: string,
-  verificationState: string,
-  user?: User
+  verificationState: string
 }
 
 //Type for the base paths
@@ -138,19 +136,17 @@ export class ValidationError extends Error {
 export class CentralAuthClass {
   private organizationId: string | null;
   private secret: string;
-  private authBaseUrl: string;
-  private callbackUrl: string;
-  private cacheUserData: boolean = false;
+  protected authBaseUrl: string;
+  protected callbackUrl: string;
   private token?: string;
   private user?: User;
 
   //Constructor method to set all instance variable
-  constructor({ organizationId, secret, authBaseUrl, callbackUrl, cacheUserData }: ConstructorParams) {
+  constructor({ organizationId, secret, authBaseUrl, callbackUrl }: ConstructorParams) {
     this.organizationId = organizationId;
     this.secret = secret;
     this.authBaseUrl = authBaseUrl;
     this.callbackUrl = callbackUrl;
-    this.cacheUserData = !!cacheUserData;
   }
 
   //Private method to check whether all variable are set for a specific action
@@ -271,15 +267,10 @@ export class CentralAuthClass {
     //Populate the token
     await this.setTokenFromCookie(headers);
     //Decode the token to get the session ID
-    const { sessionId, user } = await this.getDecodedToken();
+    const { sessionId } = await this.getDecodedToken();
 
-    if (this.cacheUserData && user) {
-      //Get the user data from the cached data in the JWT when available
-      this.user = user;
-    } else {
-      //Get the user data from CentralAuth
-      await this.getUser(sessionId, this.getUserAgent(headers), this.getIPAddress(headers));
-    }
+    //Get the user data from CentralAuth
+    await this.getUser(sessionId, this.getUserAgent(headers), this.getIPAddress(headers));
 
     return this.user || null;
   }
@@ -354,18 +345,13 @@ export class CentralAuthClass {
     }
     this.user = await verifyResponse.json() as User;
 
-    if (this.cacheUserData) {
-      //Add the user data to the JWT
-      this.token = jwt.sign({ sessionId, verificationState, user: this.user } as JWTPayload, this.secret);
-    }
-
     //Set the default response object
     let res = new Response(null,
       {
         status: 302,
         headers: {
           "Location": returnTo,
-          "Set-Cookie": `sessionToken=${this.token}; Path=/; HttpOnly; Max-Age=100000000; SameSite=Strict; Secure`
+          "Set-Cookie": `sessionToken=${this.token}; Path=/; HttpOnly; Max-Age=100000000; SameSite=Lax; Secure`
         }
       }
     );
@@ -393,7 +379,7 @@ export class CentralAuthClass {
       //Delete the cookie
       return Response.json(null, {
         headers: {
-          "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict; Secure"
+          "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax; Secure"
         }
       })
     }
@@ -406,9 +392,6 @@ export class CentralAuthClass {
 
     try {
       if (config?.LogoutSessionWide) {
-        if (this.cacheUserData)
-          console.warn("Session-wide logging out not supported when caching user data.");
-
         //To log out session wide, invalidate the session at CentralAuth
         await this.setTokenFromCookie(headerList);
         //Get the session ID from the token
@@ -431,7 +414,7 @@ export class CentralAuthClass {
           status: 302,
           headers: {
             "Location": returnTo,
-            "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict; Secure"
+            "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax; Secure"
           }
         }
       );
@@ -441,20 +424,26 @@ export class CentralAuthClass {
 
 //Define a subclass for HTTP based servers
 export class CentralAuthHTTPClass extends CentralAuthClass {
+  //Private method for converting a HTTP Request to a Fetch API Request
   private httpRequestToFetchRequest = (httpRequest: IncomingMessage) => {
-    const fetchRequest = new Request(httpRequest.url!, {
-      headers: new Headers(httpRequest.headers as HeadersInit)
+    const baseUrl = new URL(this.callbackUrl);
+
+    const fetchRequest = new Request(new URL(httpRequest.url!, baseUrl.origin), {
+      headers: new Headers({ ...httpRequest.headers as HeadersInit, "x-real-ip": httpRequest.socket.remoteAddress || "" })
     });
 
     return fetchRequest;
   }
 
-  private fetchResponseToHttpResponse = (fetchResponse: Response, httpResponse: ServerResponse) => {
+  //Private method for converting a Fetch API response to an HTTP Response
+  private fetchResponseToHttpResponse = async (fetchResponse: Response, httpResponse: ServerResponse) => {
     const entries = fetchResponse.headers.entries();
     const httpHeaders: Record<string, string> = {};
     for (const entry of entries)
       httpHeaders[entry[0]] = entry[1];
-    httpResponse.writeHead(fetchResponse.status, httpHeaders).end(fetchResponse.body);
+
+    const body = await fetchResponse.text();
+    httpResponse.writeHead(fetchResponse.status, httpHeaders).end(body);
   }
 
   //Overloaded method for getUserData
@@ -466,28 +455,28 @@ export class CentralAuthHTTPClass extends CentralAuthClass {
   public loginHTTP = async (req: IncomingMessage, res: ServerResponse, config?: LoginParams) => {
     const fetchResponse = await this.login(this.httpRequestToFetchRequest(req), config);
 
-    this.fetchResponseToHttpResponse(fetchResponse, res);
+    await this.fetchResponseToHttpResponse(fetchResponse, res);
   }
 
   //Overloaded method for callback
   public callbackHTTP = async (req: IncomingMessage, res: ServerResponse, config?: CallbackParams) => {
     const fetchResponse = await this.callback(this.httpRequestToFetchRequest(req), config);
 
-    this.fetchResponseToHttpResponse(fetchResponse, res);
+    await this.fetchResponseToHttpResponse(fetchResponse, res);
   }
 
   //Overloaded method for logout
   public logoutHTTP = async (req: IncomingMessage, res: ServerResponse, config?: LogoutParams) => {
     const fetchResponse = await this.logout(this.httpRequestToFetchRequest(req), config);
 
-    this.fetchResponseToHttpResponse(fetchResponse, res);
+    await this.fetchResponseToHttpResponse(fetchResponse, res);
   }
 
   //Overloaded method for me
   public meHTTP = async (req: IncomingMessage, res: ServerResponse) => {
     const fetchResponse = await this.me(this.httpRequestToFetchRequest(req));
 
-    this.fetchResponseToHttpResponse(fetchResponse, res);
+    await this.fetchResponseToHttpResponse(fetchResponse, res);
   }
 }
 
@@ -516,13 +505,13 @@ export const useUserRequired = (config?: Pick<BasePaths, "profilePath" | "loginP
       //Fetch the user
       fetch(config?.profilePath || "/api/auth/me")
         .then(async response => {
-          if (response.ok) {
+          const user = await response.json() as User | null;
+          if (user) {
             //User was found, populate the state variable with the user object
-            const user = await response.json() as User;
             setUser(user);
           } else {
             //User is not logged in, redirect to the login page
-            window.location.replace(config?.loginPath || "/api/auth/login")
+            window.location.replace(config?.loginPath || "/api/auth/login");
           }
         })
     }

@@ -6,7 +6,6 @@ export type ConstructorParams = {
     secret: string;
     authBaseUrl: string;
     callbackUrl: string;
-    cacheUserData?: boolean;
 };
 export type User = {
     id: string;
@@ -20,7 +19,6 @@ export type User = {
 export type JWTPayload = {
     sessionId: string;
     verificationState: string;
-    user?: User;
 };
 export type BasePaths = {
     loginPath?: string;
@@ -81,12 +79,11 @@ export declare class ValidationError extends Error {
 export declare class CentralAuthClass {
     private organizationId;
     private secret;
-    private authBaseUrl;
-    private callbackUrl;
-    private cacheUserData;
+    protected authBaseUrl: string;
+    protected callbackUrl: string;
     private token?;
     private user?;
-    constructor({ organizationId, secret, authBaseUrl, callbackUrl, cacheUserData }: ConstructorParams);
+    constructor({ organizationId, secret, authBaseUrl, callbackUrl }: ConstructorParams);
     private checkData;
     private getDecodedToken;
     private getReturnToURL;

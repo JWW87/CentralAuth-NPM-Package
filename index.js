@@ -25,8 +25,7 @@ export class ValidationError extends Error {
 //Class for CentralAuth
 export class CentralAuthClass {
     //Constructor method to set all instance variable
-    constructor({ organizationId, secret, authBaseUrl, callbackUrl, cacheUserData }) {
-        this.cacheUserData = false;
+    constructor({ organizationId, secret, authBaseUrl, callbackUrl }) {
         //Private method to check whether all variable are set for a specific action
         //Will throw a ValidationError when a check fails
         this.checkData = (action) => {
@@ -131,15 +130,9 @@ export class CentralAuthClass {
             //Populate the token
             yield this.setTokenFromCookie(headers);
             //Decode the token to get the session ID
-            const { sessionId, user } = yield this.getDecodedToken();
-            if (this.cacheUserData && user) {
-                //Get the user data from the cached data in the JWT when available
-                this.user = user;
-            }
-            else {
-                //Get the user data from CentralAuth
-                yield this.getUser(sessionId, this.getUserAgent(headers), this.getIPAddress(headers));
-            }
+            const { sessionId } = yield this.getDecodedToken();
+            //Get the user data from CentralAuth
+            yield this.getUser(sessionId, this.getUserAgent(headers), this.getIPAddress(headers));
             return this.user || null;
         });
         //Public method to start the login procedure
@@ -202,16 +195,12 @@ export class CentralAuthClass {
                 throw new ValidationError(error);
             }
             this.user = (yield verifyResponse.json());
-            if (this.cacheUserData) {
-                //Add the user data to the JWT
-                this.token = jwt.sign({ sessionId, verificationState, user: this.user }, this.secret);
-            }
             //Set the default response object
             let res = new Response(null, {
                 status: 302,
                 headers: {
                     "Location": returnTo,
-                    "Set-Cookie": `sessionToken=${this.token}; Path=/; HttpOnly; Max-Age=100000000; SameSite=Strict; Secure`
+                    "Set-Cookie": `sessionToken=${this.token}; Path=/; HttpOnly; Max-Age=100000000; SameSite=Lax; Secure`
                 }
             });
             //When a callback function is given, call it with the user data
@@ -236,7 +225,7 @@ export class CentralAuthClass {
                 //Delete the cookie
                 return Response.json(null, {
                     headers: {
-                        "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict; Secure"
+                        "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax; Secure"
                     }
                 });
             }
@@ -247,8 +236,6 @@ export class CentralAuthClass {
             const headerList = req.headers;
             try {
                 if (config === null || config === void 0 ? void 0 : config.LogoutSessionWide) {
-                    if (this.cacheUserData)
-                        console.warn("Session-wide logging out not supported when caching user data.");
                     //To log out session wide, invalidate the session at CentralAuth
                     yield this.setTokenFromCookie(headerList);
                     //Get the session ID from the token
@@ -272,7 +259,7 @@ export class CentralAuthClass {
                     status: 302,
                     headers: {
                         "Location": returnTo,
-                        "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict; Secure"
+                        "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax; Secure"
                     }
                 });
             }
@@ -281,26 +268,29 @@ export class CentralAuthClass {
         this.secret = secret;
         this.authBaseUrl = authBaseUrl;
         this.callbackUrl = callbackUrl;
-        this.cacheUserData = !!cacheUserData;
     }
 }
 //Define a subclass for HTTP based servers
 export class CentralAuthHTTPClass extends CentralAuthClass {
     constructor() {
         super(...arguments);
+        //Private method for converting a HTTP Request to a Fetch API Request
         this.httpRequestToFetchRequest = (httpRequest) => {
-            const fetchRequest = new Request(httpRequest.url, {
-                headers: new Headers(httpRequest.headers)
+            const baseUrl = new URL(this.callbackUrl);
+            const fetchRequest = new Request(new URL(httpRequest.url, baseUrl.origin), {
+                headers: new Headers(Object.assign(Object.assign({}, httpRequest.headers), { "x-real-ip": httpRequest.socket.remoteAddress || "" }))
             });
             return fetchRequest;
         };
-        this.fetchResponseToHttpResponse = (fetchResponse, httpResponse) => {
+        //Private method for converting a Fetch API response to an HTTP Response
+        this.fetchResponseToHttpResponse = (fetchResponse, httpResponse) => __awaiter(this, void 0, void 0, function* () {
             const entries = fetchResponse.headers.entries();
             const httpHeaders = {};
             for (const entry of entries)
                 httpHeaders[entry[0]] = entry[1];
-            httpResponse.writeHead(fetchResponse.status, httpHeaders).end(fetchResponse.body);
-        };
+            const body = yield fetchResponse.text();
+            httpResponse.writeHead(fetchResponse.status, httpHeaders).end(body);
+        });
         //Overloaded method for getUserData
         this.getUserDataHTTP = (req) => __awaiter(this, void 0, void 0, function* () {
             return yield this.getUserData(new Headers(req.headers));
@@ -308,22 +298,22 @@ export class CentralAuthHTTPClass extends CentralAuthClass {
         //Overloaded method for login
         this.loginHTTP = (req, res, config) => __awaiter(this, void 0, void 0, function* () {
             const fetchResponse = yield this.login(this.httpRequestToFetchRequest(req), config);
-            this.fetchResponseToHttpResponse(fetchResponse, res);
+            yield this.fetchResponseToHttpResponse(fetchResponse, res);
         });
         //Overloaded method for callback
         this.callbackHTTP = (req, res, config) => __awaiter(this, void 0, void 0, function* () {
             const fetchResponse = yield this.callback(this.httpRequestToFetchRequest(req), config);
-            this.fetchResponseToHttpResponse(fetchResponse, res);
+            yield this.fetchResponseToHttpResponse(fetchResponse, res);
         });
         //Overloaded method for logout
         this.logoutHTTP = (req, res, config) => __awaiter(this, void 0, void 0, function* () {
             const fetchResponse = yield this.logout(this.httpRequestToFetchRequest(req), config);
-            this.fetchResponseToHttpResponse(fetchResponse, res);
+            yield this.fetchResponseToHttpResponse(fetchResponse, res);
         });
         //Overloaded method for me
         this.meHTTP = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const fetchResponse = yield this.me(this.httpRequestToFetchRequest(req));
-            this.fetchResponseToHttpResponse(fetchResponse, res);
+            yield this.fetchResponseToHttpResponse(fetchResponse, res);
         });
     }
 }
@@ -345,9 +335,9 @@ export const useUserRequired = (config) => {
             //Fetch the user
             fetch((config === null || config === void 0 ? void 0 : config.profilePath) || "/api/auth/me")
                 .then((response) => __awaiter(void 0, void 0, void 0, function* () {
-                if (response.ok) {
+                const user = yield response.json();
+                if (user) {
                     //User was found, populate the state variable with the user object
-                    const user = yield response.json();
                     setUser(user);
                 }
                 else {
