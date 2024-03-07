@@ -371,3 +371,4 @@ export const withCentralAuthAutomaticLogin = (Component, config = {}) => {
         return null;
     };
 };
+//# sourceMappingURL=index.js.map
