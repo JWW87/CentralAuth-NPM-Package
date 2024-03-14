@@ -17,50 +17,40 @@ export const useUser = (config?: Pick<BasePaths, "profilePath">) => {
 //When the user could not be fetched, redirect the user to the login page
 //Returns the user object when the user is logged in, and null when the user is being fetched
 export const useUserRequired = (config?: Pick<BasePaths, "profilePath" | "loginPath">) => {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, isLoading } = useUser(config);
 
   useEffect(() => {
-    if (!user) {
-      //Fetch the user
-      fetch(config?.profilePath || "/api/auth/me")
-        .then(async response => {
-          const user = await response.json() as User | null;
-          if (user) {
-            //User was found, populate the state variable with the user object
-            setUser(user);
-          } else {
-            //User is not logged in, redirect to the login page
-            window.location.replace(config?.loginPath || "/api/auth/login");
-          }
-        })
+    if (!user && !isLoading) {
+      //User is not logged in, redirect to the login page
+      window.location.replace(config?.loginPath || "/api/auth/login");
     }
-  }, [user]);
+  }, [user, isLoading]);
 
-  return user;
+  return user || null;
 }
 //Wrapper for a React based client to redirect an anonymous user to CentralAuth when visiting a page that requires authentication
-export const withCentralAuthAutomaticLogin: WithCentralAuthAutomaticLogin = (Component, config = {}) => {
+export const withCentralAuthAutomaticLogin: WithCentralAuthAutomaticLogin = (Component, config) => {
   return function withCentralAuthAutomaticLogin(props): ReactElement<any, any> | null {
-    const { loginPath, profilePath } = config;
+    const PlaceholderComponent = config?.PlaceholderComponent || null;
     const [user, setUser] = useState<User>();
 
     useEffect(() => {
-      fetch(profilePath || "/api/auth/me")
+      fetch(config?.profilePath || "/api/auth/me")
         .then(response => {
           response.json()
             .then((userData: User) => {
               if (userData == null)
-                window.location.replace(loginPath || "/api/auth/login");
+                window.location.replace(config?.loginPath || "/api/auth/login");
               else
                 setUser(userData);
             })
         })
 
-    }, [loginPath, profilePath]);
+    }, [config]);
 
     if (user)
       return createElement(Component, Object.assign({}, props));
 
-    return null;
+    return PlaceholderComponent;
   };
 };

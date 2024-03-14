@@ -1,6 +1,6 @@
 {
   "name": "centralauth",
-  "version": "0.1.37",
+  "version": "0.1.41",
   "description": "Official package for CentralAuth",
   "type": "module",
   "repository": {
