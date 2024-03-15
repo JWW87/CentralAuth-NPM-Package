@@ -7,7 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import jwt from "jsonwebtoken";
+import { EncryptJWT, jwtDecrypt, base64url } from "jose";
 //Private method for parsing a cookie string in a request header
 const parseCookie = (cookieString) => ((cookieString === null || cookieString === void 0 ? void 0 : cookieString.split(';').map(v => v.split('=')).reduce((acc, v) => {
     acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
@@ -46,7 +46,7 @@ export class CentralAuthClass {
             this.checkData("callback");
             try {
                 //Decode the JWT
-                const decodedToken = jwt.verify(this.token, this.secret);
+                const { payload: decodedToken } = yield jwtDecrypt(this.token, base64url.decode(this.secret));
                 return decodedToken;
             }
             catch (error) {
@@ -178,7 +178,10 @@ export class CentralAuthClass {
                 throw new ValidationError({ errorCode: errorCode, message: errorMessage || "" });
             }
             //Build the JWT with the session ID and verification state as payload
-            this.token = jwt.sign({ sessionId, verificationState }, this.secret);
+            this.token = yield new EncryptJWT({ sessionId, verificationState })
+                .setProtectedHeader({ alg: "dir", enc: "A256CBC-HS512" })
+                .setIssuedAt()
+                .encrypt(base64url.decode(this.secret));
             this.checkData("callback");
             //Make a request to the verification endpoint to verify this session at CentralAuth
             const headers = new Headers();

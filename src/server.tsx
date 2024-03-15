@@ -1,5 +1,5 @@
 import { IncomingMessage, ServerResponse } from "http";
-import jwt from "jsonwebtoken";
+import { EncryptJWT, jwtDecrypt, base64url } from "jose";
 import { CallbackParams, ConstructorParams, ErrorCode, ErrorObject, JWTPayload, LoginParams, LogoutParams, User } from "./types";
 
 //Private method for parsing a cookie string in a request header
@@ -63,7 +63,7 @@ export class CentralAuthClass {
 
     try {
       //Decode the JWT
-      const decodedToken = jwt.verify(this.token!, this.secret) as JWTPayload;
+      const { payload: decodedToken } = await jwtDecrypt<JWTPayload>(this.token!, base64url.decode(this.secret));
 
       return decodedToken;
     } catch (error: any) {
@@ -216,7 +216,10 @@ export class CentralAuthClass {
     }
 
     //Build the JWT with the session ID and verification state as payload
-    this.token = jwt.sign({ sessionId, verificationState } as JWTPayload, this.secret);
+    this.token = await new EncryptJWT({ sessionId, verificationState })
+      .setProtectedHeader({ alg: "dir", enc: "A256CBC-HS512" })
+      .setIssuedAt()
+      .encrypt(base64url.decode(this.secret));
     this.checkData("callback");
 
     //Make a request to the verification endpoint to verify this session at CentralAuth
