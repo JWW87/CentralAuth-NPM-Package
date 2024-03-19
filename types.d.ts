@@ -8,6 +8,7 @@ export type ConstructorParams = {
 export type User = {
     id: string;
     email: string;
+    gravatar: string | null;
     verified: boolean;
     blocked: boolean;
     organizationId: string | null;
