@@ -145,9 +145,7 @@ export class CentralAuthClass {
             //Check for custom translations in the config
             const translations = (config === null || config === void 0 ? void 0 : config.translations) ? btoa(JSON.stringify(config.translations)) : null;
             //Redirect to the login page
-            const loginUrl = new URL(`${this.authBaseUrl}/login`);
-            if (this.organizationId)
-                loginUrl.searchParams.set("organizationId", this.organizationId);
+            const loginUrl = new URL(`${this.authBaseUrl}/login/${this.organizationId || ""}`);
             //Add an error message when given
             if (config === null || config === void 0 ? void 0 : config.errorMessage)
                 loginUrl.searchParams.set("errorMessage", config === null || config === void 0 ? void 0 : config.errorMessage);
