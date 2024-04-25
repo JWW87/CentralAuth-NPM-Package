@@ -69,6 +69,7 @@ export type LoginParams = {
   errorMessage?: string | null;
   emailAddress?: string | null;
   translations?: Translations | null;
+  embed?: boolean | null;
 }
 
 //Type for the parameters of the logout method

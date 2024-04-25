@@ -58,6 +58,7 @@ export type LoginParams = {
     errorMessage?: string | null;
     emailAddress?: string | null;
     translations?: Translations | null;
+    embed?: boolean | null;
 };
 export type LogoutParams = {
     returnTo?: string | null;

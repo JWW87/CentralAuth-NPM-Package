@@ -189,6 +189,9 @@ export class CentralAuthClass {
     //Add translations when given
     if (translations)
       loginUrl.searchParams.set("translations", translations);
+    //Add embed boolean when given
+    if (config?.embed)
+      loginUrl.searchParams.set("embed", "1");
     loginUrl.searchParams.set("callbackUrl", callbackUrl.toString());
 
     return Response.redirect(loginUrl.toString());
