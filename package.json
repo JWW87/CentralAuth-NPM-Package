@@ -18,7 +18,7 @@
   "license": "ISC",
   "dependencies": {
     "jose": "^5.2.3",
-    "react": "^18.2.0",
+    "react": "^18.3.0",
     "swr": "^2.2.4"
   },
   "devDependencies": {
