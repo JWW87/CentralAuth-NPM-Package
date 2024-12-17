@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { IncomingMessage, ServerResponse } from "http";
 import { CallbackParams, ConstructorParams, ErrorObject, LoginParams, LogoutParams, User } from "./types";
 export declare class ValidationError extends Error {
