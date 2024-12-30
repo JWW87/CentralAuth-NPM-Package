@@ -143,7 +143,8 @@ export class CentralAuthClass {
             if (returnTo)
                 callbackUrl.searchParams.set("returnTo", returnTo);
             //Check for custom translations in the config
-            const translations = (config === null || config === void 0 ? void 0 : config.translations) ? btoa(JSON.stringify(config.translations)) : null;
+            const textEncoder = new TextEncoder();
+            const translations = (config === null || config === void 0 ? void 0 : config.translations) ? textEncoder.encode(JSON.stringify(config.translations)) : null;
             //Redirect to the login page
             const loginUrl = new URL(`${this.authBaseUrl}/login/${this.organizationId || ""}`);
             //Add an error message when given
@@ -154,7 +155,7 @@ export class CentralAuthClass {
                 loginUrl.searchParams.set("emailAddress", config === null || config === void 0 ? void 0 : config.emailAddress);
             //Add translations when given
             if (translations)
-                loginUrl.searchParams.set("translations", translations);
+                loginUrl.searchParams.set("translations", Buffer.from(translations).toString("base64"));
             //Add embed boolean when given
             if (config === null || config === void 0 ? void 0 : config.embed)
                 loginUrl.searchParams.set("embed", "1");
