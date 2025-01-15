@@ -1,6 +1,6 @@
 import type { ComponentType, FC, ReactElement } from "react";
 export type ConstructorParams = {
-    organizationId: string | null;
+    clientId: string | null;
     secret: string;
     authBaseUrl: string;
     callbackUrl: string;

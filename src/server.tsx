@@ -23,7 +23,7 @@ export class ValidationError extends Error {
 
 //Class for CentralAuth
 export class CentralAuthClass {
-  private organizationId: string | null;
+  private clientId: string | null;
   private secret: string;
   protected authBaseUrl: string;
   protected callbackUrl: string;
@@ -31,8 +31,8 @@ export class CentralAuthClass {
   private user?: User;
 
   //Constructor method to set all instance variable
-  constructor({ organizationId, secret, authBaseUrl, callbackUrl }: ConstructorParams) {
-    this.organizationId = organizationId;
+  constructor({ clientId, secret, authBaseUrl, callbackUrl }: ConstructorParams) {
+    this.clientId = clientId;
     this.secret = secret;
     this.authBaseUrl = authBaseUrl;
     this.callbackUrl = callbackUrl;
@@ -42,7 +42,7 @@ export class CentralAuthClass {
   //Will throw a ValidationError when a check fails
   private checkData = (action: "login" | "callback" | "verify" | "me") => {
     let error: ErrorObject | null = null;
-    if (typeof this.organizationId === "undefined")
+    if (typeof this.clientId === "undefined")
       error = { errorCode: "organizationIdMissing", message: "The organization ID is missing. This ID can be found on the organization page in your admin console." };
     if (!this.secret)
       error = { errorCode: "secretMissing", message: "The secret is missing. The secret is shown only once at the creation of an organization and should never be exposed publicly or stored unsafely." };
@@ -180,7 +180,7 @@ export class CentralAuthClass {
     const translations = config?.translations ? textEncoder.encode(JSON.stringify(config.translations)) : null;
 
     //Redirect to the login page
-    const loginUrl = new URL(`${this.authBaseUrl}/login/${this.organizationId || ""}`);
+    const loginUrl = new URL(`${this.authBaseUrl}/login/${this.clientId || ""}`);
     //Add an error message when given
     if (config?.errorMessage)
       loginUrl.searchParams.set("errorMessage", config?.errorMessage);

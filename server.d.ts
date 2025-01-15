@@ -5,13 +5,13 @@ export declare class ValidationError extends Error {
     constructor(error: ErrorObject);
 }
 export declare class CentralAuthClass {
-    private organizationId;
+    private clientId;
     private secret;
     protected authBaseUrl: string;
     protected callbackUrl: string;
     private token?;
     private user?;
-    constructor({ organizationId, secret, authBaseUrl, callbackUrl }: ConstructorParams);
+    constructor({ clientId, secret, authBaseUrl, callbackUrl }: ConstructorParams);
     private checkData;
     private getDecodedToken;
     private getReturnToURL;
