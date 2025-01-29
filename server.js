@@ -163,11 +163,22 @@ export class CentralAuthClass {
             return Response.redirect(loginUrl.toString());
         });
         //Public method for the callback procedure when returning from CentralAuth
+        this.callback = (req, config) => __awaiter(this, void 0, void 0, function* () {
+            const res = yield this.processCallback(req);
+            //When an onAfterCallback function is given, call it with the user data
+            //The onAfterCallback function may return a new/altered response, which will be returned instead of the default response object
+            let callbackResponse = null;
+            if (config === null || config === void 0 ? void 0 : config.onAfterCallback)
+                callbackResponse = yield config.onAfterCallback(req, res, this.user);
+            //Set a cookie with the JWT and redirect to the returnTo URL
+            return callbackResponse || res;
+        });
+        //Protected method for processing the callback
         //This method will automatically verify the JWT payload and set the sessionToken cookie
         //Optionally calls a custom callback function when given with the user data as an argument
         //Returns a Response with a redirection to the returnTo URL
         //Will throw an error when the verification procedure fails or the user data could not be fetched
-        this.callback = (req, config) => __awaiter(this, void 0, void 0, function* () {
+        this.processCallback = (req) => __awaiter(this, void 0, void 0, function* () {
             const url = new URL(req.url);
             const searchParams = url.searchParams;
             const returnTo = searchParams.get("returnTo") || url.origin;
@@ -208,13 +219,8 @@ export class CentralAuthClass {
                     "Set-Cookie": `sessionToken=${this.token}; Path=/; HttpOnly; Max-Age=100000000; SameSite=Lax; Secure`
                 }
             });
-            //When a callback function is given, call it with the user data
-            //The callback function may return a new/altered response, which will be returned instead of the default response object
-            let callbackResponse = null;
-            if (config === null || config === void 0 ? void 0 : config.callback)
-                callbackResponse = yield config.callback(req, res, this.user);
             //Set a cookie with the JWT and redirect to the returnTo URL
-            return callbackResponse || res;
+            return res;
         });
         //Public method to get the user data from the current request
         //This method wraps getUserData and returns a Response with the user data as JSON in the body
@@ -307,8 +313,13 @@ export class CentralAuthHTTPClass extends CentralAuthClass {
         });
         //Overloaded method for callback
         this.callbackHTTP = (req, res, config) => __awaiter(this, void 0, void 0, function* () {
-            const fetchResponse = yield this.callback(this.httpRequestToFetchRequest(req), config);
-            yield this.fetchResponseToHttpResponse(fetchResponse, res);
+            const fetchResponse = yield this.processCallback(this.httpRequestToFetchRequest(req));
+            //When an onAfterCallback function is given, call it with the user data
+            //The onAfterCallback function may return a new/altered response, which will be returned instead of the default response object
+            let callbackResponse = null;
+            if (config === null || config === void 0 ? void 0 : config.onAfterCallback)
+                callbackResponse = yield config.onAfterCallback(req, res, fetchResponse, this.user);
+            yield this.fetchResponseToHttpResponse(callbackResponse || fetchResponse, res);
         });
         //Overloaded method for logout
         this.logoutHTTP = (req, res, config) => __awaiter(this, void 0, void 0, function* () {

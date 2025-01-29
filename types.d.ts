@@ -1,3 +1,4 @@
+import { IncomingMessage, ServerResponse } from "http";
 import type { ComponentType, FC, ReactElement } from "react";
 export type ConstructorParams = {
     clientId: string | null;
@@ -66,7 +67,10 @@ export type LogoutParams = {
     LogoutSessionWide?: boolean;
 };
 export type CallbackParams = {
-    callback?: (req: Request, res: Response, user: User) => Promise<Response | void>;
+    onAfterCallback?: (req: Request, res: Response, user: User) => Promise<Response | void>;
+};
+export type CallbackParamsHTTP = {
+    onAfterCallback?: (req: IncomingMessage, originalResponse: ServerResponse, responseToReturn: Response, user: User) => Promise<Response | void>;
 };
 export type ErrorCode = "genericError" | "missingFields" | "sessionMissing" | "sessionNotVerified" | "sessionInactive" | "sessionInvalid" | "domainInvalid" | "verificationStateInvalid" | "loginAttemptMissing" | "loginAttemptExpired" | "loginAttemptInvalid" | "sessionExpired" | "callbackUrlInvalid" | "connectionMissing" | "organizationIdMissing" | "secretMissing" | "authBaseUrlMissing" | "callbackUrlMissing" | "tokenMissing" | "tokenInvalid" | "captchaInvalid";
 export type ErrorObject = {

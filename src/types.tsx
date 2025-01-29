@@ -1,3 +1,4 @@
+import { IncomingMessage, ServerResponse } from "http";
 import type { ComponentType, FC, ReactElement } from "react";
 
 //Type for the class constructor
@@ -81,7 +82,14 @@ export type LogoutParams = {
 
 //Type for the parameters of the callback method
 export type CallbackParams = {
-  callback?: (req: Request, res: Response, user: User) => Promise<Response | void>;
+  onAfterCallback?: (req: Request, res: Response, user: User) => Promise<Response | void>;
+}
+
+//Type for the parameters of the callback HTTP method
+//The originalResponse is the HTTP response object
+//The responseToReturn is the Response object that will be sent back to the user. This object can be altered in the callback method and returned to alter the Response that will be returned by the callback function.
+export type CallbackParamsHTTP = {
+  onAfterCallback?: (req: IncomingMessage, originalResponse: ServerResponse, responseToReturn: Response, user: User) => Promise<Response | void>;
 }
 
 //Enum for the different error messages

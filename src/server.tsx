@@ -1,6 +1,6 @@
 import { IncomingMessage, ServerResponse } from "http";
 import { EncryptJWT, jwtDecrypt } from "jose";
-import { CallbackParams, ConstructorParams, ErrorCode, ErrorObject, JWTPayload, LoginParams, LogoutParams, User } from "./types";
+import { CallbackParams, CallbackParamsHTTP, ConstructorParams, ErrorCode, ErrorObject, JWTPayload, LoginParams, LogoutParams, User } from "./types";
 
 //Private method for parsing a cookie string in a request header
 const parseCookie = (cookieString: string | null) =>
@@ -28,7 +28,7 @@ export class CentralAuthClass {
   protected authBaseUrl: string;
   protected callbackUrl: string;
   private token?: string;
-  private user?: User;
+  protected user?: User;
 
   //Constructor method to set all instance variable
   constructor({ clientId, secret, authBaseUrl, callbackUrl }: ConstructorParams) {
@@ -199,11 +199,25 @@ export class CentralAuthClass {
   }
 
   //Public method for the callback procedure when returning from CentralAuth
+  public callback = async (req: Request, config?: CallbackParams) => {
+    const res = await this.processCallback(req);
+
+    //When an onAfterCallback function is given, call it with the user data
+    //The onAfterCallback function may return a new/altered response, which will be returned instead of the default response object
+    let callbackResponse: Response | void | null = null;
+    if (config?.onAfterCallback)
+      callbackResponse = await config.onAfterCallback(req, res, this.user!);
+
+    //Set a cookie with the JWT and redirect to the returnTo URL
+    return callbackResponse || res;
+  }
+
+  //Protected method for processing the callback
   //This method will automatically verify the JWT payload and set the sessionToken cookie
   //Optionally calls a custom callback function when given with the user data as an argument
   //Returns a Response with a redirection to the returnTo URL
   //Will throw an error when the verification procedure fails or the user data could not be fetched
-  public callback = async (req: Request, config?: CallbackParams) => {
+  protected processCallback = async (req: Request) => {
     const url = new URL(req.url);
     const searchParams = url.searchParams;
     const returnTo = searchParams.get("returnTo") || url.origin;
@@ -252,14 +266,8 @@ export class CentralAuthClass {
       }
     );
 
-    //When a callback function is given, call it with the user data
-    //The callback function may return a new/altered response, which will be returned instead of the default response object
-    let callbackResponse: Response | void | null = null;
-    if (config?.callback)
-      callbackResponse = await config.callback(req, res, this.user!);
-
     //Set a cookie with the JWT and redirect to the returnTo URL
-    return callbackResponse || res;
+    return res;
   }
 
   //Public method to get the user data from the current request
@@ -355,10 +363,16 @@ export class CentralAuthHTTPClass extends CentralAuthClass {
   }
 
   //Overloaded method for callback
-  public callbackHTTP = async (req: IncomingMessage, res: ServerResponse, config?: CallbackParams) => {
-    const fetchResponse = await this.callback(this.httpRequestToFetchRequest(req), config);
+  public callbackHTTP = async (req: IncomingMessage, res: ServerResponse, config?: CallbackParamsHTTP) => {
+    const fetchResponse = await this.processCallback(this.httpRequestToFetchRequest(req));
 
-    await this.fetchResponseToHttpResponse(fetchResponse, res);
+    //When an onAfterCallback function is given, call it with the user data
+    //The onAfterCallback function may return a new/altered response, which will be returned instead of the default response object
+    let callbackResponse: Response | void | null = null;
+    if (config?.onAfterCallback)
+      callbackResponse = await config.onAfterCallback(req, res, fetchResponse, this.user!);
+
+    await this.fetchResponseToHttpResponse(callbackResponse || fetchResponse, res);
   }
 
   //Overloaded method for logout
