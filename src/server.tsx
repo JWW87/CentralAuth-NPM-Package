@@ -352,7 +352,8 @@ export class CentralAuthHTTPClass extends CentralAuthClass {
 
   //Overloaded method for getUserData
   public getUserDataHTTP = async (req: IncomingMessage) => {
-    return await this.getUserData(new Headers(req.headers as HeadersInit));
+    const request = this.httpRequestToFetchRequest(req);
+    return await this.getUserData(request.headers);
   }
 
   //Overloaded method for login

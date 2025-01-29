@@ -304,7 +304,8 @@ export class CentralAuthHTTPClass extends CentralAuthClass {
         });
         //Overloaded method for getUserData
         this.getUserDataHTTP = (req) => __awaiter(this, void 0, void 0, function* () {
-            return yield this.getUserData(new Headers(req.headers));
+            const request = this.httpRequestToFetchRequest(req);
+            return yield this.getUserData(request.headers);
         });
         //Overloaded method for login
         this.loginHTTP = (req, res, config) => __awaiter(this, void 0, void 0, function* () {
