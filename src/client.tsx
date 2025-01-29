@@ -30,7 +30,7 @@ export const useUserRequired = (config?: Pick<BasePaths, "profilePath" | "loginP
 }
 //Wrapper for a React based client to redirect an anonymous user to CentralAuth when visiting a page that requires authentication
 export const withCentralAuthAutomaticLogin: WithCentralAuthAutomaticLogin = (Component, config) => {
-  return function withCentralAuthAutomaticLogin(props): ReactElement<any, any> | null {
+  return function WithCentralAuthAutomaticLogin(props): ReactElement<any, any> | null {
     const PlaceholderComponent = config?.PlaceholderComponent || null;
     const [user, setUser] = useState<User>();
 
