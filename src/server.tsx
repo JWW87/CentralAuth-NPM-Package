@@ -108,7 +108,7 @@ export class CentralAuthClass {
   private getIPAddress = (headers: Headers) => {
     const realIp = headers.get("x-real-ip");
     const forwardedFor = headers.get("x-forwarded-for");
-    const ip = realIp || forwardedFor || null;
+    const ip = forwardedFor || realIp || null;
     //The IP address might consist of multiple IP addresses, seperated by commas. Only return the first IP address
     return ip ? ip.split(",")[0] : "0.0.0.0";
   }
@@ -333,7 +333,7 @@ export class CentralAuthHTTPClass extends CentralAuthClass {
     const baseUrl = new URL(this.callbackUrl);
 
     const fetchRequest = new Request(new URL(httpRequest.url!, baseUrl.origin), {
-      headers: new Headers({ ...httpRequest.headers as HeadersInit, "x-real-ip": httpRequest.socket.remoteAddress || "" })
+      headers: new Headers({ ...httpRequest.headers as HeadersInit })
     });
 
     return fetchRequest;
