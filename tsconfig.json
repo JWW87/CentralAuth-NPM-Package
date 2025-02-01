@@ -21,7 +21,8 @@
     "declaration": true
   },
   "include": [
-    "src/**.tsx"
+    "src/**.tsx",
+    "api/**.ts"
   ],
   "exclude": [
     "node_modules"
