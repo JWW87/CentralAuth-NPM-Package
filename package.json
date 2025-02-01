@@ -4,7 +4,7 @@
   "description": "Official package for CentralAuth",
   "type": "module",
   "scripts": {
-    "openapi-ts": "openapi-ts"
+    "build": "openapi-ts && npx tsc"
   },
   "repository": {
     "type": "git",
