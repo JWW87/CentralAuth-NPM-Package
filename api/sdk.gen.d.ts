@@ -1,5 +1,5 @@
 import type { Options as ClientOptions, TDataShape, Client } from '@hey-api/client-fetch';
-import type { DeleteApiV1InvitedUserByIdData, PostApiV1InvitedUserData, DeleteApiV1InternalUserByTenantIdByUserIdData, PostApiV1InternalUserByTenantIdByUserIdData, DeleteApiV1OrganizationByIdData, GetApiV1OrganizationByIdData, PostApiV1OrganizationByIdData, PostApiV1OrganizationData, GetApiV1OrganizationByIdRotateSecretData, PostApiV1OrganizationByIdActivateSecretData, DeleteApiV1TenantByIdData, GetApiV1TenantByIdData, PostApiV1TenantByIdData, DeleteApiV1UserByIdData, GetApiV1UserByIdData, PostApiV1UserByIdData, PostApiV1UserData, GetApiV1UsersByOrganizationIdData, DeleteApiV1ApiKeyByIdData, GetApiV1ApiKeyByIdData, PostApiV1ApiKeyByIdData, PostApiV1ApiKeyData, GetApiV1ApiKeysByOrganizationIdData } from './types.gen';
+import type { DeleteApiV1InvitedUserByIdData, PostApiV1InvitedUserData, DeleteApiV1InternalUserByTenantIdByUserIdData, PostApiV1InternalUserByTenantIdByUserIdData, DeleteApiV1OrganizationByIdData, GetApiV1OrganizationByIdData, PostApiV1OrganizationByIdData, PostApiV1OrganizationData, GetApiV1OrganizationByIdRotateSecretData, PostApiV1OrganizationByIdActivateSecretData, DeleteApiV1TenantByIdData, GetApiV1TenantByIdData, PostApiV1TenantByIdData, DeleteApiV1UserByIdData, GetApiV1UserByIdData, PostApiV1UserByIdData, DeleteApiV1UserByOrganizationIdByEmailData, GetApiV1UserByOrganizationIdByEmailData, PostApiV1UserByOrganizationIdByEmailData, PostApiV1UserData, GetApiV1UsersByOrganizationIdData, DeleteApiV1ApiKeyByIdData, GetApiV1ApiKeyByIdData, PostApiV1ApiKeyByIdData, PostApiV1ApiKeyData, GetApiV1ApiKeysByOrganizationIdData } from './types.gen';
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = ClientOptions<TData, ThrowOnError> & {
     /**
      * You can provide a client instance returned by `createClient()` instead of
@@ -77,6 +77,20 @@ export declare const getApiV1UserById: <ThrowOnError extends boolean = false>(op
  * Note that it is not possible to edit the email address of a user.
  */
 export declare const postApiV1UserById: <ThrowOnError extends boolean = false>(options: Options<PostApiV1UserByIdData, ThrowOnError>) => import("@hey-api/client-fetch").RequestResult<import("./types.gen").User, unknown, ThrowOnError>;
+/**
+ * Delete a user by email address
+ * Note that a user can create a new user object by logging in again. It is not necessary to create a new user object first.
+ */
+export declare const deleteApiV1UserByOrganizationIdByEmail: <ThrowOnError extends boolean = false>(options: Options<DeleteApiV1UserByOrganizationIdByEmailData, ThrowOnError>) => import("@hey-api/client-fetch").RequestResult<unknown, unknown, ThrowOnError>;
+/**
+ * Get a user by email address
+ */
+export declare const getApiV1UserByOrganizationIdByEmail: <ThrowOnError extends boolean = false>(options: Options<GetApiV1UserByOrganizationIdByEmailData, ThrowOnError>) => import("@hey-api/client-fetch").RequestResult<import("./types.gen").User, unknown, ThrowOnError>;
+/**
+ * Update an existing user by email address
+ * Note that it is not possible to edit the email address of a user.
+ */
+export declare const postApiV1UserByOrganizationIdByEmail: <ThrowOnError extends boolean = false>(options: Options<PostApiV1UserByOrganizationIdByEmailData, ThrowOnError>) => import("@hey-api/client-fetch").RequestResult<import("./types.gen").User, unknown, ThrowOnError>;
 /**
  * Create a new user
  * Note that it is not necessary to create a user before this user can log in. When a user does not exist when they try to log for in the first time, the user will be created automatically.

@@ -198,6 +198,44 @@ export const postApiV1UserById = (options) => {
         ], url: '/api/v1/user/{id}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
 };
 /**
+ * Delete a user by email address
+ * Note that a user can create a new user object by logging in again. It is not necessary to create a new user object first.
+ */
+export const deleteApiV1UserByOrganizationIdByEmail = (options) => {
+    var _a;
+    return ((_a = options.client) !== null && _a !== void 0 ? _a : _heyApiClient).delete(Object.assign({ security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ], url: '/api/v1/user/{organizationId}/{email}' }, options));
+};
+/**
+ * Get a user by email address
+ */
+export const getApiV1UserByOrganizationIdByEmail = (options) => {
+    var _a;
+    return ((_a = options.client) !== null && _a !== void 0 ? _a : _heyApiClient).get(Object.assign({ security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ], url: '/api/v1/user/{organizationId}/{email}' }, options));
+};
+/**
+ * Update an existing user by email address
+ * Note that it is not possible to edit the email address of a user.
+ */
+export const postApiV1UserByOrganizationIdByEmail = (options) => {
+    var _a;
+    return ((_a = options.client) !== null && _a !== void 0 ? _a : _heyApiClient).post(Object.assign(Object.assign({ security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ], url: '/api/v1/user/{organizationId}/{email}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
+};
+/**
  * Create a new user
  * Note that it is not necessary to create a user before this user can log in. When a user does not exist when they try to log for in the first time, the user will be created automatically.
  */

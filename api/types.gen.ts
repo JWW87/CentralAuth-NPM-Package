@@ -1243,6 +1243,205 @@ export type PostApiV1UserByIdResponses = {
 
 export type PostApiV1UserByIdResponse = PostApiV1UserByIdResponses[keyof PostApiV1UserByIdResponses];
 
+export type DeleteApiV1UserByOrganizationIdByEmailData = {
+    body?: never;
+    path: {
+        organizationId: string;
+        email: string;
+    };
+    query?: never;
+    url: '/api/v1/user/{organizationId}/{email}';
+};
+
+export type DeleteApiV1UserByOrganizationIdByEmailErrors = {
+    /**
+     * Bad request
+     */
+    400: {
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * No permission
+     */
+    403: {
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Not found
+     */
+    404: {
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Invalid method
+     */
+    405: {
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Deployment error
+     */
+    502: unknown;
+    /**
+     * Service unavailable
+     */
+    503: unknown;
+    /**
+     * Gateway timeout
+     */
+    504: unknown;
+};
+
+export type DeleteApiV1UserByOrganizationIdByEmailError = DeleteApiV1UserByOrganizationIdByEmailErrors[keyof DeleteApiV1UserByOrganizationIdByEmailErrors];
+
+export type DeleteApiV1UserByOrganizationIdByEmailResponses = {
+    /**
+     * Success
+     */
+    200: unknown;
+};
+
+export type GetApiV1UserByOrganizationIdByEmailData = {
+    body?: never;
+    path: {
+        organizationId: string;
+        email: string;
+    };
+    query?: never;
+    url: '/api/v1/user/{organizationId}/{email}';
+};
+
+export type GetApiV1UserByOrganizationIdByEmailErrors = {
+    /**
+     * Bad request
+     */
+    400: {
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * No permission
+     */
+    403: {
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Not found
+     */
+    404: {
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Invalid method
+     */
+    405: {
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Deployment error
+     */
+    502: unknown;
+    /**
+     * Service unavailable
+     */
+    503: unknown;
+    /**
+     * Gateway timeout
+     */
+    504: unknown;
+};
+
+export type GetApiV1UserByOrganizationIdByEmailError = GetApiV1UserByOrganizationIdByEmailErrors[keyof GetApiV1UserByOrganizationIdByEmailErrors];
+
+export type GetApiV1UserByOrganizationIdByEmailResponses = {
+    /**
+     * A user object with all active connections
+     */
+    200: User;
+};
+
+export type GetApiV1UserByOrganizationIdByEmailResponse = GetApiV1UserByOrganizationIdByEmailResponses[keyof GetApiV1UserByOrganizationIdByEmailResponses];
+
+export type PostApiV1UserByOrganizationIdByEmailData = {
+    body?: {
+        /**
+         * Flag whether this user has verified their email address.
+         */
+        verified?: boolean;
+        /**
+         * Flag whether this user is blocked.
+         */
+        blocked?: boolean;
+    };
+    path: {
+        organizationId: string;
+        email: string;
+    };
+    query?: never;
+    url: '/api/v1/user/{organizationId}/{email}';
+};
+
+export type PostApiV1UserByOrganizationIdByEmailErrors = {
+    /**
+     * Bad request
+     */
+    400: {
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * No permission
+     */
+    403: {
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Not found
+     */
+    404: {
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Invalid method
+     */
+    405: {
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Deployment error
+     */
+    502: unknown;
+    /**
+     * Service unavailable
+     */
+    503: unknown;
+    /**
+     * Gateway timeout
+     */
+    504: unknown;
+};
+
+export type PostApiV1UserByOrganizationIdByEmailError = PostApiV1UserByOrganizationIdByEmailErrors[keyof PostApiV1UserByOrganizationIdByEmailErrors];
+
+export type PostApiV1UserByOrganizationIdByEmailResponses = {
+    /**
+     * A user object with all active connections
+     */
+    200: User;
+};
+
+export type PostApiV1UserByOrganizationIdByEmailResponse = PostApiV1UserByOrganizationIdByEmailResponses[keyof PostApiV1UserByOrganizationIdByEmailResponses];
+
 export type PostApiV1UserData = {
     body?: {
         /**
