@@ -43,6 +43,8 @@ export class CentralAuthClass {
         };
         //Private method to get the decoded token
         this.getDecodedToken = (headers) => __awaiter(this, void 0, void 0, function* () {
+            //Populate the token
+            yield this.setTokenFromCookie(headers);
             this.checkData("callback");
             try {
                 //Decode the JWT

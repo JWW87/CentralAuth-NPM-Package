@@ -59,6 +59,9 @@ export class CentralAuthClass {
 
   //Private method to get the decoded token
   private getDecodedToken = async (headers: Headers) => {
+    //Populate the token
+    await this.setTokenFromCookie(headers);
+
     this.checkData("callback");
 
     try {
