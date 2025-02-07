@@ -21,11 +21,22 @@ export type User = {
   updated: Date;
 }
 
+//Type for the user data response from CentralAuth
+export type UserResponse = {
+  user: User;
+  session: {
+    id: string;
+    ipAddress: string;
+    userAgent: string;
+    lastSync: string;
+  }
+}
+
 //Type for the payload of the JWT
 export type JWTPayload = {
   sessionId: string,
   verificationState: string
-}
+} & Partial<UserResponse>;
 
 //Type for the base paths
 export type BasePaths = {

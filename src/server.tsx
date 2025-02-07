@@ -1,6 +1,6 @@
 import { IncomingMessage, ServerResponse } from "http";
 import { EncryptJWT, jwtDecrypt } from "jose";
-import { CallbackParams, CallbackParamsHTTP, ConstructorParams, ErrorCode, ErrorObject, JWTPayload, LoginParams, LogoutParams, User } from "./types";
+import { CallbackParams, CallbackParamsHTTP, ConstructorParams, ErrorCode, ErrorObject, JWTPayload, LoginParams, LogoutParams, User, UserResponse } from "./types";
 
 //Private method for parsing a cookie string in a request header
 const parseCookie = (cookieString: string | null) =>
@@ -72,6 +72,15 @@ export class CentralAuthClass {
     }
   }
 
+  //Private method to set the payload of the JWT
+  private setToken = async (payload: JWTPayload) => {
+    const textEncoder = new TextEncoder();
+    this.token = await new EncryptJWT(payload)
+      .setProtectedHeader({ alg: "dir", enc: "A256CBC-HS512" })
+      .setIssuedAt()
+      .encrypt(textEncoder.encode(this.secret));
+  }
+
   //Private method to get the returnTo URL from the config object or current request
   private getReturnToURL = (req: Request, config?: LoginParams | LogoutParams) => {
     const url = new URL(req.url);
@@ -113,32 +122,39 @@ export class CentralAuthClass {
     return ip ? ip.split(",")[0] : "0.0.0.0";
   }
 
-  //Private method to get the user data from the CentralAuth server
+  //Private method to get the user data from cache or the CentralAuth server
   //Will throw an error when the request fails
-  private getUser = async (sessionId: string, userAgent: string, ipAddress: string) => {
+  private getUser = async (jwtPayload: JWTPayload, userAgent: string, ipAddress: string) => {
     if (this.user)
       return this.user;
     else {
       this.checkData("me");
 
-      const headers = new Headers();
-      headers.set("Authorization", `Bearer ${this.token!}`);
-      //Set the user agent to the user agent of the current request
-      headers.set("user-agent", userAgent);
-      //Set the custom auth-ip header with the IP address of the current request
-      headers.set("auth-ip", ipAddress);
+      const { user, session } = jwtPayload
 
-      //Construct the URL
-      const requestUrl = new URL(`${this.authBaseUrl}/api/v1/me/${sessionId}`);
-      const callbackUrl = new URL(this.callbackUrl!);
-      requestUrl.searchParams.set("domain", callbackUrl.origin);
+      if (user && session) {
 
-      const response = await fetch(requestUrl.toString(), { headers });
-      if (!response.ok) {
-        const error = await response.json() as ErrorObject;
-        throw new ValidationError(error);
+      } else {
+        //Get the user and session data from the CentralAuth server
+        const headers = new Headers();
+        headers.set("Authorization", `Bearer ${this.token!}`);
+        //Set the user agent to the user agent of the current request
+        headers.set("user-agent", userAgent);
+        //Set the custom auth-ip header with the IP address of the current request
+        headers.set("auth-ip", ipAddress);
+
+        //Construct the URL
+        const requestUrl = new URL(`${this.authBaseUrl}/api/v1/me/${jwtPayload.sessionId}`);
+        const callbackUrl = new URL(this.callbackUrl!);
+        requestUrl.searchParams.set("domain", callbackUrl.origin);
+
+        const response = await fetch(requestUrl.toString(), { headers });
+        if (!response.ok) {
+          const error = await response.json() as ErrorObject;
+          throw new ValidationError(error);
+        }
+        this.user = await response.json() as User;
       }
-      this.user = await response.json() as User;
     }
   }
 
@@ -157,10 +173,10 @@ export class CentralAuthClass {
     //Populate the token
     await this.setTokenFromCookie(headers);
     //Decode the token to get the session ID
-    const { sessionId } = await this.getDecodedToken();
+    const jwtPayload = await this.getDecodedToken();
 
-    //Get the user data from CentralAuth
-    await this.getUser(sessionId, this.getUserAgent(headers), this.getIPAddress(headers));
+    //Get the user data from cache or CentralAuth
+    await this.getUser(jwtPayload, this.getUserAgent(headers), this.getIPAddress(headers));
 
     return this.user || null;
   }
@@ -226,6 +242,9 @@ export class CentralAuthClass {
     const errorCode = searchParams.get("errorCode");
     const errorMessage = searchParams.get("errorMessage");
 
+    if (!sessionId || !verificationState)
+      throw new ValidationError({ errorCode: "missingFields", message: "The session ID and/or verification state are missing in the callback URL." });
+
     if (errorCode) {
       //When the error code is set, something went wrong in the login procedure
       //Throw a ValidationError
@@ -233,11 +252,7 @@ export class CentralAuthClass {
     }
 
     //Build the JWT with the session ID and verification state as payload
-    const textEncoder = new TextEncoder();
-    this.token = await new EncryptJWT({ sessionId, verificationState })
-      .setProtectedHeader({ alg: "dir", enc: "A256CBC-HS512" })
-      .setIssuedAt()
-      .encrypt(textEncoder.encode(this.secret));
+    await this.setToken({ sessionId, verificationState });
     this.checkData("callback");
 
     //Make a request to the verification endpoint to verify this session at CentralAuth
@@ -253,7 +268,15 @@ export class CentralAuthClass {
       const error = await verifyResponse.json() as ErrorObject;
       throw new ValidationError(error);
     }
-    this.user = await verifyResponse.json() as User;
+    const response = await verifyResponse.json() as UserResponse;
+    this.user = response.user;
+
+    //Add the user and session data to the token
+    await this.setToken({
+      sessionId,
+      verificationState,
+      ...response
+    });
 
     //Set the default response object
     let res = new Response(null,
@@ -276,8 +299,24 @@ export class CentralAuthClass {
   public me = async (req: Request) => {
     try {
       const headers = req.headers;
+      const jwtPayload = await this.getDecodedToken();
+      console.log(jwtPayload)
       await this.getUserData(headers);
-      return Response.json(this.user);
+      //Update the payload in the session token cookie
+      await this.setToken({
+        ...jwtPayload,
+        user: this.user,
+        session: {
+          ...jwtPayload.session!,
+          lastSync: new Date().toISOString()
+        }
+      });
+      //Return the user and update the session token cookie
+      return Response.json(this.user, {
+        headers: {
+          "Set-Cookie": `sessionToken=${this.token}; Path=/; HttpOnly; Max-Age=100000000; SameSite=Lax; Secure`
+        }
+      });
     } catch (error) {
       //When an error occurs, assume the user session is not valid anymore
       //Delete the cookie
