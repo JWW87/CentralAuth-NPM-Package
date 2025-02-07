@@ -58,7 +58,7 @@ export class CentralAuthClass {
   }
 
   //Private method to get the decoded token
-  private getDecodedToken = async () => {
+  private getDecodedToken = async (headers: Headers) => {
     this.checkData("callback");
 
     try {
@@ -170,10 +170,8 @@ export class CentralAuthClass {
   //The JWT will be set based on the sessionToken cookie in the request header
   //Will throw an error when the request fails or the token could not be decoded
   public getUserData = async (headers: Headers) => {
-    //Populate the token
-    await this.setTokenFromCookie(headers);
     //Decode the token to get the session ID
-    const jwtPayload = await this.getDecodedToken();
+    const jwtPayload = await this.getDecodedToken(headers);
 
     //Get the user data from cache or CentralAuth
     await this.getUser(jwtPayload, this.getUserAgent(headers), this.getIPAddress(headers));
@@ -242,14 +240,15 @@ export class CentralAuthClass {
     const errorCode = searchParams.get("errorCode");
     const errorMessage = searchParams.get("errorMessage");
 
-    if (!sessionId || !verificationState)
-      throw new ValidationError({ errorCode: "missingFields", message: "The session ID and/or verification state are missing in the callback URL." });
 
     if (errorCode) {
       //When the error code is set, something went wrong in the login procedure
       //Throw a ValidationError
       throw new ValidationError({ errorCode: errorCode as ErrorCode, message: errorMessage || "" })
     }
+
+    if (!sessionId || !verificationState)
+      throw new ValidationError({ errorCode: "missingFields", message: "The session ID and/or verification state are missing in the callback URL." });
 
     //Build the JWT with the session ID and verification state as payload
     await this.setToken({ sessionId, verificationState });
@@ -299,8 +298,10 @@ export class CentralAuthClass {
   public me = async (req: Request) => {
     try {
       const headers = req.headers;
-      const jwtPayload = await this.getDecodedToken();
+      const jwtPayload = await this.getDecodedToken(headers);
+
       await this.getUserData(headers);
+
       //Update the payload in the session token cookie
       await this.setToken({
         ...jwtPayload,
@@ -310,6 +311,7 @@ export class CentralAuthClass {
           lastSync: new Date().toISOString()
         }
       });
+
       //Return the user and update the session token cookie
       return Response.json(this.user, {
         headers: {
@@ -335,9 +337,8 @@ export class CentralAuthClass {
     try {
       if (config?.LogoutSessionWide) {
         //To log out session wide, invalidate the session at CentralAuth
-        await this.setTokenFromCookie(headerList);
         //Get the session ID from the token
-        const { sessionId } = await this.getDecodedToken();
+        const { sessionId } = await this.getDecodedToken(headerList);
         //Make a request to the log out endpoint to invalidate this session at CentralAuth
         const headers = new Headers();
         headers.set("Authorization", `Bearer ${this.token}`);
