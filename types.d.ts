@@ -16,10 +16,18 @@ export type User = {
     created: Date;
     updated: Date;
 };
+export type UserResponse = {
+    user: User;
+    session: {
+        ipAddress: string;
+        userAgent: string;
+        lastSync: string;
+    };
+};
 export type JWTPayload = {
     sessionId: string;
     verificationState: string;
-};
+} & Partial<UserResponse>;
 export type BasePaths = {
     loginPath?: string;
     logoutPath?: string;

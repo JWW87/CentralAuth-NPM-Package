@@ -300,7 +300,6 @@ export class CentralAuthClass {
     try {
       const headers = req.headers;
       const jwtPayload = await this.getDecodedToken();
-      console.log(jwtPayload)
       await this.getUserData(headers);
       //Update the payload in the session token cookie
       await this.setToken({

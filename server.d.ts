@@ -14,6 +14,7 @@ export declare class CentralAuthClass {
     constructor({ clientId, secret, authBaseUrl, callbackUrl }: ConstructorParams);
     private checkData;
     private getDecodedToken;
+    private setToken;
     private getReturnToURL;
     private getUserAgent;
     private getIPAddress;

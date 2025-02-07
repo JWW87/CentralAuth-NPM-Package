@@ -25,7 +25,6 @@ export type User = {
 export type UserResponse = {
   user: User;
   session: {
-    id: string;
     ipAddress: string;
     userAgent: string;
     lastSync: string;

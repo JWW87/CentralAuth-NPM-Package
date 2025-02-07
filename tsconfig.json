@@ -11,6 +11,10 @@
     "skipLibCheck": true,
     "strict": true,
     "outDir": "./",
+    "rootDirs": [
+      "./src",
+      "./api"
+    ],
     "esModuleInterop": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
@@ -21,8 +25,8 @@
     "declaration": true
   },
   "include": [
-    "src/**.tsx",
-    "api/**.ts"
+    "src/*.tsx",
+    "api/*.ts"
   ],
   "exclude": [
     "node_modules"
