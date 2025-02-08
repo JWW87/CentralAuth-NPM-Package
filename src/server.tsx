@@ -27,15 +27,19 @@ export class CentralAuthClass {
   private secret: string;
   protected authBaseUrl: string;
   protected callbackUrl: string;
+  private cacheLifeTime?: number;
+  private debug?: boolean;
   private token?: string;
   protected user?: User;
 
   //Constructor method to set all instance variable
-  constructor({ clientId, secret, authBaseUrl, callbackUrl }: ConstructorParams) {
+  constructor({ clientId, secret, authBaseUrl, callbackUrl, cacheLifeTime, debug }: ConstructorParams) {
     this.clientId = clientId;
     this.secret = secret;
     this.authBaseUrl = authBaseUrl;
     this.callbackUrl = callbackUrl;
+    this.cacheLifeTime = cacheLifeTime;
+    this.debug = debug;
   }
 
   //Private method to check whether all variable are set for a specific action
@@ -133,10 +137,17 @@ export class CentralAuthClass {
     else {
       this.checkData("me");
 
-      const { user, session } = jwtPayload
+      const { user, session } = jwtPayload;
 
-      if (user && session) {
+      //Check if user data should be fetched from cache
+      const cached = !!session?.lastSync && this.cacheLifeTime ? new Date().getTime() - new Date(session.lastSync).getTime() < this.cacheLifeTime * 1000 : false;
 
+      if (user && session && cached) {
+        //Check if the IP address and user agent of the current user matches the IP address and user agent of the session
+        if (session.ipAddress !== ipAddress || session.userAgent !== userAgent)
+          this.user = user;
+        else
+          this.user = undefined;
       } else {
         //Get the user and session data from the CentralAuth server
         const headers = new Headers();
@@ -305,22 +316,25 @@ export class CentralAuthClass {
 
       await this.getUserData(headers);
 
-      //Update the payload in the session token cookie
-      await this.setToken({
-        ...jwtPayload,
-        user: this.user,
-        session: {
-          ...jwtPayload.session!,
-          lastSync: new Date().toISOString()
-        }
-      });
+      if (jwtPayload.user && jwtPayload.session) {
+        //Update the payload in the session token cookie
+        await this.setToken({
+          ...jwtPayload,
+          user: this.user,
+          session: {
+            ...jwtPayload.session!,
+            lastSync: new Date().toISOString()
+          }
+        });
 
-      //Return the user and update the session token cookie
-      return Response.json(this.user, {
-        headers: {
-          "Set-Cookie": `sessionToken=${this.token}; Path=/; HttpOnly; Max-Age=100000000; SameSite=Lax; Secure`
-        }
-      });
+        //Return the user and update the session token cookie
+        return Response.json(this.user, {
+          headers: {
+            "Set-Cookie": `sessionToken=${this.token}; Path=/; HttpOnly; Max-Age=100000000; SameSite=Lax; Secure`
+          }
+        });
+      } else
+        return Response.json(this.user);
     } catch (error) {
       //When an error occurs, assume the user session is not valid anymore
       //Delete the cookie

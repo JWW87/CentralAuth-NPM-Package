@@ -5,6 +5,8 @@ export type ConstructorParams = {
     secret: string;
     authBaseUrl: string;
     callbackUrl: string;
+    cacheLifeTime?: number;
+    debug?: boolean;
 };
 export type User = {
     id: string;
