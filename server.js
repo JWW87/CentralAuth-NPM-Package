@@ -24,6 +24,7 @@ export class ValidationError extends Error {
 export class CentralAuthClass {
     //Constructor method to set all instance variable
     constructor({ clientId, secret, authBaseUrl, callbackUrl, cacheLifeTime, debug }) {
+        this.fetchedFromCache = false;
         //Private method to check whether all variable are set for a specific action
         //Will throw a ValidationError when a check fails
         this.checkData = (action) => {
@@ -111,13 +112,15 @@ export class CentralAuthClass {
                 //Check if user data should be fetched from cache
                 const cached = !!(session === null || session === void 0 ? void 0 : session.lastSync) && this.cacheLifeTime ? new Date().getTime() - new Date(session.lastSync).getTime() < this.cacheLifeTime * 1000 : false;
                 if (user && session && cached) {
+                    this.fetchedFromCache = true;
                     //Check if the IP address and user agent of the current user matches the IP address and user agent of the session
-                    if (session.ipAddress !== ipAddress || session.userAgent !== userAgent)
+                    if (session.ipAddress == ipAddress && session.userAgent == userAgent)
                         this.user = user;
                     else
                         this.user = undefined;
                 }
                 else {
+                    this.fetchedFromCache = false;
                     //Get the user and session data from the CentralAuth server
                     const headers = new Headers();
                     headers.set("Authorization", `Bearer ${this.token}`);
@@ -255,7 +258,7 @@ export class CentralAuthClass {
                 yield this.getUserData(headers);
                 if (jwtPayload.user && jwtPayload.session) {
                     //Update the payload in the session token cookie
-                    yield this.setToken(Object.assign(Object.assign({}, jwtPayload), { user: this.user, session: Object.assign(Object.assign({}, jwtPayload.session), { lastSync: new Date().toISOString() }) }));
+                    yield this.setToken(Object.assign(Object.assign({}, jwtPayload), { user: this.user, session: Object.assign(Object.assign({}, jwtPayload.session), { lastSync: this.fetchedFromCache ? jwtPayload.session.lastSync : new Date().toISOString() }) }));
                     //Return the user and update the session token cookie
                     return Response.json(this.user, {
                         headers: {

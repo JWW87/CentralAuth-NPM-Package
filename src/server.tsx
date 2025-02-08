@@ -29,6 +29,7 @@ export class CentralAuthClass {
   protected callbackUrl: string;
   private cacheLifeTime?: number;
   private debug?: boolean;
+  private fetchedFromCache: boolean = false;
   private token?: string;
   protected user?: User;
 
@@ -143,12 +144,14 @@ export class CentralAuthClass {
       const cached = !!session?.lastSync && this.cacheLifeTime ? new Date().getTime() - new Date(session.lastSync).getTime() < this.cacheLifeTime * 1000 : false;
 
       if (user && session && cached) {
+        this.fetchedFromCache = true;
         //Check if the IP address and user agent of the current user matches the IP address and user agent of the session
-        if (session.ipAddress !== ipAddress || session.userAgent !== userAgent)
+        if (session.ipAddress == ipAddress && session.userAgent == userAgent)
           this.user = user;
         else
           this.user = undefined;
       } else {
+        this.fetchedFromCache = false;
         //Get the user and session data from the CentralAuth server
         const headers = new Headers();
         headers.set("Authorization", `Bearer ${this.token!}`);
@@ -323,7 +326,7 @@ export class CentralAuthClass {
           user: this.user,
           session: {
             ...jwtPayload.session!,
-            lastSync: new Date().toISOString()
+            lastSync: this.fetchedFromCache ? jwtPayload.session.lastSync : new Date().toISOString()
           }
         });
 
