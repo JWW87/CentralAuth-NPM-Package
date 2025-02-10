@@ -20,7 +20,7 @@
   "author": "West IT",
   "license": "ISC",
   "dependencies": {
-    "@hey-api/client-fetch": "^0.7.3",
+    "@hey-api/client-fetch": "^0.8.1",
     "jose": "^5.2.3",
     "react": "^19.0.0",
     "swr": "^2.3.0"
