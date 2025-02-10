@@ -20,13 +20,13 @@
   "author": "West IT",
   "license": "ISC",
   "dependencies": {
-    "@hey-api/client-fetch": "^0.7.3",
+    "@hey-api/client-fetch": "^0.8.1",
     "jose": "^5.2.3",
     "react": "^19.0.0",
     "swr": "^2.3.0"
   },
   "devDependencies": {
-    "@hey-api/openapi-ts": "^0.63.2",
+    "@hey-api/openapi-ts": "^0.64.2",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.0",
     "typescript": "^5.7.2"
