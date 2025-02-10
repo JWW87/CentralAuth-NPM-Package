@@ -14,7 +14,7 @@ export type ConstructorParams = {
 export type ExperimentalCacheOptions = {
   enabled: boolean;
   cacheLifeTime: number;
-  cacheHijackProtection: boolean;
+  cacheHijackProtection?: boolean;
 }
 
 //Type for the user data
