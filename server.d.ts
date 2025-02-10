@@ -9,11 +9,11 @@ export declare class CentralAuthClass {
   private secret;
   protected authBaseUrl: string;
   protected callbackUrl: string;
-  private cacheLifeTime?;
+  private cache?;
   private debug?;
   private token?;
   protected user?: User;
-  constructor({ clientId, secret, authBaseUrl, callbackUrl, cacheLifeTime, debug }: ConstructorParams);
+  constructor({ clientId, secret, authBaseUrl, callbackUrl, cache, debug }: ConstructorParams);
   private checkData;
   private getDecodedToken;
   private setToken;

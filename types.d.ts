@@ -5,8 +5,13 @@ export type ConstructorParams = {
     secret: string;
     authBaseUrl: string;
     callbackUrl: string;
-    cacheLifeTime?: number;
+    cache?: ExperimentalCacheOptions;
     debug?: boolean;
+};
+export type ExperimentalCacheOptions = {
+    enabled: boolean;
+    cacheLifeTime: number;
+    cacheHijackProtection: boolean;
 };
 export type User = {
     id: string;
