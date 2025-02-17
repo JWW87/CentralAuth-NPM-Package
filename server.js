@@ -36,8 +36,10 @@ export class CentralAuthClass {
                 error = { errorCode: "callbackUrlMissing", message: "The callback URL is missing." };
             if (!this.authBaseUrl)
                 error = { errorCode: "authBaseUrlMissing", message: "The base URL for the organization is missing. The base URL is either the internal base URL or a custom domain for your organization." };
-            if ((action == "callback" || action == "verify" || action == "me") && !this.token)
+            if ((action == "callback" || action == "verify") && !this.token)
                 error = { errorCode: "tokenMissing", message: "The JSON Web Token is missing. A JWT must be created in the callback after a successful login attempt." };
+            if (action == "me" && !this.token)
+                error = { errorCode: "tokenMissing", message: "The JSON Web Token is missing. This means the user is not logged in or the token is invalid." };
             if (error) {
                 if (this.debug)
                     console.error(`Data check failed for client ${this.clientId} in ${action}: ${error.message}`);

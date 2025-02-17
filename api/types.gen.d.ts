@@ -22,6 +22,7 @@ export type OrganizationSettings = {
     maxInactivityTime?: number;
     allowLocalhost?: boolean;
     checkReferrer?: boolean;
+    hijackProtection?: boolean;
     autoLogin?: boolean;
     defaultLoginMethod?: 'local' | 'remote' | 'userPick';
     defaultLoginAttemptType?: 'link' | 'challenge' | 'code';
@@ -521,6 +522,7 @@ export type PostApiV1OrganizationByIdData = {
             maxInactivityTime?: number;
             allowLocalhost?: boolean;
             checkReferrer?: boolean;
+            hijackProtection?: boolean;
             autoLogin?: boolean;
             defaultLoginMethod?: 'local' | 'remote' | 'userPick';
             defaultLoginAttemptType?: 'link' | 'challenge' | 'code';
@@ -609,6 +611,7 @@ export type PostApiV1OrganizationData = {
             maxInactivityTime?: number;
             allowLocalhost?: boolean;
             checkReferrer?: boolean;
+            hijackProtection?: boolean;
             autoLogin?: boolean;
             defaultLoginMethod?: 'local' | 'remote' | 'userPick';
             defaultLoginAttemptType?: 'link' | 'challenge' | 'code';
@@ -1806,3 +1809,6 @@ export type GetApiV1ApiKeysByOrganizationIdResponses = {
     200: Array<ApiKey>;
 };
 export type GetApiV1ApiKeysByOrganizationIdResponse = GetApiV1ApiKeysByOrganizationIdResponses[keyof GetApiV1ApiKeysByOrganizationIdResponses];
+export type ClientOptions = {
+    baseUrl: 'https://centralauth.com' | (string & {});
+};
