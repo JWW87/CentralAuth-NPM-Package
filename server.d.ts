@@ -22,6 +22,7 @@ export declare class CentralAuthClass {
   private getIPAddress;
   private getUser;
   private setTokenFromCookie;
+  private setTokenFromTokenBearer;
   getUserData: (headers: Headers) => Promise<User | null>;
   login: (req: Request, config?: LoginParams) => Promise<Response>;
   callback: (req: Request, config?: CallbackParams) => Promise<Response>;

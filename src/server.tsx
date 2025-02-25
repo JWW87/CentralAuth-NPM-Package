@@ -35,7 +35,7 @@ export class CentralAuthClass {
   //Constructor method to set all instance variable
   constructor({ clientId, secret, authBaseUrl, callbackUrl, cache, debug }: ConstructorParams) {
     if (debug)
-      console.log(`CentralAuth class instantiated for client ${clientId}.`);
+      console.log(`[CENTRALAUTH DEBUG] CentralAuth class instantiated for client ${clientId || "CentralAuth"}.`);
     this.clientId = clientId;
     this.secret = secret;
     this.authBaseUrl = authBaseUrl;
@@ -63,15 +63,19 @@ export class CentralAuthClass {
 
     if (error) {
       if (this.debug)
-        console.error(`Data check failed for client ${this.clientId} in ${action}: ${error.message}`);
+        console.error(`[CENTRALAUTH DEBUG] Data check failed for client ${this.clientId || "CentralAuth"} in ${action}: ${error.message}`);
       throw new ValidationError(error);
     }
   }
 
-  //Private method to get the decoded token
+  //Private method to get the decoded token, either from the cookie of the token bearer in the headers
   private getDecodedToken = async (headers: Headers) => {
-    //Populate the token
-    await this.setTokenFromCookie(headers);
+    //Populate the token from token bearer or cookie
+    const authHeader = headers.get("Authorization");
+    if (authHeader)
+      await this.setTokenFromTokenBearer(headers);
+    else
+      await this.setTokenFromCookie(headers);
 
     this.checkData("callback");
 
@@ -83,7 +87,7 @@ export class CentralAuthClass {
       return decodedToken;
     } catch (error: any) {
       if (this.debug)
-        console.error(`Failed to decode token for client ${this.clientId}: ${error.message}`);
+        console.error(`[CENTRALAUTH DEBUG] Failed to decode token for client ${this.clientId || "CentralAuth"}: ${error.message}`);
       throw new ValidationError({ errorCode: error?.name, message: error?.message });
     }
   }
@@ -154,13 +158,13 @@ export class CentralAuthClass {
 
       if (user && session && cached) {
         if (this.debug)
-          console.log(`User data fetched from cache for client ${this.clientId}.`);
+          console.log(`[CENTRALAUTH DEBUG] User data fetched from cache for client ${this.clientId || "CentralAuth"}.`);
         //Check if hijack protection is disabled or the IP address and user agent of the current user matches the IP address and user agent of the session
         if (this.cache?.cacheHijackProtection === false || (session.ipAddress === ipAddress && session.userAgent === userAgent))
           this.user = user;
         else {
           if (this.debug)
-            console.error(`Cached data could not be fetched for client ${this.clientId}.`);
+            console.error(`[CENTRALAUTH DEBUG] Cached data could not be fetched for client ${this.clientId || "CentralAuth"}.`);
           this.user = undefined;
           throw new ValidationError({ errorCode: "sessionInvalid", message: "The session is invalid. The IP address and/or user agent of the current request do not match the IP address and/or user agent of the session." });
         }
@@ -182,7 +186,7 @@ export class CentralAuthClass {
         if (!response.ok) {
           const error = await response.json() as ErrorObject;
           if (this.debug)
-            console.error(`Failed to fetch user data from the server for client ${this.clientId}: ${error.message}`);
+            console.error(`[CENTRALAUTH DEBUG] Failed to fetch user data from the server for client ${this.clientId || "CentralAuth"}: ${error.message}`);
           throw new ValidationError(error);
         }
 
@@ -211,8 +215,16 @@ export class CentralAuthClass {
       this.token = cookies["sessionToken"];
   }
 
+  //Private method to populate the token argument from the JWT in the token bearer header
+  private setTokenFromTokenBearer = async (headers: Headers) => {
+    const authHeader = headers.get("Authorization");
+    //Check for a token bearer header
+    if (authHeader && authHeader.startsWith("Bearer "))
+      this.token = authHeader.substring(7);
+  }
+
   //Public method to get the user data from the current request headers
-  //The JWT will be set based on the sessionToken cookie in the request header
+  //The JWT will be set based on the sessionToken cookie or token bearer in the request header
   //Will throw an error when the request fails or the token could not be decoded
   public getUserData = async (headers: Headers) => {
     //Decode the token
@@ -255,7 +267,7 @@ export class CentralAuthClass {
     loginUrl.searchParams.set("callbackUrl", callbackUrl.toString());
 
     if (this.debug)
-      console.log(`Starting login procedure for client ${this.clientId}, redirecting to ${loginUrl.toString()}.`);
+      console.log(`[CENTRALAUTH DEBUG] Starting login procedure for client ${this.clientId || "CentralAuth"}, redirecting to ${loginUrl.toString()}.`);
 
     return Response.redirect(loginUrl.toString());
   }
@@ -293,13 +305,13 @@ export class CentralAuthClass {
       //When the error code is set, something went wrong in the login procedure
       //Throw a ValidationError
       if (this.debug)
-        console.error(`Error in login procedure for client ${this.clientId}: ${errorMessage}`);
-      throw new ValidationError({ errorCode: errorCode as ErrorCode, message: errorMessage || "" })
+        console.error(`[CENTRALAUTH DEBUG] Error in login procedure for client ${this.clientId || "CentralAuth"}: ${errorMessage}`);
+      throw new ValidationError({ errorCode: errorCode as ErrorCode, message: errorMessage || "" });
     }
 
     if (!sessionId || !verificationState) {
       if (this.debug)
-        console.error(`Callback could not be processed for client ${this.clientId}, missing session ID and/or verification state.`);
+        console.error(`[CENTRALAUTH DEBUG] Callback could not be processed for client ${this.clientId || "CentralAuth"}, missing session ID and/or verification state.`);
       throw new ValidationError({ errorCode: "missingFields", message: "The session ID and/or verification state are missing in the callback URL." });
     }
 
@@ -319,7 +331,7 @@ export class CentralAuthClass {
     if (!verifyResponse.ok) {
       const error = await verifyResponse.json() as ErrorObject;
       if (this.debug)
-        console.error(`Failed to verify session for client ${this.clientId}: ${error.message}`);
+        console.error(`[CENTRALAUTH DEBUG] Failed to verify session for client ${this.clientId || "CentralAuth"}: ${error.message}`);
       throw new ValidationError(error);
     }
     const response = await verifyResponse.json() as UserResponse;
@@ -366,12 +378,12 @@ export class CentralAuthClass {
       //When an error occurs, assume the user session is not valid anymore
       //Delete the cookie
       if (this.debug)
-        console.error(`Error fetching user data from cache or CentralAuth server or validation error for client ${this.clientId}: ${error?.message}`);
+        console.error(`[CENTRALAUTH DEBUG] Error fetching user data from cache or CentralAuth server or validation error for client ${this.clientId || "CentralAuth"}: ${error?.message}`);
       return Response.json(null, {
         headers: {
           "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax; Secure"
         }
-      })
+      });
     }
   }
 
@@ -396,7 +408,7 @@ export class CentralAuthClass {
       }
     } catch (error: any) {
       if (this.debug)
-        console.error(`Error logging out session-wide for client ${this.clientId}: ${error?.message}`);
+        console.error(`[CENTRALAUTH DEBUG] Error logging out session-wide for client ${this.clientId || "CentralAuth"}: ${error?.message}`);
     } finally {
       //Unset the cookie and redirect to the returnTo URL
       return new Response(null,
