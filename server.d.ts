@@ -12,8 +12,9 @@ export declare class CentralAuthClass {
     private cache?;
     private debug?;
     private token?;
-    protected user?: User;
+    protected userData?: User;
     constructor({ clientId, secret, authBaseUrl, callbackUrl, cache, debug }: ConstructorParams);
+    private getOAuthClient;
     private checkData;
     private getDecodedToken;
     private setToken;
@@ -27,7 +28,7 @@ export declare class CentralAuthClass {
     login: (req: Request, config?: LoginParams) => Promise<Response>;
     callback: (req: Request, config?: CallbackParams) => Promise<Response>;
     protected processCallback: (req: Request) => Promise<Response>;
-    me: (req: Request) => Promise<Response>;
+    user: (req: Request) => Promise<Response>;
     logout: (req: Request, config?: LogoutParams) => Promise<Response>;
 }
 export declare class CentralAuthHTTPClass extends CentralAuthClass {
@@ -37,5 +38,5 @@ export declare class CentralAuthHTTPClass extends CentralAuthClass {
     loginHTTP: (req: IncomingMessage, res: ServerResponse, config?: LoginParams) => Promise<void>;
     callbackHTTP: (req: IncomingMessage, res: ServerResponse, config?: CallbackParamsHTTP) => Promise<void>;
     logoutHTTP: (req: IncomingMessage, res: ServerResponse, config?: LogoutParams) => Promise<void>;
-    meHTTP: (req: IncomingMessage, res: ServerResponse) => Promise<void>;
+    userHTTP: (req: IncomingMessage, res: ServerResponse) => Promise<void>;
 }

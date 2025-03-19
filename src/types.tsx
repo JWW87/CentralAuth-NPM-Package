@@ -42,7 +42,6 @@ export type UserResponse = {
 //Type for the payload of the JWT
 export type JWTPayload = {
   sessionId: string,
-  verificationState: string
 } & Partial<UserResponse>;
 
 //Type for the base paths
@@ -88,7 +87,7 @@ export type Translations = Partial<{
 export type LoginParams = {
   returnTo?: string | null;
   errorMessage?: string | null;
-  emailAddress?: string | null;
+  email?: string | null;
   translations?: Translations | null;
   embed?: boolean | null;
 }

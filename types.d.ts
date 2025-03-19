@@ -33,7 +33,6 @@ export type UserResponse = {
 };
 export type JWTPayload = {
     sessionId: string;
-    verificationState: string;
 } & Partial<UserResponse>;
 export type BasePaths = {
     loginPath?: string;
@@ -74,7 +73,7 @@ export type Translations = Partial<{
 export type LoginParams = {
     returnTo?: string | null;
     errorMessage?: string | null;
-    emailAddress?: string | null;
+    email?: string | null;
     translations?: Translations | null;
     embed?: boolean | null;
 };

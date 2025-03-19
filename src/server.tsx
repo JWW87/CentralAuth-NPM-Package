@@ -1,6 +1,7 @@
 import { IncomingMessage, ServerResponse } from "http";
 import { EncryptJWT, jwtDecrypt } from "jose";
-import { CallbackParams, CallbackParamsHTTP, ConstructorParams, ErrorCode, ErrorObject, ExperimentalCacheOptions, JWTPayload, LoginParams, LogoutParams, User, UserResponse } from "./types";
+import { AuthorizationCode } from 'simple-oauth2';
+import { CallbackParams, CallbackParamsHTTP, ConstructorParams, ErrorCode, ErrorObject, ExperimentalCacheOptions, JWTPayload, LoginParams, LogoutParams, User } from "./types";
 
 //Private method for parsing a cookie string in a request header
 const parseCookie = (cookieString: string | null) =>
@@ -30,7 +31,7 @@ export class CentralAuthClass {
   private cache?: ExperimentalCacheOptions;
   private debug?: boolean;
   private token?: string;
-  protected user?: User;
+  protected userData?: User;
 
   //Constructor method to set all instance variable
   constructor({ clientId, secret, authBaseUrl, callbackUrl, cache, debug }: ConstructorParams) {
@@ -44,9 +45,24 @@ export class CentralAuthClass {
     this.debug = debug;
   }
 
+  //Private method to get the Simple OAuth client
+  private getOAuthClient = () => {
+    return new AuthorizationCode({
+      client: {
+        id: this.clientId || "",
+        secret: this.secret,
+      },
+      auth: {
+        tokenHost: this.authBaseUrl,
+        tokenPath: '/api/v1/verify',
+        authorizePath: '/login',
+      }
+    })
+  }
+
   //Private method to check whether all variable are set for a specific action
   //Will throw a ValidationError when a check fails
-  private checkData = (action: "login" | "callback" | "verify" | "me") => {
+  private checkData = (action: "login" | "callback" | "verify" | "user") => {
     let error: ErrorObject | null = null;
     if (typeof this.clientId === "undefined")
       error = { errorCode: "organizationIdMissing", message: "The organization ID is missing. This ID can be found on the organization page in your admin console." };
@@ -58,7 +74,7 @@ export class CentralAuthClass {
       error = { errorCode: "authBaseUrlMissing", message: "The base URL for the organization is missing. The base URL is either the internal base URL or a custom domain for your organization." };
     if ((action == "callback" || action == "verify") && !this.token)
       error = { errorCode: "tokenMissing", message: "The JSON Web Token is missing. A JWT must be created in the callback after a successful login attempt." };
-    if (action == "me" && !this.token)
+    if (action == "user" && !this.token)
       error = { errorCode: "tokenMissing", message: "The JSON Web Token is missing. This means the user is not logged in or the token is invalid." };
 
     if (error) {
@@ -104,7 +120,7 @@ export class CentralAuthClass {
   //Private method to get the returnTo URL from the config object or current request
   private getReturnToURL = (req: Request, config?: LoginParams | LogoutParams) => {
     const url = new URL(req.url);
-    const returnToParam = url.searchParams.get("returnTo");
+    const returnToParam = url.searchParams.get("return_to");
     const headers = req.headers;
 
     let returnTo = "";
@@ -116,7 +132,7 @@ export class CentralAuthClass {
     else {
       const referrer = headers.get("referer");
       //Set returnTo to the referrer in the request when present
-      if (referrer && !referrer.startsWith("about"))
+      if (referrer && !referrer.startsWith("about") && referrer != this.authBaseUrl)
         returnTo = referrer;
       else {
         //Otherwise fallback to the origin
@@ -145,13 +161,19 @@ export class CentralAuthClass {
   //Private method to get the user data from cache or the CentralAuth server
   //Will throw an error when the request fails
   //Will update the contents of the token with user and session data
-  private getUser = async (jwtPayload: JWTPayload, userAgent: string, ipAddress: string) => {
-    if (this.user)
-      return this.user;
+  private getUser = async (headers: Headers) => {
+    if (this.userData)
+      return this.userData;
     else {
-      this.checkData("me");
-
+      //Get the decoded token
+      const jwtPayload = await this.getDecodedToken(headers);
       const { user, session } = jwtPayload;
+
+      this.checkData("user");
+
+      //Get the IP address and user agent from the headers
+      const ipAddress = this.getIPAddress(headers);
+      const userAgent = this.getUserAgent(headers);
 
       //Check if user data should be fetched from cache
       const cached = user && session && !!session?.lastSync && this.cache?.enabled && this.cache.cacheLifeTime ? new Date().getTime() - new Date(session.lastSync).getTime() < this.cache.cacheLifeTime * 1000 : false;
@@ -161,28 +183,34 @@ export class CentralAuthClass {
           console.log(`[CENTRALAUTH DEBUG] User data fetched from cache for client ${this.clientId || "CentralAuth"}.`);
         //Check if hijack protection is disabled or the IP address and user agent of the current user matches the IP address and user agent of the session
         if (this.cache?.cacheHijackProtection === false || (session.ipAddress === ipAddress && session.userAgent === userAgent))
-          this.user = user;
+          this.userData = user;
         else {
           if (this.debug)
             console.error(`[CENTRALAUTH DEBUG] Cached data could not be fetched for client ${this.clientId || "CentralAuth"}.`);
-          this.user = undefined;
+          this.userData = undefined;
           throw new ValidationError({ errorCode: "sessionInvalid", message: "The session is invalid. The IP address and/or user agent of the current request do not match the IP address and/or user agent of the session." });
         }
       } else {
         //Get the user and session data from the CentralAuth server
         const headers = new Headers();
-        headers.set("Authorization", `Bearer ${this.token!}`);
+        headers.set("Content-Type", "text/plain");
+        headers.set("Authorization", `Basic ${Buffer.from(`${this.clientId || ""}:${this.secret}`).toString("base64")}`);
         //Set the user agent to the user agent of the current request
         headers.set("user-agent", userAgent);
         //Set the custom auth-ip header with the IP address of the current request
         headers.set("auth-ip", ipAddress);
 
         //Construct the URL
-        const requestUrl = new URL(`${this.authBaseUrl}/api/v1/me/${jwtPayload.sessionId}`);
+        const requestUrl = new URL(`${this.authBaseUrl}/api/v1/userinfo`);
         const callbackUrl = new URL(this.callbackUrl!);
         requestUrl.searchParams.set("domain", callbackUrl.origin);
 
-        const response = await fetch(requestUrl.toString(), { headers });
+        const response = await fetch(requestUrl.toString(),
+          {
+            method: "POST",
+            body: this.token,
+            headers
+          });
         if (!response.ok) {
           const error = await response.json() as ErrorObject;
           if (this.debug)
@@ -190,13 +218,13 @@ export class CentralAuthClass {
           throw new ValidationError(error);
         }
 
-        this.user = await response.json() as User;
+        this.userData = await response.json() as User;
 
-        if (this.user && session) {
+        if (this.userData && session) {
           //Update the payload in the session token cookie
           await this.setToken({
             ...jwtPayload,
-            user: this.user,
+            user: this.userData,
             session: {
               ...session,
               lastSync: cached ? session.lastSync : new Date().toISOString()
@@ -227,13 +255,10 @@ export class CentralAuthClass {
   //The JWT will be set based on the sessionToken cookie or token bearer in the request header
   //Will throw an error when the request fails or the token could not be decoded
   public getUserData = async (headers: Headers) => {
-    //Decode the token
-    const jwtPayload = await this.getDecodedToken(headers);
-
     //Get the user data from cache or CentralAuth
-    await this.getUser(jwtPayload, this.getUserAgent(headers), this.getIPAddress(headers));
+    await this.getUser(headers);
 
-    return this.user || null;
+    return this.userData || null;
   }
 
   //Public method to start the login procedure
@@ -244,32 +269,36 @@ export class CentralAuthClass {
     const returnTo = this.getReturnToURL(req, config);
     const callbackUrl = new URL(this.callbackUrl);
     if (returnTo)
-      callbackUrl.searchParams.set("returnTo", returnTo);
+      callbackUrl.searchParams.set("return_to", returnTo);
+
+    //Get a new OAuth client
+    const client = this.getOAuthClient();
+    //Construct the base URL for the OAuth login
+    const authorizationUri = new URL(client.authorizeURL({
+      redirect_uri: callbackUrl.toString(),
+    }));
 
     //Check for custom translations in the config
     const textEncoder = new TextEncoder();
     const translations = config?.translations ? textEncoder.encode(JSON.stringify(config.translations)) : null;
 
-    //Redirect to the login page
-    const loginUrl = new URL(`${this.authBaseUrl}/login/${this.clientId || ""}`);
     //Add an error message when given
     if (config?.errorMessage)
-      loginUrl.searchParams.set("errorMessage", config?.errorMessage);
+      authorizationUri.searchParams.set("errorMessage", config?.errorMessage);
     //Add a default email address when given
-    if (config?.emailAddress)
-      loginUrl.searchParams.set("emailAddress", config?.emailAddress);
+    if (config?.email)
+      authorizationUri.searchParams.set("email", config?.email);
     //Add translations when given
     if (translations)
-      loginUrl.searchParams.set("translations", Buffer.from(translations).toString("base64"));
+      authorizationUri.searchParams.set("translations", Buffer.from(translations).toString("base64"));
     //Add embed boolean when given
     if (config?.embed)
-      loginUrl.searchParams.set("embed", "1");
-    loginUrl.searchParams.set("callbackUrl", callbackUrl.toString());
+      authorizationUri.searchParams.set("embed", "1");
 
     if (this.debug)
-      console.log(`[CENTRALAUTH DEBUG] Starting login procedure for client ${this.clientId || "CentralAuth"}, redirecting to ${loginUrl.toString()}.`);
+      console.log(`[CENTRALAUTH DEBUG] Starting login procedure for client ${this.clientId || "CentralAuth"}, redirecting to ${authorizationUri.toString()}.`);
 
-    return Response.redirect(loginUrl.toString());
+    return Response.redirect(authorizationUri.toString());
   }
 
   //Public method for the callback procedure when returning from CentralAuth
@@ -280,26 +309,25 @@ export class CentralAuthClass {
     //The onAfterCallback function may return a new/altered response, which will be returned instead of the default response object
     let callbackResponse: Response | void | null = null;
     if (config?.onAfterCallback)
-      callbackResponse = await config.onAfterCallback(req, res, this.user!);
+      callbackResponse = await config.onAfterCallback(req, res, this.userData!);
 
     //Set a cookie with the JWT and redirect to the returnTo URL
     return callbackResponse || res;
   }
 
   //Protected method for processing the callback
-  //This method will automatically verify the JWT payload and set the sessionToken cookie
-  //Optionally calls a custom callback function when given with the user data as an argument
+  //This method will process the OAuth code and verify the user session with it
+  //The user object will be retrieved based on the returned access JWT
+  //Optionally calls a custom callback function when given with the user object as an argument
   //Returns a Response with a redirection to the returnTo URL
-  //Will throw an error when the verification procedure fails or the user data could not be fetched
+  //Will throw an error when the verification procedure fails or the user object could not be fetched
   protected processCallback = async (req: Request) => {
     const url = new URL(req.url);
     const searchParams = url.searchParams;
-    const returnTo = searchParams.get("returnTo") || url.origin;
-    const sessionId = searchParams.get("sessionId");
-    const verificationState = searchParams.get("verificationState");
-    const errorCode = searchParams.get("errorCode");
-    const errorMessage = searchParams.get("errorMessage");
-
+    const returnTo = searchParams.get("return_to") || url.origin;
+    const code = searchParams.get("code");
+    const errorCode = searchParams.get("error_code");
+    const errorMessage = searchParams.get("error_message");
 
     if (errorCode) {
       //When the error code is set, something went wrong in the login procedure
@@ -309,39 +337,41 @@ export class CentralAuthClass {
       throw new ValidationError({ errorCode: errorCode as ErrorCode, message: errorMessage || "" });
     }
 
+    if (!code) {
+      if (this.debug)
+        console.error(`[CENTRALAUTH DEBUG] Callback could not be processed for client ${this.clientId || "CentralAuth"}, missing code.`);
+      throw new ValidationError({ errorCode: "missingFields", message: "The code is missing in the callback URL." });
+    }
+
+    const [sessionId, verificationState] = code.split("|");
     if (!sessionId || !verificationState) {
       if (this.debug)
         console.error(`[CENTRALAUTH DEBUG] Callback could not be processed for client ${this.clientId || "CentralAuth"}, missing session ID and/or verification state.`);
       throw new ValidationError({ errorCode: "missingFields", message: "The session ID and/or verification state are missing in the callback URL." });
     }
 
-    //Build the JWT with the session ID and verification state as payload
-    await this.setToken({ sessionId, verificationState });
-    this.checkData("callback");
+    //Get a new OAuth client
+    const client = this.getOAuthClient();
+    //Get an access JWT based on the given code
+    const tokenObject = await client.getToken({
+      redirect_uri: req.url,
+      code
+    });
+    //Set the token in this object
+    this.token = tokenObject.token.token as string;
 
-    //Make a request to the verification endpoint to verify this session at CentralAuth
-    const headers = new Headers();
-    headers.set("Authorization", `Bearer ${this.token}`);
-
-    //Construct the URL
-    const requestUrl = new URL(`${this.authBaseUrl}/api/v1/verify/${sessionId}/${verificationState}`);
-    const callbackUrl = new URL(this.callbackUrl!);
-    requestUrl.searchParams.set("domain", callbackUrl.origin);
-    const verifyResponse = await fetch(requestUrl, { headers });
-    if (!verifyResponse.ok) {
-      const error = await verifyResponse.json() as ErrorObject;
-      if (this.debug)
-        console.error(`[CENTRALAUTH DEBUG] Failed to verify session for client ${this.clientId || "CentralAuth"}: ${error.message}`);
-      throw new ValidationError(error);
-    }
-    const response = await verifyResponse.json() as UserResponse;
-    this.user = response.user;
+    //Get the user data from the CentralAuth server
+    await this.getUser(req.headers);
 
     //Add the user and session data to the token
     await this.setToken({
       sessionId,
-      verificationState,
-      ...response
+      user: this.userData,
+      session: {
+        ipAddress: this.getIPAddress(req.headers),
+        userAgent: this.getUserAgent(req.headers),
+        lastSync: new Date().toISOString()
+      }
     });
 
     //Set the default response object
@@ -362,14 +392,14 @@ export class CentralAuthClass {
   //Public method to get the user data from the current request
   //This method wraps getUserData and returns a Response with the user data as JSON in the body
   //Will return a NULL response on error
-  public me = async (req: Request) => {
+  public user = async (req: Request) => {
     try {
       const headers = req.headers;
 
       await this.getUserData(headers);
 
       //Return the user and update the session token cookie
-      return Response.json(this.user, {
+      return Response.json(this.userData, {
         headers: {
           "Set-Cookie": `sessionToken=${this.token}; Path=/; HttpOnly; Max-Age=100000000; SameSite=Lax; Secure`
         }
@@ -469,7 +499,7 @@ export class CentralAuthHTTPClass extends CentralAuthClass {
     //The onAfterCallback function may return a new/altered response, which will be returned instead of the default response object
     let callbackResponse: Response | void | null = null;
     if (config?.onAfterCallback)
-      callbackResponse = await config.onAfterCallback(req, res, fetchResponse, this.user!);
+      callbackResponse = await config.onAfterCallback(req, res, fetchResponse, this.userData!);
 
     await this.fetchResponseToHttpResponse(callbackResponse || fetchResponse, res);
   }
@@ -481,9 +511,9 @@ export class CentralAuthHTTPClass extends CentralAuthClass {
     await this.fetchResponseToHttpResponse(fetchResponse, res);
   }
 
-  //Overloaded method for me
-  public meHTTP = async (req: IncomingMessage, res: ServerResponse) => {
-    const fetchResponse = await this.me(this.httpRequestToFetchRequest(req));
+  //Overloaded method for user
+  public userHTTP = async (req: IncomingMessage, res: ServerResponse) => {
+    const fetchResponse = await this.user(this.httpRequestToFetchRequest(req));
 
     await this.fetchResponseToHttpResponse(fetchResponse, res);
   }
