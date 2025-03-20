@@ -221,24 +221,22 @@ export class CentralAuthClass {
             //Get a new OAuth client
             const client = this.getOAuthClient();
             //Construct the base URL for the OAuth login
-            const authorizationUri = new URL(client.authorizeURL({
+            const authorizationUriParams = {
                 redirect_uri: callbackUrl.toString(),
-            }));
-            //Check for custom translations in the config
-            const textEncoder = new TextEncoder();
-            const translations = (config === null || config === void 0 ? void 0 : config.translations) ? textEncoder.encode(JSON.stringify(config.translations)) : null;
+            };
             //Add an error message when given
             if (config === null || config === void 0 ? void 0 : config.errorMessage)
-                authorizationUri.searchParams.set("errorMessage", config === null || config === void 0 ? void 0 : config.errorMessage);
+                authorizationUriParams.error_message = config.errorMessage;
             //Add a default email address when given
             if (config === null || config === void 0 ? void 0 : config.email)
-                authorizationUri.searchParams.set("email", config === null || config === void 0 ? void 0 : config.email);
+                authorizationUriParams.email = config.email;
             //Add translations when given
-            if (translations)
-                authorizationUri.searchParams.set("translations", Buffer.from(translations).toString("base64"));
+            if (config === null || config === void 0 ? void 0 : config.translations)
+                authorizationUriParams.translations = Buffer.from(JSON.stringify(config.translations)).toString("base64");
             //Add embed boolean when given
             if (config === null || config === void 0 ? void 0 : config.embed)
-                authorizationUri.searchParams.set("embed", "1");
+                authorizationUriParams.embed = "1";
+            const authorizationUri = new URL(client.authorizeURL(authorizationUriParams));
             if (this.debug)
                 console.log(`[CENTRALAUTH DEBUG] Starting login procedure for client ${this.clientId || "CentralAuth"}, redirecting to ${authorizationUri.toString()}.`);
             return Response.redirect(authorizationUri.toString());
@@ -349,13 +347,17 @@ export class CentralAuthClass {
             const headerList = req.headers;
             try {
                 if (config === null || config === void 0 ? void 0 : config.LogoutSessionWide) {
+                    //Populate the token in this object
+                    yield this.getDecodedToken(headerList);
                     //To log out session wide, invalidate the session at CentralAuth
-                    //Get the session ID from the token
-                    const { sessionId } = yield this.getDecodedToken(headerList);
-                    //Make a request to the log out endpoint to invalidate this session at CentralAuth
                     const headers = new Headers();
-                    headers.set("Authorization", `Bearer ${this.token}`);
-                    const logoutResponse = yield fetch(`${this.authBaseUrl}/api/v1/logout/${sessionId}`, { headers });
+                    headers.set("Content-Type", "text/plain");
+                    headers.set("Authorization", `Basic ${Buffer.from(`${this.clientId || ""}:${this.secret}`).toString("base64")}`);
+                    const logoutResponse = yield fetch(`${this.authBaseUrl}/api/v1/logout`, {
+                        method: "POST",
+                        body: this.token,
+                        headers
+                    });
                     if (!logoutResponse.ok) {
                         const error = yield logoutResponse.json();
                         throw new ValidationError(error);
