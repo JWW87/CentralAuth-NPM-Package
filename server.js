@@ -287,7 +287,7 @@ export class CentralAuthClass {
             const client = this.getOAuthClient();
             //Get an access JWT based on the given code
             const tokenObject = yield client.getToken({
-                redirect_uri: req.url,
+                redirect_uri: this.callbackUrl,
                 code
             });
             //Set the token in this object
