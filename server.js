@@ -61,14 +61,17 @@ export class CentralAuthClass {
                 throw new ValidationError(error);
             }
         };
-        //Private method to get the decoded token, either from the cookie of the token bearer in the headers
-        this.getDecodedToken = (headers) => __awaiter(this, void 0, void 0, function* () {
-            //Populate the token from token bearer or cookie
+        //Private method to populate the token, either from the cookie of the token bearer in the headers
+        this.populateToken = (headers) => __awaiter(this, void 0, void 0, function* () {
             const authHeader = headers.get("Authorization");
             if (authHeader)
                 yield this.setTokenFromTokenBearer(headers);
             else
                 yield this.setTokenFromCookie(headers);
+        });
+        //Private method to get the decoded token
+        //Can only be used after the token has been set in this object
+        this.getDecodedToken = () => __awaiter(this, void 0, void 0, function* () {
             this.checkData("callback");
             try {
                 //Decode the JWT
@@ -135,7 +138,7 @@ export class CentralAuthClass {
                 return this.userData;
             else {
                 //Get the decoded token
-                const jwtPayload = yield this.getDecodedToken(headers);
+                const jwtPayload = yield this.getDecodedToken();
                 const { user, session } = jwtPayload;
                 this.checkData("user");
                 //Get the IP address and user agent from the headers
@@ -207,6 +210,7 @@ export class CentralAuthClass {
         //Will throw an error when the request fails or the token could not be decoded
         this.getUserData = (headers) => __awaiter(this, void 0, void 0, function* () {
             //Get the user data from cache or CentralAuth
+            yield this.populateToken(headers);
             yield this.getUser(headers);
             return this.userData || null;
         });
@@ -348,7 +352,7 @@ export class CentralAuthClass {
             try {
                 if (config === null || config === void 0 ? void 0 : config.LogoutSessionWide) {
                     //Populate the token in this object
-                    yield this.getDecodedToken(headerList);
+                    yield this.populateToken(headerList);
                     //To log out session wide, invalidate the session at CentralAuth
                     const headers = new Headers();
                     headers.set("Content-Type", "text/plain");

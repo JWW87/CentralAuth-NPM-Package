@@ -84,15 +84,18 @@ export class CentralAuthClass {
     }
   }
 
-  //Private method to get the decoded token, either from the cookie of the token bearer in the headers
-  private getDecodedToken = async (headers: Headers) => {
-    //Populate the token from token bearer or cookie
+  //Private method to populate the token, either from the cookie of the token bearer in the headers
+  private populateToken = async (headers: Headers) => {//Populate the token from token bearer or cookie
     const authHeader = headers.get("Authorization");
     if (authHeader)
       await this.setTokenFromTokenBearer(headers);
     else
       await this.setTokenFromCookie(headers);
+  }
 
+  //Private method to get the decoded token
+  //Can only be used after the token has been set in this object
+  private getDecodedToken = async () => {
     this.checkData("callback");
 
     try {
@@ -166,7 +169,7 @@ export class CentralAuthClass {
       return this.userData;
     else {
       //Get the decoded token
-      const jwtPayload = await this.getDecodedToken(headers);
+      const jwtPayload = await this.getDecodedToken();
       const { user, session } = jwtPayload;
 
       this.checkData("user");
@@ -256,6 +259,7 @@ export class CentralAuthClass {
   //Will throw an error when the request fails or the token could not be decoded
   public getUserData = async (headers: Headers) => {
     //Get the user data from cache or CentralAuth
+    await this.populateToken(headers);
     await this.getUser(headers);
 
     return this.userData || null;
@@ -423,7 +427,7 @@ export class CentralAuthClass {
     try {
       if (config?.LogoutSessionWide) {
         //Populate the token in this object
-        await this.getDecodedToken(headerList);
+        await this.populateToken(headerList);
         //To log out session wide, invalidate the session at CentralAuth
         const headers = new Headers();
         headers.set("Content-Type", "text/plain");
