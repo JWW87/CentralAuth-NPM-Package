@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto";
+import { createHash } from "crypto";
 import { IncomingMessage, ServerResponse } from "http";
 import { EncryptJWT, jwtDecrypt } from "jose";
 import { AuthorizationCode } from 'simple-oauth2';
@@ -276,8 +276,8 @@ export class CentralAuthClass {
     if (returnTo)
       callbackUrl.searchParams.set("return_to", returnTo);
 
-    //Create a random state for CSRF protection
-    const state = randomUUID();
+    //Create a random state for CSRF protection based on the user's IP address and user agent
+    const state = createHash('md5').update(this.getIPAddress(req.headers) + this.getUserAgent(req.headers)).digest("hex");
 
     //Get a new OAuth client
     const client = this.getOAuthClient();
@@ -305,16 +305,8 @@ export class CentralAuthClass {
     if (this.debug)
       console.log(`[CENTRALAUTH DEBUG] Starting login procedure for client ${this.clientId || "CentralAuth"}, redirecting to ${authorizationUri.toString()}.`);
 
-    //Redirect to the authorization URI with the state in a cookie
-    return new Response(null,
-      {
-        status: 302,
-        headers: {
-          "Location": authorizationUri.toString(),
-          "Set-Cookie": `oAuthState=${state}; Path=/; HttpOnly; Max-Age=3600; SameSite=Lax; Secure`
-        }
-      }
-    );
+    //Redirect to the authorization URI
+    return Response.redirect(authorizationUri.toString());
   }
 
   //Public method for the callback procedure when returning from CentralAuth
@@ -346,14 +338,11 @@ export class CentralAuthClass {
     const errorCode = searchParams.get("error_code");
     const errorMessage = searchParams.get("error_message");
 
-    //Get the state from the cookie
-    const cookies = parseCookie(req.headers.get("cookie"));
-    let stateInCookie = "";
-    if (cookies["oAuthState"])
-      stateInCookie = cookies["oAuthState"];
+    //Get the state  based on the user's IP address and user agent
+    const oAuthState = createHash('md5').update(this.getIPAddress(req.headers) + this.getUserAgent(req.headers)).digest("hex");
 
-    //Check if the state in the cookie matches the state in the URL
-    if (!state || !stateInCookie || state !== stateInCookie) {
+    //Check if the state matches the state in the URL
+    if (!state || state !== oAuthState) {
       if (this.debug)
         console.error(`[CENTRALAUTH DEBUG] State mismatch for client ${this.clientId || "CentralAuth"}`);
       throw new ValidationError({ errorCode: "stateInvalid", message: "State mismatch in callback." });
