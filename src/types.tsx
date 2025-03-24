@@ -131,6 +131,8 @@ export type ErrorCode = "genericError" |
   "callbackUrlMissing" |
   "tokenMissing" |
   "tokenInvalid" |
+  "stateMissing" |
+  "stateInvalid" |
   "captchaInvalid";
 
 //Type for the validation errors

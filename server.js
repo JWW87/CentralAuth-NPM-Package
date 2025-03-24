@@ -7,6 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+import { randomUUID } from "crypto";
 import { EncryptJWT, jwtDecrypt } from "jose";
 import { AuthorizationCode } from 'simple-oauth2';
 //Private method for parsing a cookie string in a request header
@@ -222,11 +223,14 @@ export class CentralAuthClass {
             const callbackUrl = new URL(this.callbackUrl);
             if (returnTo)
                 callbackUrl.searchParams.set("return_to", returnTo);
+            //Create a random state for CSRF protection
+            const state = randomUUID();
             //Get a new OAuth client
             const client = this.getOAuthClient();
             //Construct the base URL for the OAuth login
             const authorizationUriParams = {
                 redirect_uri: callbackUrl.toString(),
+                state
             };
             //Add an error message when given
             if (config === null || config === void 0 ? void 0 : config.errorMessage)
@@ -243,7 +247,14 @@ export class CentralAuthClass {
             const authorizationUri = new URL(client.authorizeURL(authorizationUriParams));
             if (this.debug)
                 console.log(`[CENTRALAUTH DEBUG] Starting login procedure for client ${this.clientId || "CentralAuth"}, redirecting to ${authorizationUri.toString()}.`);
-            return Response.redirect(authorizationUri.toString());
+            //Redirect to the authorization URI with the state in a cookie
+            return new Response(null, {
+                status: 302,
+                headers: {
+                    "Location": authorizationUri.toString(),
+                    "Set-Cookie": `oAuthState=${state}; Path=/; HttpOnly; Max-Age=3600; SameSite=Lax; Secure`
+                }
+            });
         });
         //Public method for the callback procedure when returning from CentralAuth
         this.callback = (req, config) => __awaiter(this, void 0, void 0, function* () {
@@ -267,8 +278,20 @@ export class CentralAuthClass {
             const searchParams = url.searchParams;
             const returnTo = searchParams.get("return_to") || url.origin;
             const code = searchParams.get("code");
+            const state = searchParams.get("state");
             const errorCode = searchParams.get("error_code");
             const errorMessage = searchParams.get("error_message");
+            //Get the state from the cookie
+            const cookies = parseCookie(req.headers.get("cookie"));
+            let stateInCookie = "";
+            if (cookies["oAuthState"])
+                stateInCookie = cookies["oAuthState"];
+            //Check if the state in the cookie matches the state in the URL
+            if (!state || !stateInCookie || state !== stateInCookie) {
+                if (this.debug)
+                    console.error(`[CENTRALAUTH DEBUG] State mismatch for client ${this.clientId || "CentralAuth"}`);
+                throw new ValidationError({ errorCode: "stateInvalid", message: "State mismatch in callback." });
+            }
             if (errorCode) {
                 //When the error code is set, something went wrong in the login procedure
                 //Throw a ValidationError
