@@ -1,4 +1,4 @@
-import { createHash } from "crypto";
+import { randomUUID } from "crypto";
 import { IncomingMessage, ServerResponse } from "http";
 import { EncryptJWT, jwtDecrypt } from "jose";
 import { AuthorizationCode } from 'simple-oauth2';
@@ -276,15 +276,11 @@ export class CentralAuthClass {
     if (returnTo)
       callbackUrl.searchParams.set("return_to", returnTo);
 
-    //Create a random state for CSRF protection based on the user's IP address and user agent
-    const state = createHash('md5').update(this.getIPAddress(req.headers) + this.getUserAgent(req.headers)).digest("hex");
-
     //Get a new OAuth client
     const client = this.getOAuthClient();
     //Construct the base URL for the OAuth login
     const authorizationUriParams: { [key: string]: string } = {
-      redirect_uri: callbackUrl.toString(),
-      state
+      redirect_uri: callbackUrl.toString()
     };
 
     //Add an error message when given
@@ -293,6 +289,8 @@ export class CentralAuthClass {
     //Add a default email address when given
     if (config?.email)
       authorizationUriParams.email = config.email;
+    //Add OAuth state when given, otherwise fall back to a random state
+    authorizationUriParams.state = config?.state || randomUUID();
     //Add translations when given
     if (config?.translations)
       authorizationUriParams.translations = Buffer.from(JSON.stringify(config.translations)).toString("base64");
@@ -329,7 +327,7 @@ export class CentralAuthClass {
   //Optionally calls a custom callback function when given with the user object as an argument
   //Returns a Response with a redirection to the returnTo URL
   //Will throw an error when the verification procedure fails or the user object could not be fetched
-  protected processCallback = async (req: Request) => {
+  protected processCallback = async (req: Request, config?: CallbackParams) => {
     const url = new URL(req.url);
     const searchParams = url.searchParams;
     const returnTo = searchParams.get("return_to") || url.origin;
@@ -338,14 +336,14 @@ export class CentralAuthClass {
     const errorCode = searchParams.get("error_code");
     const errorMessage = searchParams.get("error_message");
 
-    //Get the state  based on the user's IP address and user agent
-    const oAuthState = createHash('md5').update(this.getIPAddress(req.headers) + this.getUserAgent(req.headers)).digest("hex");
-
-    //Check if the state matches the state in the URL
-    if (!state || state !== oAuthState) {
-      if (this.debug)
-        console.error(`[CENTRALAUTH DEBUG] State mismatch for client ${this.clientId || "CentralAuth"}`);
-      throw new ValidationError({ errorCode: "stateInvalid", message: "State mismatch in callback." });
+    //If the state is given and an onStateReceived function is given, call it to verify the state
+    if (state && config?.onStateReceived) {
+      const stateVerification = await config.onStateReceived(req, state);
+      if (!stateVerification) {
+        if (this.debug)
+          console.error(`[CENTRALAUTH DEBUG] State verification failed for client ${this.clientId || "CentralAuth"}`);
+        throw new ValidationError({ errorCode: "stateInvalid", message: "State verification failed." });
+      }
     }
 
     if (errorCode) {

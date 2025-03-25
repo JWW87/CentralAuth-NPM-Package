@@ -74,6 +74,7 @@ export type LoginParams = {
     returnTo?: string | null;
     errorMessage?: string | null;
     email?: string | null;
+    state?: string;
     translations?: Translations | null;
     embed?: boolean | null;
 };
@@ -82,6 +83,7 @@ export type LogoutParams = {
     LogoutSessionWide?: boolean;
 };
 export type CallbackParams = {
+    onStateReceived?: (req: Request, state: string) => Promise<boolean>;
     onAfterCallback?: (req: Request, res: Response, user: User) => Promise<Response | void>;
 };
 export type CallbackParamsHTTP = {
