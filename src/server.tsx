@@ -309,7 +309,7 @@ export class CentralAuthClass {
 
   //Public method for the callback procedure when returning from CentralAuth
   public callback = async (req: Request, config?: CallbackParams) => {
-    const res = await this.processCallback(req);
+    const res = await this.processCallback(req, config?.onStateReceived);
 
     //When an onAfterCallback function is given, call it with the user data
     //The onAfterCallback function may return a new/altered response, which will be returned instead of the default response object
@@ -327,7 +327,7 @@ export class CentralAuthClass {
   //Optionally calls a custom callback function when given with the user object as an argument
   //Returns a Response with a redirection to the returnTo URL
   //Will throw an error when the verification procedure fails or the user object could not be fetched
-  protected processCallback = async (req: Request, config?: CallbackParams) => {
+  protected processCallback = async (req: Request, onStateReceived?: CallbackParams["onStateReceived"]) => {
     const url = new URL(req.url);
     const searchParams = url.searchParams;
     const returnTo = searchParams.get("return_to") || url.origin;
@@ -337,8 +337,8 @@ export class CentralAuthClass {
     const errorMessage = searchParams.get("error_message");
 
     //If the state is given and an onStateReceived function is given, call it to verify the state
-    if (state && config?.onStateReceived) {
-      const stateVerification = await config.onStateReceived(req, state);
+    if (state && onStateReceived) {
+      const stateVerification = await onStateReceived(req, state);
       if (!stateVerification) {
         if (this.debug)
           console.error(`[CENTRALAUTH DEBUG] State verification failed for client ${this.clientId || "CentralAuth"}`);
@@ -516,7 +516,7 @@ export class CentralAuthHTTPClass extends CentralAuthClass {
 
   //Overloaded method for callback
   public callbackHTTP = async (req: IncomingMessage, res: ServerResponse, config?: CallbackParamsHTTP) => {
-    const fetchResponse = await this.processCallback(this.httpRequestToFetchRequest(req));
+    const fetchResponse = await this.processCallback(this.httpRequestToFetchRequest(req), config?.onStateReceived);
 
     //When an onAfterCallback function is given, call it with the user data
     //The onAfterCallback function may return a new/altered response, which will be returned instead of the default response object

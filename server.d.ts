@@ -28,7 +28,7 @@ export declare class CentralAuthClass {
   getUserData: (headers: Headers) => Promise<User | null>;
   login: (req: Request, config?: LoginParams) => Promise<Response>;
   callback: (req: Request, config?: CallbackParams) => Promise<Response>;
-  protected processCallback: (req: Request, config?: CallbackParams) => Promise<Response>;
+  protected processCallback: (req: Request, onStateReceived?: CallbackParams["onStateReceived"]) => Promise<Response>;
   user: (req: Request) => Promise<Response>;
   logout: (req: Request, config?: LogoutParams) => Promise<Response>;
 }
