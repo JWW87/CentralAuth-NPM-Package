@@ -16,7 +16,7 @@ export type ExperimentalCacheOptions = {
 export type User = {
     id: string;
     email: string;
-    gravatar: string | null;
+    gravatar: string;
     verified: boolean;
     blocked: boolean;
     organizationId: string | null;
