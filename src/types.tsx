@@ -87,9 +87,9 @@ export type Translations = Partial<{
 //Type for the parameters of the login method
 export type LoginParams = {
   returnTo?: string | null;
-  errorMessage?: string | null;
   email?: string | null;
   state?: string;
+  errorMessage?: string | null;
   translations?: Translations | null;
   embed?: boolean | null;
 }
@@ -97,7 +97,7 @@ export type LoginParams = {
 //Type for the parameters of the logout method
 export type LogoutParams = {
   returnTo?: string | null;
-  LogoutSessionWide?: boolean
+  logoutSessionWide?: boolean;
 }
 
 //Type for the parameters of the callback method
@@ -143,6 +143,12 @@ export type ErrorCode = "genericError" |
 export type ErrorObject = {
   errorCode: ErrorCode;
   message?: string;
+}
+
+export type TokenResponse = {
+  access_token: string;
+  expires_in: number | null;
+  expires_at: string | null;
 }
 
 export type WithCentralAuthAutomaticLogin = <T extends { [key: string]: any }>(

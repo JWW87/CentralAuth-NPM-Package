@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import { IncomingMessage, ServerResponse } from "http";
 import { EncryptJWT, jwtDecrypt } from "jose";
 import { AuthorizationCode } from 'simple-oauth2';
-import { CallbackParams, CallbackParamsHTTP, ConstructorParams, ErrorCode, ErrorObject, ExperimentalCacheOptions, JWTPayload, LoginParams, LogoutParams, User } from "./types";
+import { CallbackParams, CallbackParamsHTTP, ConstructorParams, ErrorCode, ErrorObject, ExperimentalCacheOptions, JWTPayload, LoginParams, LogoutParams, TokenResponse, User } from "./types";
 
 //Private method for parsing a cookie string in a request header
 const parseCookie = (cookieString: string | null) =>
@@ -374,8 +374,9 @@ export class CentralAuthClass {
       redirect_uri: this.callbackUrl,
       code
     });
+    const tokenResponse = tokenObject.token as TokenResponse;
     //Set the token in this object
-    this.token = tokenObject.token.token as string;
+    this.token = tokenResponse.access_token;
 
     //Get the user data from the CentralAuth server
     await this.getUser(req.headers);
@@ -397,7 +398,7 @@ export class CentralAuthClass {
         status: 302,
         headers: {
           "Location": returnTo,
-          "Set-Cookie": `sessionToken=${this.token}; Path=/; HttpOnly; Max-Age=100000000; SameSite=Lax; Secure`
+          "Set-Cookie": `sessionToken=${this.token}; Path=/; HttpOnly; Max-Age=${tokenResponse.expires_in || 100000000}; SameSite=Lax; Secure`
         }
       }
     );
@@ -440,7 +441,7 @@ export class CentralAuthClass {
     const headerList = req.headers;
 
     try {
-      if (config?.LogoutSessionWide) {
+      if (config?.logoutSessionWide) {
         //Populate the token in this object
         await this.populateToken(headerList);
         //To log out session wide, invalidate the session at CentralAuth
