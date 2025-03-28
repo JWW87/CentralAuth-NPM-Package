@@ -80,7 +80,7 @@ export class CentralAuthClass {
 
     if (error) {
       if (this.debug)
-        console.error(`[CENTRALAUTH DEBUG] Data check failed for client ${this.clientId || "CentralAuth"} in ${action}: ${error.message}`);
+        console.warn(`[CENTRALAUTH DEBUG] Data check failed for client ${this.clientId || "CentralAuth"} in ${action}: ${error.message}`);
       throw new ValidationError(error);
     }
   }
@@ -107,7 +107,7 @@ export class CentralAuthClass {
       return decodedToken;
     } catch (error: any) {
       if (this.debug)
-        console.error(`[CENTRALAUTH DEBUG] Failed to decode token for client ${this.clientId || "CentralAuth"}: ${error.message}`);
+        console.warn(`[CENTRALAUTH DEBUG] Failed to decode token for client ${this.clientId || "CentralAuth"}: ${error.message}`);
       throw new ValidationError({ errorCode: error?.name, message: error?.message });
     }
   }
@@ -190,7 +190,7 @@ export class CentralAuthClass {
           this.userData = user;
         else {
           if (this.debug)
-            console.error(`[CENTRALAUTH DEBUG] Cached data could not be fetched for client ${this.clientId || "CentralAuth"}.`);
+            console.warn(`[CENTRALAUTH DEBUG] Cached data could not be fetched for client ${this.clientId || "CentralAuth"}.`);
           this.userData = undefined;
           throw new ValidationError({ errorCode: "sessionInvalid", message: "The session is invalid. The IP address and/or user agent of the current request do not match the IP address and/or user agent of the session." });
         }
@@ -218,7 +218,7 @@ export class CentralAuthClass {
         if (!response.ok) {
           const error = await response.json() as ErrorObject;
           if (this.debug)
-            console.error(`[CENTRALAUTH DEBUG] Failed to fetch user data from the server for client ${this.clientId || "CentralAuth"}: ${error.message}`);
+            console.warn(`[CENTRALAUTH DEBUG] Failed to fetch user data from the server for client ${this.clientId || "CentralAuth"}: ${error.message}`);
           throw new ValidationError(error);
         }
 
@@ -341,7 +341,7 @@ export class CentralAuthClass {
       const stateVerification = await onStateReceived(req, state);
       if (!stateVerification) {
         if (this.debug)
-          console.error(`[CENTRALAUTH DEBUG] State verification failed for client ${this.clientId || "CentralAuth"}`);
+          console.warn(`[CENTRALAUTH DEBUG] State verification failed for client ${this.clientId || "CentralAuth"}`);
         throw new ValidationError({ errorCode: "stateInvalid", message: "State verification failed." });
       }
     }
@@ -350,20 +350,20 @@ export class CentralAuthClass {
       //When the error code is set, something went wrong in the login procedure
       //Throw a ValidationError
       if (this.debug)
-        console.error(`[CENTRALAUTH DEBUG] Error in login procedure for client ${this.clientId || "CentralAuth"}: ${errorMessage}`);
+        console.warn(`[CENTRALAUTH DEBUG] Error in login procedure for client ${this.clientId || "CentralAuth"}: ${errorMessage}`);
       throw new ValidationError({ errorCode: errorCode as ErrorCode, message: errorMessage || "" });
     }
 
     if (!code) {
       if (this.debug)
-        console.error(`[CENTRALAUTH DEBUG] Callback could not be processed for client ${this.clientId || "CentralAuth"}, missing code.`);
+        console.warn(`[CENTRALAUTH DEBUG] Callback could not be processed for client ${this.clientId || "CentralAuth"}, missing code.`);
       throw new ValidationError({ errorCode: "missingFields", message: "The code is missing in the callback URL." });
     }
 
     const [sessionId, verificationState] = code.split("|");
     if (!sessionId || !verificationState) {
       if (this.debug)
-        console.error(`[CENTRALAUTH DEBUG] Callback could not be processed for client ${this.clientId || "CentralAuth"}, missing session ID and/or verification state.`);
+        console.warn(`[CENTRALAUTH DEBUG] Callback could not be processed for client ${this.clientId || "CentralAuth"}, missing session ID and/or verification state.`);
       throw new ValidationError({ errorCode: "missingFields", message: "The session ID and/or verification state are missing in the callback URL." });
     }
 
@@ -425,7 +425,7 @@ export class CentralAuthClass {
       //When an error occurs, assume the user session is not valid anymore
       //Delete the cookie
       if (this.debug)
-        console.error(`[CENTRALAUTH DEBUG] Error fetching user data from cache or CentralAuth server or validation error for client ${this.clientId || "CentralAuth"}: ${error?.message}`);
+        console.warn(`[CENTRALAUTH DEBUG] Error fetching user data from cache or CentralAuth server or validation error for client ${this.clientId || "CentralAuth"}: ${error?.message}`);
       return Response.json(null, {
         headers: {
           "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax; Secure"
@@ -461,7 +461,7 @@ export class CentralAuthClass {
       }
     } catch (error: any) {
       if (this.debug)
-        console.error(`[CENTRALAUTH DEBUG] Error logging out session-wide for client ${this.clientId || "CentralAuth"}: ${error?.message}`);
+        console.warn(`[CENTRALAUTH DEBUG] Error logging out session-wide for client ${this.clientId || "CentralAuth"}: ${error?.message}`);
     } finally {
       //Unset the cookie and redirect to the returnTo URL
       return new Response(null,

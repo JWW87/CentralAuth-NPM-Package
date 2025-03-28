@@ -65,6 +65,7 @@ export type Translations = Partial<{
   loginPageCaptchaChallengeText: string;
   loginPageCaptchaPuzzleText: string;
   loginPageCaptchaError: string;
+  suspiciousActivityDetected: string;
   emailLinkSubject: string;
   emailCodeSubject: string;
   emailLinkBody: string;
