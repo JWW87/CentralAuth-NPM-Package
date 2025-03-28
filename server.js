@@ -308,8 +308,9 @@ export class CentralAuthClass {
                 redirect_uri: this.callbackUrl,
                 code
             });
+            const tokenResponse = tokenObject.token;
             //Set the token in this object
-            this.token = tokenObject.token.token;
+            this.token = tokenResponse.access_token;
             //Get the user data from the CentralAuth server
             yield this.getUser(req.headers);
             //Add the user and session data to the token
@@ -327,7 +328,7 @@ export class CentralAuthClass {
                 status: 302,
                 headers: {
                     "Location": returnTo,
-                    "Set-Cookie": `sessionToken=${this.token}; Path=/; HttpOnly; Max-Age=100000000; SameSite=Lax; Secure`
+                    "Set-Cookie": `sessionToken=${this.token}; Path=/; HttpOnly; Max-Age=${tokenResponse.expires_in || 100000000}; SameSite=Lax; Secure`
                 }
             });
             //Set a cookie with the JWT and redirect to the returnTo URL
@@ -364,7 +365,7 @@ export class CentralAuthClass {
             const returnTo = this.getReturnToURL(req, config);
             const headerList = req.headers;
             try {
-                if (config === null || config === void 0 ? void 0 : config.LogoutSessionWide) {
+                if (config === null || config === void 0 ? void 0 : config.logoutSessionWide) {
                     //Populate the token in this object
                     yield this.populateToken(headerList);
                     //To log out session wide, invalidate the session at CentralAuth

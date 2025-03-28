@@ -73,15 +73,15 @@ export type Translations = Partial<{
 }>;
 export type LoginParams = {
     returnTo?: string | null;
-    errorMessage?: string | null;
     email?: string | null;
     state?: string;
+    errorMessage?: string | null;
     translations?: Translations | null;
     embed?: boolean | null;
 };
 export type LogoutParams = {
     returnTo?: string | null;
-    LogoutSessionWide?: boolean;
+    logoutSessionWide?: boolean;
 };
 export type CallbackParams = {
     onStateReceived?: (req: Request, state: string) => Promise<boolean>;
@@ -95,6 +95,11 @@ export type ErrorCode = "genericError" | "missingFields" | "sessionMissing" | "s
 export type ErrorObject = {
     errorCode: ErrorCode;
     message?: string;
+};
+export type TokenResponse = {
+    access_token: string;
+    expires_in: number | null;
+    expires_at: string | null;
 };
 export type WithCentralAuthAutomaticLogin = <T extends {
     [key: string]: any;
