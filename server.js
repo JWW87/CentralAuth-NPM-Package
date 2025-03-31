@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { randomUUID } from "crypto";
-import { EncryptJWT, jwtDecrypt } from "jose";
+import { jwtDecrypt } from "jose";
 import { AuthorizationCode } from 'simple-oauth2';
 //Private method for parsing a cookie string in a request header
 const parseCookie = (cookieString) => ((cookieString === null || cookieString === void 0 ? void 0 : cookieString.split(';').map(v => v.split('=')).reduce((acc, v) => {
@@ -25,7 +25,7 @@ export class ValidationError extends Error {
 //Class for CentralAuth
 export class CentralAuthClass {
     //Constructor method to set all instance variable
-    constructor({ clientId, secret, authBaseUrl, callbackUrl, cache, debug }) {
+    constructor({ clientId, secret, authBaseUrl, callbackUrl, debug, unsafeIncludeUser }) {
         //Private method to get the Simple OAuth client
         this.getOAuthClient = () => {
             return new AuthorizationCode({
@@ -87,13 +87,13 @@ export class CentralAuthClass {
             }
         });
         //Private method to set the payload of the JWT
-        this.setToken = (payload) => __awaiter(this, void 0, void 0, function* () {
-            const textEncoder = new TextEncoder();
-            this.token = yield new EncryptJWT(payload)
-                .setProtectedHeader({ alg: "dir", enc: "A256CBC-HS512" })
-                .setIssuedAt()
-                .encrypt(textEncoder.encode(this.secret));
-        });
+        // private setToken = async (payload: JWTPayload) => {
+        //   const textEncoder = new TextEncoder();
+        //   this.token = await new EncryptJWT(payload)
+        //     .setProtectedHeader({ alg: "dir", enc: "A256CBC-HS512" })
+        //     .setIssuedAt()
+        //     .encrypt(textEncoder.encode(this.secret));
+        // }
         //Private method to get the returnTo URL from the config object or current request
         this.getReturnToURL = (req, config) => {
             const url = new URL(req.url);
@@ -130,36 +130,21 @@ export class CentralAuthClass {
             //The IP address might consist of multiple IP addresses, seperated by commas. Only return the first IP address
             return ip ? ip.split(",")[0] : "0.0.0.0";
         };
-        //Private method to get the user data from cache or the CentralAuth server
+        //Private method to get the user data from the ID token or the CentralAuth server
         //Will throw an error when the request fails
-        //Will update the contents of the token with user and session data
         this.getUser = (headers) => __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
             if (this.userData)
                 return this.userData;
             else {
                 //Get the decoded token
                 const jwtPayload = yield this.getDecodedToken();
-                const { user, session } = jwtPayload;
-                this.checkData("user");
+                const { user } = jwtPayload;
                 //Get the IP address and user agent from the headers
                 const ipAddress = this.getIPAddress(headers);
                 const userAgent = this.getUserAgent(headers);
-                //Check if user data should be fetched from cache
-                const cached = user && session && !!(session === null || session === void 0 ? void 0 : session.lastSync) && ((_a = this.cache) === null || _a === void 0 ? void 0 : _a.enabled) && this.cache.cacheLifeTime ? new Date().getTime() - new Date(session.lastSync).getTime() < this.cache.cacheLifeTime * 1000 : false;
-                if (user && session && cached) {
-                    if (this.debug)
-                        console.log(`[CENTRALAUTH DEBUG] User data fetched from cache for client ${this.clientId || "CentralAuth"}.`);
-                    //Check if hijack protection is disabled or the IP address and user agent of the current user matches the IP address and user agent of the session
-                    if (((_b = this.cache) === null || _b === void 0 ? void 0 : _b.cacheHijackProtection) === false || (session.ipAddress === ipAddress && session.userAgent === userAgent))
-                        this.userData = user;
-                    else {
-                        if (this.debug)
-                            console.warn(`[CENTRALAUTH DEBUG] Cached data could not be fetched for client ${this.clientId || "CentralAuth"}.`);
-                        this.userData = undefined;
-                        throw new ValidationError({ errorCode: "sessionInvalid", message: "The session is invalid. The IP address and/or user agent of the current request do not match the IP address and/or user agent of the session." });
-                    }
-                }
+                this.checkData("user");
+                if (this.unsafeIncludeUser && user)
+                    this.userData = user;
                 else {
                     //Get the user and session data from the CentralAuth server
                     const headers = new Headers();
@@ -185,19 +170,17 @@ export class CentralAuthClass {
                         throw new ValidationError(error);
                     }
                     this.userData = (yield response.json());
-                    if (this.userData && session) {
-                        //Update the payload in the session token cookie
-                        yield this.setToken(Object.assign(Object.assign({}, jwtPayload), { user: this.userData, session: Object.assign(Object.assign({}, session), { lastSync: cached ? session.lastSync : new Date().toISOString() }) }));
-                    }
                 }
             }
         });
         //Private method to populate the token argument from the cookie in the session
         this.setTokenFromCookie = (headers) => __awaiter(this, void 0, void 0, function* () {
             const cookies = parseCookie(headers.get("cookie"));
-            //Check for a sessionToken in the cookies
-            if (cookies["sessionToken"])
-                this.token = cookies["sessionToken"];
+            //Check for a accessToken or idToken in the cookies based on the unsafeIncludeUser flag
+            if (this.unsafeIncludeUser && cookies["idToken"])
+                this.token = cookies["idToken"];
+            else
+                this.token = cookies["accessToken"];
         });
         //Private method to populate the token argument from the JWT in the token bearer header
         this.setTokenFromTokenBearer = (headers) => __awaiter(this, void 0, void 0, function* () {
@@ -207,7 +190,7 @@ export class CentralAuthClass {
                 this.token = authHeader.substring(7);
         });
         //Public method to get the user data from the current request headers
-        //The JWT will be set based on the sessionToken cookie or token bearer in the request header
+        //The JWT will be set based on the cookie or token bearer in the request header
         //Will throw an error when the request fails or the token could not be decoded
         this.getUserData = (headers) => __awaiter(this, void 0, void 0, function* () {
             //Get the user data from cache or CentralAuth
@@ -309,26 +292,14 @@ export class CentralAuthClass {
                 code
             });
             const tokenResponse = tokenObject.token;
-            //Set the token in this object
-            this.token = tokenResponse.access_token;
-            //Get the user data from the CentralAuth server
-            yield this.getUser(req.headers);
-            //Add the user and session data to the token
-            yield this.setToken({
-                sessionId,
-                user: this.userData,
-                session: {
-                    ipAddress: this.getIPAddress(req.headers),
-                    userAgent: this.getUserAgent(req.headers),
-                    lastSync: new Date().toISOString()
-                }
-            });
+            //Set the token in this object based on the unsafeIncludeUser flag
+            this.token = this.unsafeIncludeUser ? tokenResponse.id_token : tokenResponse.access_token;
             //Set the default response object
             let res = new Response(null, {
                 status: 302,
                 headers: {
                     "Location": returnTo,
-                    "Set-Cookie": `sessionToken=${this.token}; Path=/; HttpOnly; Max-Age=${tokenResponse.expires_in || 100000000}; SameSite=Lax; Secure`
+                    "Set-Cookie": `${this.unsafeIncludeUser ? "idToken" : "accessToken"}=${this.token}; Path=/; HttpOnly; Max-Age=${tokenResponse.expires_in || 100000000}; SameSite=Lax; Secure`
                 }
             });
             //Set a cookie with the JWT and redirect to the returnTo URL
@@ -341,12 +312,8 @@ export class CentralAuthClass {
             try {
                 const headers = req.headers;
                 yield this.getUserData(headers);
-                //Return the user and update the session token cookie
-                return Response.json(this.userData, {
-                    headers: {
-                        "Set-Cookie": `sessionToken=${this.token}; Path=/; HttpOnly; Max-Age=100000000; SameSite=Lax; Secure`
-                    }
-                });
+                //Return the user data as JSON
+                return Response.json(this.userData);
             }
             catch (error) {
                 //When an error occurs, assume the user session is not valid anymore
@@ -355,7 +322,7 @@ export class CentralAuthClass {
                     console.warn(`[CENTRALAUTH DEBUG] Error fetching user data from cache or CentralAuth server or validation error for client ${this.clientId || "CentralAuth"}: ${error === null || error === void 0 ? void 0 : error.message}`);
                 return Response.json(null, {
                     headers: {
-                        "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax; Secure"
+                        "Set-Cookie": `${this.unsafeIncludeUser ? "idToken" : "accessToken"}= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax; Secure`
                     }
                 });
             }
@@ -393,7 +360,7 @@ export class CentralAuthClass {
                     status: 302,
                     headers: {
                         "Location": returnTo,
-                        "Set-Cookie": "sessionToken= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax; Secure"
+                        "Set-Cookie": `${this.unsafeIncludeUser ? "idToken" : "accessToken"}= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax; Secure`
                     }
                 });
             }
@@ -404,8 +371,11 @@ export class CentralAuthClass {
         this.secret = secret;
         this.authBaseUrl = authBaseUrl;
         this.callbackUrl = callbackUrl;
-        this.cache = cache;
         this.debug = debug;
+        if (unsafeIncludeUser) {
+            this.unsafeIncludeUser = true;
+            console.warn(`[CENTRALAUTH DEBUG] Unsafe ID token will be used for ${clientId || "CentralAuth"}.`);
+        }
     }
 }
 //Define a subclass for HTTP based servers

@@ -5,13 +5,8 @@ export type ConstructorParams = {
     secret: string;
     authBaseUrl: string;
     callbackUrl: string;
-    cache?: ExperimentalCacheOptions;
     debug?: boolean;
-};
-export type ExperimentalCacheOptions = {
-    enabled: boolean;
-    cacheLifeTime: number;
-    cacheHijackProtection?: boolean;
+    unsafeIncludeUser?: boolean;
 };
 export type User = {
     id: string;
@@ -23,17 +18,10 @@ export type User = {
     created: Date;
     updated: Date;
 };
-export type UserResponse = {
-    user: User;
-    session: {
-        ipAddress: string;
-        userAgent: string;
-        lastSync: string;
-    };
-};
 export type JWTPayload = {
     sessionId: string;
-} & Partial<UserResponse>;
+    user?: User;
+};
 export type BasePaths = {
     loginPath?: string;
     logoutPath?: string;
@@ -98,6 +86,7 @@ export type ErrorObject = {
 };
 export type TokenResponse = {
     access_token: string;
+    id_token: string;
     expires_in: number | null;
     expires_at: string | null;
 };

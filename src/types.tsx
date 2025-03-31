@@ -7,14 +7,8 @@ export type ConstructorParams = {
   secret: string;
   authBaseUrl: string;
   callbackUrl: string;
-  cache?: ExperimentalCacheOptions;
   debug?: boolean;
-}
-
-export type ExperimentalCacheOptions = {
-  enabled: boolean;
-  cacheLifeTime: number;
-  cacheHijackProtection?: boolean;
+  unsafeIncludeUser?: boolean;
 }
 
 //Type for the user data
@@ -29,20 +23,11 @@ export type User = {
   updated: Date;
 }
 
-//Type for the user data response from CentralAuth
-export type UserResponse = {
-  user: User;
-  session: {
-    ipAddress: string;
-    userAgent: string;
-    lastSync: string;
-  }
-}
-
 //Type for the payload of the JWT
 export type JWTPayload = {
-  sessionId: string,
-} & Partial<UserResponse>;
+  sessionId: string;
+  user?: User;
+}
 
 //Type for the base paths
 export type BasePaths = {
@@ -147,6 +132,7 @@ export type ErrorObject = {
 
 export type TokenResponse = {
   access_token: string;
+  id_token: string;
   expires_in: number | null;
   expires_at: string | null;
 }

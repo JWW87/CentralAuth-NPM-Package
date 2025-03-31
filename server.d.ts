@@ -9,16 +9,15 @@ export declare class CentralAuthClass {
     private secret;
     protected authBaseUrl: string;
     protected callbackUrl: string;
-    private cache?;
     private debug?;
+    private unsafeIncludeUser?;
     private token?;
     protected userData?: User;
-    constructor({ clientId, secret, authBaseUrl, callbackUrl, cache, debug }: ConstructorParams);
+    constructor({ clientId, secret, authBaseUrl, callbackUrl, debug, unsafeIncludeUser }: ConstructorParams);
     private getOAuthClient;
     private checkData;
     private populateToken;
     private getDecodedToken;
-    private setToken;
     private getReturnToURL;
     private getUserAgent;
     private getIPAddress;
