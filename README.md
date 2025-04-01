@@ -1,0 +1,1 @@
+This is the official NPM package for [CentralAuth](https://centralauth.com). Please refer to the [documentation](https://docs.centralauth.com/category/developers) for installation and usage instructions.
