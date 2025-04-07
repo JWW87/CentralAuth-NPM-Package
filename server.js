@@ -266,7 +266,7 @@ export class CentralAuthClass {
                     throw new ValidationError({ errorCode: "stateInvalid", message: "State verification failed." });
                 }
             }
-            if (errorCode) {
+            if (errorCode || errorMessage) {
                 //When the error code is set, something went wrong in the login procedure
                 //Throw a ValidationError
                 if (this.debug)
