@@ -9,6 +9,11 @@ export const deleteApiV1InvitedUserById = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/invited_user/{id}' }, options));
 };
@@ -21,6 +26,11 @@ export const postApiV1InvitedUser = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/invited_user' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
 };
@@ -33,6 +43,11 @@ export const deleteApiV1InternalUserByTenantIdByUserId = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/internal_user/{tenantId}/{userId}' }, options));
 };
@@ -45,6 +60,11 @@ export const postApiV1InternalUserByTenantIdByUserId = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/internal_user/{tenantId}/{userId}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
 };
@@ -58,6 +78,11 @@ export const deleteApiV1OrganizationById = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/organization/{id}' }, options));
 };
@@ -70,6 +95,11 @@ export const getApiV1OrganizationById = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/organization/{id}' }, options));
 };
@@ -82,6 +112,11 @@ export const postApiV1OrganizationById = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/organization/{id}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
 };
@@ -94,6 +129,11 @@ export const postApiV1Organization = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/organization' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
 };
@@ -106,6 +146,11 @@ export const getApiV1OrganizationByIdRotateSecret = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/organization/{id}/rotate_secret' }, options));
 };
@@ -119,6 +164,11 @@ export const postApiV1OrganizationByIdActivateSecret = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/organization/{id}/activate_secret' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
 };
@@ -132,6 +182,11 @@ export const deleteApiV1TenantById = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/tenant/{id}' }, options));
 };
@@ -144,6 +199,11 @@ export const getApiV1TenantById = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/tenant/{id}' }, options));
 };
@@ -156,6 +216,11 @@ export const postApiV1TenantById = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/tenant/{id}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
 };
@@ -169,6 +234,11 @@ export const deleteApiV1UserById = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/user/{id}' }, options));
 };
@@ -181,6 +251,11 @@ export const getApiV1UserById = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/user/{id}' }, options));
 };
@@ -194,6 +269,11 @@ export const postApiV1UserById = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/user/{id}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
 };
@@ -207,6 +287,11 @@ export const deleteApiV1UserByOrganizationIdByEmail = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/user/{organizationId}/{email}' }, options));
 };
@@ -219,6 +304,11 @@ export const getApiV1UserByOrganizationIdByEmail = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/user/{organizationId}/{email}' }, options));
 };
@@ -232,6 +322,11 @@ export const postApiV1UserByOrganizationIdByEmail = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/user/{organizationId}/{email}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
 };
@@ -245,6 +340,11 @@ export const postApiV1User = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/user' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
 };
@@ -258,6 +358,11 @@ export const getApiV1UsersByOrganizationId = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/users/{organizationId}' }, options));
 };
@@ -270,6 +375,11 @@ export const deleteApiV1ApiKeyById = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/api_key/{id}' }, options));
 };
@@ -282,6 +392,11 @@ export const getApiV1ApiKeyById = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/api_key/{id}' }, options));
 };
@@ -294,6 +409,11 @@ export const postApiV1ApiKeyById = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/api_key/{id}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
 };
@@ -306,6 +426,11 @@ export const postApiV1ApiKey = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/api_key' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
 };
@@ -318,6 +443,11 @@ export const getApiV1ApiKeysByOrganizationId = (options) => {
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ], url: '/api/v1/api_keys/{organizationId}' }, options));
 };

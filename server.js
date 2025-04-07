@@ -294,6 +294,8 @@ export class CentralAuthClass {
             const tokenResponse = tokenObject.token;
             //Set the token in this object based on the unsafeIncludeUser flag
             this.token = this.unsafeIncludeUser ? tokenResponse.id_token : tokenResponse.access_token;
+            //Populate the user data based on the token
+            yield this.getUser(req.headers);
             //Set the default response object
             let res = new Response(null, {
                 status: 302,

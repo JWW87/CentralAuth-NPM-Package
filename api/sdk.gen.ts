@@ -27,6 +27,11 @@ export const deleteApiV1InvitedUserById = <ThrowOnError extends boolean = false>
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/invited_user/{id}',
@@ -43,6 +48,11 @@ export const postApiV1InvitedUser = <ThrowOnError extends boolean = false>(optio
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/invited_user',
@@ -63,6 +73,11 @@ export const deleteApiV1InternalUserByTenantIdByUserId = <ThrowOnError extends b
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/internal_user/{tenantId}/{userId}',
@@ -79,6 +94,11 @@ export const postApiV1InternalUserByTenantIdByUserId = <ThrowOnError extends boo
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/internal_user/{tenantId}/{userId}',
@@ -100,6 +120,11 @@ export const deleteApiV1OrganizationById = <ThrowOnError extends boolean = false
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/organization/{id}',
@@ -116,6 +141,11 @@ export const getApiV1OrganizationById = <ThrowOnError extends boolean = false>(o
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/organization/{id}',
@@ -132,6 +162,11 @@ export const postApiV1OrganizationById = <ThrowOnError extends boolean = false>(
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/organization/{id}',
@@ -152,6 +187,11 @@ export const postApiV1Organization = <ThrowOnError extends boolean = false>(opti
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/organization',
@@ -172,6 +212,11 @@ export const getApiV1OrganizationByIdRotateSecret = <ThrowOnError extends boolea
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/organization/{id}/rotate_secret',
@@ -189,6 +234,11 @@ export const postApiV1OrganizationByIdActivateSecret = <ThrowOnError extends boo
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/organization/{id}/activate_secret',
@@ -210,6 +260,11 @@ export const deleteApiV1TenantById = <ThrowOnError extends boolean = false>(opti
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/tenant/{id}',
@@ -226,6 +281,11 @@ export const getApiV1TenantById = <ThrowOnError extends boolean = false>(options
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/tenant/{id}',
@@ -242,6 +302,11 @@ export const postApiV1TenantById = <ThrowOnError extends boolean = false>(option
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/tenant/{id}',
@@ -263,6 +328,11 @@ export const deleteApiV1UserById = <ThrowOnError extends boolean = false>(option
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/user/{id}',
@@ -279,6 +349,11 @@ export const getApiV1UserById = <ThrowOnError extends boolean = false>(options: 
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/user/{id}',
@@ -296,6 +371,11 @@ export const postApiV1UserById = <ThrowOnError extends boolean = false>(options:
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/user/{id}',
@@ -317,6 +397,11 @@ export const deleteApiV1UserByOrganizationIdByEmail = <ThrowOnError extends bool
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/user/{organizationId}/{email}',
@@ -333,6 +418,11 @@ export const getApiV1UserByOrganizationIdByEmail = <ThrowOnError extends boolean
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/user/{organizationId}/{email}',
@@ -350,6 +440,11 @@ export const postApiV1UserByOrganizationIdByEmail = <ThrowOnError extends boolea
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/user/{organizationId}/{email}',
@@ -371,6 +466,11 @@ export const postApiV1User = <ThrowOnError extends boolean = false>(options?: Op
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/user',
@@ -392,6 +492,11 @@ export const getApiV1UsersByOrganizationId = <ThrowOnError extends boolean = fal
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/users/{organizationId}',
@@ -408,6 +513,11 @@ export const deleteApiV1ApiKeyById = <ThrowOnError extends boolean = false>(opti
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/api_key/{id}',
@@ -424,6 +534,11 @@ export const getApiV1ApiKeyById = <ThrowOnError extends boolean = false>(options
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/api_key/{id}',
@@ -440,6 +555,11 @@ export const postApiV1ApiKeyById = <ThrowOnError extends boolean = false>(option
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/api_key/{id}',
@@ -460,6 +580,11 @@ export const postApiV1ApiKey = <ThrowOnError extends boolean = false>(options?: 
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/api_key',
@@ -480,6 +605,11 @@ export const getApiV1ApiKeysByOrganizationId = <ThrowOnError extends boolean = f
             {
                 scheme: 'bearer',
                 type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'sessionToken',
+                type: 'apiKey'
             }
         ],
         url: '/api/v1/api_keys/{organizationId}',
