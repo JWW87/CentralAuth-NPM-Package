@@ -68,6 +68,18 @@ export type LoginParams = {
     translations?: Translations | null;
     embed?: boolean | null;
 };
+export type DirectAuthenticationParams = {
+    email: string;
+    state?: string;
+    returnTo?: string | null;
+    translations?: Translations | null;
+};
+export type DirectAuthenticationResponse = {
+    loginAttemptId?: string;
+    token?: string;
+    sentence?: string;
+    allowedDate?: string;
+};
 export type LogoutParams = {
     returnTo?: string | null;
     logoutSessionWide?: boolean;

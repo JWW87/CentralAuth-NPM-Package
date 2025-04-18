@@ -80,6 +80,22 @@ export type LoginParams = {
   embed?: boolean | null;
 }
 
+//Type for the parameters of the direct authentication method
+export type DirectAuthenticationParams = {
+  email: string;
+  state?: string;
+  returnTo?: string | null;
+  translations?: Translations | null;
+}
+
+//Type for the response of the direct authentication method
+export type DirectAuthenticationResponse = {
+  loginAttemptId?: string;
+  token?: string;
+  sentence?: string;
+  allowedDate?: string;
+};
+
 //Type for the parameters of the logout method
 export type LogoutParams = {
   returnTo?: string | null;

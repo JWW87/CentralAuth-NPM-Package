@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import { IncomingMessage, ServerResponse } from "http";
 import { jwtDecrypt } from "jose";
 import { AuthorizationCode } from 'simple-oauth2';
-import { CallbackParams, CallbackParamsHTTP, ConstructorParams, ErrorCode, ErrorObject, JWTPayload, LoginParams, LogoutParams, TokenResponse, User } from "./types";
+import { CallbackParams, CallbackParamsHTTP, ConstructorParams, DirectAuthenticationParams, DirectAuthenticationResponse, ErrorCode, ErrorObject, JWTPayload, LoginParams, LogoutParams, TokenResponse, User } from "./types";
 
 //Private method for parsing a cookie string in a request header
 const parseCookie = (cookieString: string | null) =>
@@ -258,6 +258,44 @@ export class CentralAuthClass {
     return script;
   }
 
+  //Public method to start a direct authentication procedure based on a given email address
+  //Will throw an error when the procedure could not be started
+  public authenticateDirect = async (req: Request, config: DirectAuthenticationParams) => {
+    this.checkData("login");
+
+    const returnTo = this.getReturnToURL(req, config);
+    const callbackUrl = new URL(this.callbackUrl);
+    if (returnTo)
+      callbackUrl.searchParams.set("return_to", returnTo);
+
+    //Set the body for the direct authentication request
+    const body = {
+      email: config.email,
+      state: config.state || randomUUID(),
+      redirect_uri: callbackUrl.toString(),
+      translations: config.translations
+    }
+
+    //Set the headers for the direct authentication request
+    const headers = new Headers();
+    headers.set("Content-Type", "application/json");
+    headers.set("Authorization", `Basic ${Buffer.from(`${this.clientId || ""}:${this.secret}`).toString("base64")}`);
+
+    const authenticationResponse = await fetch(`${this.authBaseUrl}/api/v1/authenticate_direct`,
+      {
+        method: "POST",
+        body: JSON.stringify(body),
+        headers
+      });
+    if (!authenticationResponse.ok) {
+      const error = await authenticationResponse.json() as ErrorObject;
+      throw new ValidationError(error);
+    }
+
+    const responseData = await authenticationResponse.json() as DirectAuthenticationResponse;
+    return responseData;
+  }
+
   //Public method to start the login procedure
   //Will throw an error when the procedure could not be started
   public login = async (req: Request, config?: LoginParams) => {
@@ -483,6 +521,11 @@ export class CentralAuthHTTPClass extends CentralAuthClass {
   public getUserDataHTTP = async (req: IncomingMessage) => {
     const request = this.httpRequestToFetchRequest(req);
     return await this.getUserData(request.headers);
+  }
+
+  //Overloaded method for direct authentication
+  public authenticateDirectHTTP = async (req: IncomingMessage, config: DirectAuthenticationParams) => {
+    return await this.authenticateDirect(this.httpRequestToFetchRequest(req), config);
   }
 
   //Overloaded method for login

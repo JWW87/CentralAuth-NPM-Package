@@ -208,6 +208,37 @@ export class CentralAuthClass {
             const script = `<iframe allow="publickey-credentials-get *; publickey-credentials-create *" referrerpolicy="origin" src="${srcUrl.toString()}" style="width:420px" onload="window.addEventListener('message', ({data}) => this.style.height=data+'px')" />`;
             return script;
         };
+        //Public method to start a direct authentication procedure based on a given email address
+        //Will throw an error when the procedure could not be started
+        this.authenticateDirect = (req, config) => __awaiter(this, void 0, void 0, function* () {
+            this.checkData("login");
+            const returnTo = this.getReturnToURL(req, config);
+            const callbackUrl = new URL(this.callbackUrl);
+            if (returnTo)
+                callbackUrl.searchParams.set("return_to", returnTo);
+            //Set the body for the direct authentication request
+            const body = {
+                email: config.email,
+                state: config.state || randomUUID(),
+                redirect_uri: callbackUrl.toString(),
+                translations: config.translations
+            };
+            //Set the headers for the direct authentication request
+            const headers = new Headers();
+            headers.set("Content-Type", "application/json");
+            headers.set("Authorization", `Basic ${Buffer.from(`${this.clientId || ""}:${this.secret}`).toString("base64")}`);
+            const authenticationResponse = yield fetch(`${this.authBaseUrl}/api/v1/authenticate_direct`, {
+                method: "POST",
+                body: JSON.stringify(body),
+                headers
+            });
+            if (!authenticationResponse.ok) {
+                const error = yield authenticationResponse.json();
+                throw new ValidationError(error);
+            }
+            const responseData = yield authenticationResponse.json();
+            return responseData;
+        });
         //Public method to start the login procedure
         //Will throw an error when the procedure could not be started
         this.login = (req, config) => __awaiter(this, void 0, void 0, function* () {
@@ -415,6 +446,10 @@ export class CentralAuthHTTPClass extends CentralAuthClass {
         this.getUserDataHTTP = (req) => __awaiter(this, void 0, void 0, function* () {
             const request = this.httpRequestToFetchRequest(req);
             return yield this.getUserData(request.headers);
+        });
+        //Overloaded method for direct authentication
+        this.authenticateDirectHTTP = (req, config) => __awaiter(this, void 0, void 0, function* () {
+            return yield this.authenticateDirect(this.httpRequestToFetchRequest(req), config);
         });
         //Overloaded method for login
         this.loginHTTP = (req, res, config) => __awaiter(this, void 0, void 0, function* () {
