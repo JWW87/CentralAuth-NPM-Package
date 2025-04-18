@@ -198,10 +198,12 @@ export class CentralAuthClass {
             yield this.getUser(headers);
             return this.userData || null;
         });
-        this.getEmbedScript = (req, loginUrl, returnTo) => {
+        //Public method to get an HTML snippet for embedding the login form
+        //The login form will be embedded in an iframe with the given login URL
+        this.getEmbedScript = (loginUrl, returnTo) => {
             const srcUrl = new URL(loginUrl);
             srcUrl.searchParams.set("embed", "1");
-            srcUrl.searchParams.set("return_to", this.getReturnToURL(req, { returnTo }));
+            srcUrl.searchParams.set("return_to", returnTo);
             const script = `<iframe allow="publickey-credentials-get *; publickey-credentials-create *" referrerpolicy="origin" src="${srcUrl.toString()}" style="width:420px" onload="window.addEventListener('message', ({data}) => this.style.height=data+'px')" />`;
             return script;
         };
@@ -413,11 +415,6 @@ export class CentralAuthHTTPClass extends CentralAuthClass {
             const request = this.httpRequestToFetchRequest(req);
             return yield this.getUserData(request.headers);
         });
-        //Overloaded method for getEmbedScript
-        this.getEmbedScriptHTTP = (req, loginUrl, returnTo) => {
-            const request = this.httpRequestToFetchRequest(req);
-            return this.getEmbedScript(request, loginUrl, returnTo);
-        };
         //Overloaded method for login
         this.loginHTTP = (req, res, config) => __awaiter(this, void 0, void 0, function* () {
             const fetchResponse = yield this.login(this.httpRequestToFetchRequest(req), config);
