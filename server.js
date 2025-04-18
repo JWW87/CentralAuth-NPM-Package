@@ -198,6 +198,13 @@ export class CentralAuthClass {
             yield this.getUser(headers);
             return this.userData || null;
         });
+        this.getEmbedScript = (req, loginUrl, returnTo) => {
+            const srcUrl = new URL(loginUrl);
+            srcUrl.searchParams.set("embed", "1");
+            srcUrl.searchParams.set("return_to", this.getReturnToURL(req, { returnTo }));
+            const script = `<iframe allow="publickey-credentials-get *; publickey-credentials-create *" referrerpolicy="origin" src="${srcUrl.toString()}" style="width:420px" onload="window.addEventListener('message', ({data}) => this.style.height=data+'px')" />`;
+            return script;
+        };
         //Public method to start the login procedure
         //Will throw an error when the procedure could not be started
         this.login = (req, config) => __awaiter(this, void 0, void 0, function* () {
@@ -406,6 +413,11 @@ export class CentralAuthHTTPClass extends CentralAuthClass {
             const request = this.httpRequestToFetchRequest(req);
             return yield this.getUserData(request.headers);
         });
+        //Overloaded method for getEmbedScript
+        this.getEmbedScriptHTTP = (req, loginUrl, returnTo) => {
+            const request = this.httpRequestToFetchRequest(req);
+            return this.getEmbedScript(request, loginUrl, returnTo);
+        };
         //Overloaded method for login
         this.loginHTTP = (req, res, config) => __awaiter(this, void 0, void 0, function* () {
             const fetchResponse = yield this.login(this.httpRequestToFetchRequest(req), config);

@@ -25,6 +25,7 @@ export declare class CentralAuthClass {
     private setTokenFromCookie;
     private setTokenFromTokenBearer;
     getUserData: (headers: Headers) => Promise<User | null>;
+    getEmbedScript: (req: Request, loginUrl: string, returnTo?: string) => string;
     login: (req: Request, config?: LoginParams) => Promise<Response>;
     callback: (req: Request, config?: CallbackParams) => Promise<Response>;
     protected processCallback: (req: Request, onStateReceived?: CallbackParams["onStateReceived"]) => Promise<Response>;
@@ -35,6 +36,7 @@ export declare class CentralAuthHTTPClass extends CentralAuthClass {
     private httpRequestToFetchRequest;
     private fetchResponseToHttpResponse;
     getUserDataHTTP: (req: IncomingMessage) => Promise<User | null>;
+    getEmbedScriptHTTP: (req: IncomingMessage, loginUrl: string, returnTo?: string) => string;
     loginHTTP: (req: IncomingMessage, res: ServerResponse, config?: LoginParams) => Promise<void>;
     callbackHTTP: (req: IncomingMessage, res: ServerResponse, config?: CallbackParamsHTTP) => Promise<void>;
     logoutHTTP: (req: IncomingMessage, res: ServerResponse, config?: LogoutParams) => Promise<void>;

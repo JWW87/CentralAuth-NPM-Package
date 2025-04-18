@@ -245,6 +245,16 @@ export class CentralAuthClass {
     return this.userData || null;
   }
 
+  public getEmbedScript = (req: Request, loginUrl: string, returnTo?: string) => {
+    const srcUrl = new URL(loginUrl);
+    srcUrl.searchParams.set("embed", "1");
+    srcUrl.searchParams.set("return_to", this.getReturnToURL(req, { returnTo }));
+
+    const script = `<iframe allow="publickey-credentials-get *; publickey-credentials-create *" referrerpolicy="origin" src="${srcUrl.toString()}" style="width:420px" onload="window.addEventListener('message', ({data}) => this.style.height=data+'px')" />`
+
+    return script;
+  }
+
   //Public method to start the login procedure
   //Will throw an error when the procedure could not be started
   public login = async (req: Request, config?: LoginParams) => {
@@ -470,6 +480,12 @@ export class CentralAuthHTTPClass extends CentralAuthClass {
   public getUserDataHTTP = async (req: IncomingMessage) => {
     const request = this.httpRequestToFetchRequest(req);
     return await this.getUserData(request.headers);
+  }
+
+  //Overloaded method for getEmbedScript
+  public getEmbedScriptHTTP = (req: IncomingMessage, loginUrl: string, returnTo?: string) => {
+    const request = this.httpRequestToFetchRequest(req);
+    return this.getEmbedScript(request, loginUrl, returnTo);
   }
 
   //Overloaded method for login
