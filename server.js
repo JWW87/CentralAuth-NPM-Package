@@ -200,11 +200,13 @@ export class CentralAuthClass {
         });
         //Public method to get an HTML snippet for embedding the login form
         //The login form will be embedded in an iframe with the given login URL
-        this.getEmbedScript = (loginPath, returnTo) => {
+        this.getEmbedScript = (loginPath, returnPath) => {
             const callbackUrl = new URL(this.callbackUrl);
             const srcUrl = new URL(`${callbackUrl.origin}${loginPath}`);
             srcUrl.searchParams.set("embed", "1");
-            srcUrl.searchParams.set("return_to", returnTo);
+            //Construct the return URL and set it in the src URL
+            const returnUrl = new URL(`${callbackUrl.origin}${returnPath}`);
+            srcUrl.searchParams.set("return_to", returnUrl.toString());
             const script = `<iframe allow="publickey-credentials-get *; publickey-credentials-create *" referrerpolicy="origin" src="${srcUrl.toString()}" style="width:420px" onload="window.addEventListener('message', ({data}) => this.style.height=data+'px')" />`;
             return script;
         };
