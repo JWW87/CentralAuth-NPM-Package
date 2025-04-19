@@ -256,7 +256,16 @@ export class CentralAuthClass {
     const returnUrl = new URL(`${callbackUrl.origin}${returnPath}`);
     srcUrl.searchParams.set("return_to", returnUrl.toString());
 
-    const script = `<iframe allow="publickey-credentials-get *; publickey-credentials-create *" referrerpolicy="origin" src="${srcUrl.toString()}" style="width:420px" onload="window.addEventListener('message', ({data}) => this.style.height=data+'px')" />`
+    const script = `const iframe = document.createElement("iframe");
+iframe.id = "centralauth-embedded-login";
+iframe.border = "none";
+iframe.scrolling = "no";
+iframe.src = "${srcUrl.toString()}";
+iframe.allow = "publickey-credentials-get *; publickey-credentials-create *";
+iframe.referrerpolicy = "origin";
+iframe.style = "width:420px;outline:none";
+document.getElementById("centralauth-login-form").innerHTML = iframe.outerHTML;
+window.addEventListener("message", ({data}) => document.getElementById("centralauth-embedded-login").style.height = data + "px");`;
 
     return script;
   }
