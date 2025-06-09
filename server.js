@@ -209,12 +209,11 @@ export class CentralAuthClass {
             srcUrl.searchParams.set("return_to", returnUrl.toString());
             const script = `const iframe = document.createElement("iframe");
 iframe.id = "centralauth-embedded-login";
-iframe.border = "none";
 iframe.scrolling = "no";
 iframe.src = "${srcUrl.toString()}";
 iframe.allow = "publickey-credentials-get *; publickey-credentials-create *";
 iframe.referrerpolicy = "origin";
-iframe.style = "width:420px;outline:none";
+iframe.style = "width:420px;outline:none;border:none";
 document.getElementById("centralauth-login-form").innerHTML = iframe.outerHTML;
 window.addEventListener("message", ({data}) => document.getElementById("centralauth-embedded-login").style.height = data + "px");`;
             return script;
