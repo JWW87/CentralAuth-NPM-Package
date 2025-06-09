@@ -1,4 +1,4 @@
-export type InvitedUser = {
+export type InvitedUserReadable = {
     readonly id?: string;
     tenantId: string;
     email: string;
@@ -11,12 +11,24 @@ export type InvitedUser = {
         name: string;
     };
 };
-export type InternalUser = {
+export type InvitedUserWritable = {
+    tenantId: string;
+    email: string;
+    roleId: 'Admin' | 'OrganizationAdmin' | 'FinancialAdmin' | 'UserAdmin';
+    role: {
+        id?: 'Admin' | 'OrganizationAdmin' | 'FinancialAdmin' | 'UserAdmin';
+        name: string;
+    };
+};
+export type InternalUserReadable = {
     readonly tenantId?: string;
     readonly userId?: string;
     roleId: 'Admin' | 'OrganizationAdmin' | 'FinancialAdmin' | 'UserAdmin';
 };
-export type OrganizationSettings = {
+export type InternalUserWritable = {
+    roleId: 'Admin' | 'OrganizationAdmin' | 'FinancialAdmin' | 'UserAdmin';
+};
+export type OrganizationSettingsReadable = {
     readonly id?: string;
     maxSessionTime?: number;
     maxInactivityTime?: number;
@@ -33,12 +45,31 @@ export type OrganizationSettings = {
     smtpUser?: string | null;
     smtpPass?: string | null;
 };
-export type WhitelistItem = {
+export type OrganizationSettingsWritable = {
+    maxSessionTime?: number;
+    maxInactivityTime?: number;
+    allowLocalhost?: boolean;
+    checkReferrer?: boolean;
+    hijackProtection?: boolean;
+    autoLogin?: boolean;
+    defaultLoginMethod?: 'local' | 'remote' | 'userPick';
+    defaultLoginAttemptType?: 'link' | 'challenge' | 'code';
+    useGlobalSmtp?: boolean;
+    smtpHost?: string | null;
+    smtpPort?: number | null;
+    smtpFrom?: string | null;
+    smtpUser?: string | null;
+    smtpPass?: string | null;
+};
+export type WhitelistItemReadable = {
     readonly id?: string;
     readonly organizationId?: string;
     value: string;
 };
-export type OAuthProvider = {
+export type WhitelistItemWritable = {
+    value: string;
+};
+export type OAuthProviderReadable = {
     readonly id?: string;
     readonly organizationId?: string;
     type: 'google' | 'apple' | 'microsoft' | 'github';
@@ -46,7 +77,13 @@ export type OAuthProvider = {
     clientId: string | null;
     clientSecret: string | null;
 };
-export type Organization = {
+export type OAuthProviderWritable = {
+    type: 'google' | 'apple' | 'microsoft' | 'github';
+    useOwnCredentials?: boolean;
+    clientId: string | null;
+    clientSecret: string | null;
+};
+export type OrganizationReadable = {
     readonly id?: string;
     tenantId: string;
     name: string;
@@ -60,9 +97,19 @@ export type Organization = {
     readonly organizationSettingsId?: string;
     readonly created?: string;
     readonly updated?: string;
-    settings?: OrganizationSettings;
-    whitelistItems?: Array<WhitelistItem>;
-    oAuthProviders?: Array<OAuthProvider>;
+    settings?: OrganizationSettingsReadable;
+    whitelistItems?: Array<WhitelistItemReadable>;
+    oAuthProviders?: Array<OAuthProviderReadable>;
+};
+export type OrganizationWritable = {
+    tenantId: string;
+    name: string;
+    logo?: string | null;
+    customDomain?: string | null;
+    overrideParentSettings?: boolean;
+    settings?: OrganizationSettingsWritable;
+    whitelistItems?: Array<WhitelistItemWritable>;
+    oAuthProviders?: Array<OAuthProviderWritable>;
 };
 export type Role = {
     id?: 'Admin' | 'OrganizationAdmin' | 'FinancialAdmin' | 'UserAdmin';
@@ -72,10 +119,9 @@ export type Role = {
         name?: string;
     }>;
 };
-export type Tenant = {
+export type TenantReadable = {
     readonly id?: string;
     readonly tenantId?: string;
-    formId: string;
     name: string;
     logo?: string | null;
     readonly clientSecret?: string;
@@ -84,7 +130,7 @@ export type Tenant = {
     readonly organizationSettingsId?: string;
     readonly created?: string;
     readonly updated?: string;
-    readonly internalUsers?: Array<InternalUser & {
+    readonly internalUsers?: Array<InternalUserReadable & {
         user: {
             readonly id?: string;
             /**
@@ -110,10 +156,17 @@ export type Tenant = {
     } & {
         role: Role;
     }>;
-    readonly invitedUsers?: Array<InvitedUser>;
-    settings?: OrganizationSettings;
+    readonly invitedUsers?: Array<InvitedUserReadable>;
+    settings?: OrganizationSettingsReadable;
 };
-export type User = {
+export type TenantWritable = {
+    formId: string;
+    name: string;
+    logo?: string | null;
+    overrideParentSettings?: boolean;
+    settings?: OrganizationSettingsWritable;
+};
+export type UserReadable = {
     readonly id?: string;
     /**
      * An email address unique for this user.
@@ -142,7 +195,22 @@ export type User = {
         readonly updated?: string;
     }>;
 };
-export type ApiKey = {
+export type UserWritable = {
+    /**
+     * An email address unique for this user.
+     */
+    email: string;
+    /**
+     * Flag whether this user has verified their email address.
+     */
+    verified?: boolean;
+    /**
+     * Flag whether this user is blocked.
+     */
+    blocked?: boolean;
+    organizationId: string;
+};
+export type ApiKeyReadable = {
     readonly id?: string;
     /**
      * Foreign key to a tenant or an organization.
@@ -160,6 +228,16 @@ export type ApiKey = {
     readonly updated?: string;
     readonly lastUsed?: string;
 };
+export type ApiKeyWritable = {
+    /**
+     * Foreign key to a tenant or an organization.
+     */
+    organizationId: string;
+    /**
+     * The human-readable name of the API key.
+     */
+    name: string;
+};
 export type DeleteApiV1InvitedUserByIdData = {
     body?: never;
     path: {
@@ -173,28 +251,28 @@ export type DeleteApiV1InvitedUserByIdErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -232,28 +310,28 @@ export type PostApiV1InvitedUserErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -274,7 +352,7 @@ export type PostApiV1InvitedUserResponses = {
     /**
      * An invited admin object
      */
-    200: InvitedUser;
+    200: InvitedUserReadable;
 };
 export type PostApiV1InvitedUserResponse = PostApiV1InvitedUserResponses[keyof PostApiV1InvitedUserResponses];
 export type DeleteApiV1InternalUserByTenantIdByUserIdData = {
@@ -291,28 +369,28 @@ export type DeleteApiV1InternalUserByTenantIdByUserIdErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -351,28 +429,28 @@ export type PostApiV1InternalUserByTenantIdByUserIdErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -393,7 +471,7 @@ export type PostApiV1InternalUserByTenantIdByUserIdResponses = {
     /**
      * An internal user object
      */
-    200: InternalUser;
+    200: InternalUserReadable;
 };
 export type PostApiV1InternalUserByTenantIdByUserIdResponse = PostApiV1InternalUserByTenantIdByUserIdResponses[keyof PostApiV1InternalUserByTenantIdByUserIdResponses];
 export type DeleteApiV1OrganizationByIdData = {
@@ -409,28 +487,28 @@ export type DeleteApiV1OrganizationByIdErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -466,28 +544,28 @@ export type GetApiV1OrganizationByIdErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -508,7 +586,7 @@ export type GetApiV1OrganizationByIdResponses = {
     /**
      * An organization object with whitelist items, OAuth providers and settings
      */
-    200: Organization;
+    200: OrganizationReadable;
 };
 export type GetApiV1OrganizationByIdResponse = GetApiV1OrganizationByIdResponses[keyof GetApiV1OrganizationByIdResponses];
 export type PostApiV1OrganizationByIdData = {
@@ -554,28 +632,28 @@ export type PostApiV1OrganizationByIdErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -596,7 +674,7 @@ export type PostApiV1OrganizationByIdResponses = {
     /**
      * An organization object with whitelist items, OAuth providers and settings
      */
-    200: Organization;
+    200: OrganizationReadable;
 };
 export type PostApiV1OrganizationByIdResponse = PostApiV1OrganizationByIdResponses[keyof PostApiV1OrganizationByIdResponses];
 export type PostApiV1OrganizationData = {
@@ -641,28 +719,28 @@ export type PostApiV1OrganizationErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -683,7 +761,7 @@ export type PostApiV1OrganizationResponses = {
     /**
      * An organization object with whitelist items, OAuth providers and settings
      */
-    200: Organization;
+    200: OrganizationReadable;
 };
 export type PostApiV1OrganizationResponse = PostApiV1OrganizationResponses[keyof PostApiV1OrganizationResponses];
 export type GetApiV1OrganizationByIdRotateSecretData = {
@@ -699,28 +777,28 @@ export type GetApiV1OrganizationByIdRotateSecretErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -757,28 +835,28 @@ export type PostApiV1OrganizationByIdActivateSecretErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -814,28 +892,28 @@ export type DeleteApiV1TenantByIdErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -871,28 +949,28 @@ export type GetApiV1TenantByIdErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -913,14 +991,14 @@ export type GetApiV1TenantByIdResponses = {
     /**
      * A tenant object with settings, internal and invited users.
      */
-    200: Tenant;
+    200: TenantReadable;
 };
 export type GetApiV1TenantByIdResponse = GetApiV1TenantByIdResponses[keyof GetApiV1TenantByIdResponses];
 export type PostApiV1TenantByIdData = {
     body?: {
         name?: string;
         logo?: string | null;
-        settings?: OrganizationSettings;
+        settings?: OrganizationSettingsWritable;
     };
     path: {
         id: string;
@@ -933,28 +1011,28 @@ export type PostApiV1TenantByIdErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -975,7 +1053,7 @@ export type PostApiV1TenantByIdResponses = {
     /**
      * A tenant object with settings, internal and invited users.
      */
-    200: Tenant;
+    200: TenantReadable;
 };
 export type PostApiV1TenantByIdResponse = PostApiV1TenantByIdResponses[keyof PostApiV1TenantByIdResponses];
 export type DeleteApiV1UserByIdData = {
@@ -991,28 +1069,28 @@ export type DeleteApiV1UserByIdErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -1048,28 +1126,28 @@ export type GetApiV1UserByIdErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -1090,7 +1168,7 @@ export type GetApiV1UserByIdResponses = {
     /**
      * A user object with all active connections
      */
-    200: User;
+    200: UserReadable;
 };
 export type GetApiV1UserByIdResponse = GetApiV1UserByIdResponses[keyof GetApiV1UserByIdResponses];
 export type PostApiV1UserByIdData = {
@@ -1115,28 +1193,28 @@ export type PostApiV1UserByIdErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -1157,7 +1235,7 @@ export type PostApiV1UserByIdResponses = {
     /**
      * A user object with all active connections
      */
-    200: User;
+    200: UserReadable;
 };
 export type PostApiV1UserByIdResponse = PostApiV1UserByIdResponses[keyof PostApiV1UserByIdResponses];
 export type DeleteApiV1UserByOrganizationIdByEmailData = {
@@ -1174,28 +1252,28 @@ export type DeleteApiV1UserByOrganizationIdByEmailErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -1232,28 +1310,28 @@ export type GetApiV1UserByOrganizationIdByEmailErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -1274,7 +1352,7 @@ export type GetApiV1UserByOrganizationIdByEmailResponses = {
     /**
      * A user object with all active connections
      */
-    200: User;
+    200: UserReadable;
 };
 export type GetApiV1UserByOrganizationIdByEmailResponse = GetApiV1UserByOrganizationIdByEmailResponses[keyof GetApiV1UserByOrganizationIdByEmailResponses];
 export type PostApiV1UserByOrganizationIdByEmailData = {
@@ -1300,28 +1378,28 @@ export type PostApiV1UserByOrganizationIdByEmailErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -1342,7 +1420,7 @@ export type PostApiV1UserByOrganizationIdByEmailResponses = {
     /**
      * A user object with all active connections
      */
-    200: User;
+    200: UserReadable;
 };
 export type PostApiV1UserByOrganizationIdByEmailResponse = PostApiV1UserByOrganizationIdByEmailResponses[keyof PostApiV1UserByOrganizationIdByEmailResponses];
 export type PostApiV1UserData = {
@@ -1370,28 +1448,28 @@ export type PostApiV1UserErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -1412,7 +1490,7 @@ export type PostApiV1UserResponses = {
     /**
      * A user object with all active connections
      */
-    200: User;
+    200: UserReadable;
 };
 export type PostApiV1UserResponse = PostApiV1UserResponses[keyof PostApiV1UserResponses];
 export type GetApiV1UsersByOrganizationIdData = {
@@ -1440,28 +1518,28 @@ export type GetApiV1UsersByOrganizationIdErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -1501,7 +1579,7 @@ export type GetApiV1UsersByOrganizationIdResponses = {
              */
             readonly totalEntities: number;
         };
-        data: Array<User>;
+        data: Array<UserReadable>;
     };
 };
 export type GetApiV1UsersByOrganizationIdResponse = GetApiV1UsersByOrganizationIdResponses[keyof GetApiV1UsersByOrganizationIdResponses];
@@ -1518,28 +1596,28 @@ export type DeleteApiV1ApiKeyByIdErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -1575,28 +1653,28 @@ export type GetApiV1ApiKeyByIdErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -1617,7 +1695,7 @@ export type GetApiV1ApiKeyByIdResponses = {
     /**
      * An API key object
      */
-    200: ApiKey;
+    200: ApiKeyReadable;
 };
 export type GetApiV1ApiKeyByIdResponse = GetApiV1ApiKeyByIdResponses[keyof GetApiV1ApiKeyByIdResponses];
 export type PostApiV1ApiKeyByIdData = {
@@ -1638,28 +1716,28 @@ export type PostApiV1ApiKeyByIdErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -1680,7 +1758,7 @@ export type PostApiV1ApiKeyByIdResponses = {
     /**
      * An API key object
      */
-    200: ApiKey;
+    200: ApiKeyReadable;
 };
 export type PostApiV1ApiKeyByIdResponse = PostApiV1ApiKeyByIdResponses[keyof PostApiV1ApiKeyByIdResponses];
 export type PostApiV1ApiKeyData = {
@@ -1703,28 +1781,28 @@ export type PostApiV1ApiKeyErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -1745,7 +1823,7 @@ export type PostApiV1ApiKeyResponses = {
     /**
      * An API key object
      */
-    200: ApiKey;
+    200: ApiKeyReadable;
 };
 export type PostApiV1ApiKeyResponse = PostApiV1ApiKeyResponses[keyof PostApiV1ApiKeyResponses];
 export type GetApiV1ApiKeysByOrganizationIdData = {
@@ -1764,28 +1842,28 @@ export type GetApiV1ApiKeysByOrganizationIdErrors = {
      * Bad request
      */
     400: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * No permission
      */
     403: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Not found
      */
     404: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
      * Invalid method
      */
     405: {
-        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'sessionExpired' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'secretMissing' | 'authBaseUrlMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        errorCode?: 'genericError' | 'noPermission' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
         message?: string;
     };
     /**
@@ -1806,7 +1884,7 @@ export type GetApiV1ApiKeysByOrganizationIdResponses = {
     /**
      * An array with API key objects
      */
-    200: Array<ApiKey>;
+    200: Array<ApiKeyReadable>;
 };
 export type GetApiV1ApiKeysByOrganizationIdResponse = GetApiV1ApiKeysByOrganizationIdResponses[keyof GetApiV1ApiKeysByOrganizationIdResponses];
 export type ClientOptions = {

@@ -12,7 +12,7 @@ export const deleteApiV1InvitedUserById = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
         ], url: '/api/v1/invited_user/{id}' }, options));
@@ -29,7 +29,7 @@ export const postApiV1InvitedUser = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
         ], url: '/api/v1/invited_user' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
@@ -46,7 +46,7 @@ export const deleteApiV1InternalUserByTenantIdByUserId = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
         ], url: '/api/v1/internal_user/{tenantId}/{userId}' }, options));
@@ -63,10 +63,10 @@ export const postApiV1InternalUserByTenantIdByUserId = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
-        ], url: '/api/v1/internal_user/{tenantId}/{userId}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
+        ], url: '/api/v1/internal_user/{tenantId}/{userId}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options.headers) }));
 };
 /**
  * Delete an organization
@@ -81,7 +81,7 @@ export const deleteApiV1OrganizationById = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
         ], url: '/api/v1/organization/{id}' }, options));
@@ -98,7 +98,7 @@ export const getApiV1OrganizationById = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
         ], url: '/api/v1/organization/{id}' }, options));
@@ -115,10 +115,10 @@ export const postApiV1OrganizationById = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
-        ], url: '/api/v1/organization/{id}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
+        ], url: '/api/v1/organization/{id}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options.headers) }));
 };
 /**
  * Create a new organization
@@ -132,7 +132,7 @@ export const postApiV1Organization = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
         ], url: '/api/v1/organization' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
@@ -149,7 +149,7 @@ export const getApiV1OrganizationByIdRotateSecret = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
         ], url: '/api/v1/organization/{id}/rotate_secret' }, options));
@@ -167,10 +167,10 @@ export const postApiV1OrganizationByIdActivateSecret = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
-        ], url: '/api/v1/organization/{id}/activate_secret' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
+        ], url: '/api/v1/organization/{id}/activate_secret' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options.headers) }));
 };
 /**
  * Delete a tenant
@@ -185,7 +185,7 @@ export const deleteApiV1TenantById = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
         ], url: '/api/v1/tenant/{id}' }, options));
@@ -202,7 +202,7 @@ export const getApiV1TenantById = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
         ], url: '/api/v1/tenant/{id}' }, options));
@@ -219,10 +219,10 @@ export const postApiV1TenantById = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
-        ], url: '/api/v1/tenant/{id}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
+        ], url: '/api/v1/tenant/{id}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options.headers) }));
 };
 /**
  * Delete a user
@@ -237,7 +237,7 @@ export const deleteApiV1UserById = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
         ], url: '/api/v1/user/{id}' }, options));
@@ -254,7 +254,7 @@ export const getApiV1UserById = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
         ], url: '/api/v1/user/{id}' }, options));
@@ -272,10 +272,10 @@ export const postApiV1UserById = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
-        ], url: '/api/v1/user/{id}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
+        ], url: '/api/v1/user/{id}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options.headers) }));
 };
 /**
  * Delete a user by email address
@@ -290,7 +290,7 @@ export const deleteApiV1UserByOrganizationIdByEmail = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
         ], url: '/api/v1/user/{organizationId}/{email}' }, options));
@@ -307,7 +307,7 @@ export const getApiV1UserByOrganizationIdByEmail = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
         ], url: '/api/v1/user/{organizationId}/{email}' }, options));
@@ -325,10 +325,10 @@ export const postApiV1UserByOrganizationIdByEmail = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
-        ], url: '/api/v1/user/{organizationId}/{email}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
+        ], url: '/api/v1/user/{organizationId}/{email}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options.headers) }));
 };
 /**
  * Create a new user
@@ -343,7 +343,7 @@ export const postApiV1User = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
         ], url: '/api/v1/user' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
@@ -361,7 +361,7 @@ export const getApiV1UsersByOrganizationId = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
         ], url: '/api/v1/users/{organizationId}' }, options));
@@ -378,7 +378,7 @@ export const deleteApiV1ApiKeyById = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
         ], url: '/api/v1/api_key/{id}' }, options));
@@ -395,7 +395,7 @@ export const getApiV1ApiKeyById = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
         ], url: '/api/v1/api_key/{id}' }, options));
@@ -412,10 +412,10 @@ export const postApiV1ApiKeyById = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
-        ], url: '/api/v1/api_key/{id}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
+        ], url: '/api/v1/api_key/{id}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options.headers) }));
 };
 /**
  * Create a new API key
@@ -429,7 +429,7 @@ export const postApiV1ApiKey = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
         ], url: '/api/v1/api_key' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options === null || options === void 0 ? void 0 : options.headers) }));
@@ -446,7 +446,7 @@ export const getApiV1ApiKeysByOrganizationId = (options) => {
             },
             {
                 in: 'cookie',
-                name: 'sessionToken',
+                name: 'accessToken',
                 type: 'apiKey'
             }
         ], url: '/api/v1/api_keys/{organizationId}' }, options));
