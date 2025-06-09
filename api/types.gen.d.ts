@@ -1,4 +1,4 @@
-export type InvitedUserReadable = {
+export type InvitedUser = {
     readonly id?: string;
     tenantId: string;
     email: string;
@@ -11,24 +11,12 @@ export type InvitedUserReadable = {
         name: string;
     };
 };
-export type InvitedUserWritable = {
-    tenantId: string;
-    email: string;
-    roleId: 'Admin' | 'OrganizationAdmin' | 'FinancialAdmin' | 'UserAdmin';
-    role: {
-        id?: 'Admin' | 'OrganizationAdmin' | 'FinancialAdmin' | 'UserAdmin';
-        name: string;
-    };
-};
-export type InternalUserReadable = {
+export type InternalUser = {
     readonly tenantId?: string;
     readonly userId?: string;
     roleId: 'Admin' | 'OrganizationAdmin' | 'FinancialAdmin' | 'UserAdmin';
 };
-export type InternalUserWritable = {
-    roleId: 'Admin' | 'OrganizationAdmin' | 'FinancialAdmin' | 'UserAdmin';
-};
-export type OrganizationSettingsReadable = {
+export type OrganizationSettings = {
     readonly id?: string;
     maxSessionTime?: number;
     maxInactivityTime?: number;
@@ -45,31 +33,12 @@ export type OrganizationSettingsReadable = {
     smtpUser?: string | null;
     smtpPass?: string | null;
 };
-export type OrganizationSettingsWritable = {
-    maxSessionTime?: number;
-    maxInactivityTime?: number;
-    allowLocalhost?: boolean;
-    checkReferrer?: boolean;
-    hijackProtection?: boolean;
-    autoLogin?: boolean;
-    defaultLoginMethod?: 'local' | 'remote' | 'userPick';
-    defaultLoginAttemptType?: 'link' | 'challenge' | 'code';
-    useGlobalSmtp?: boolean;
-    smtpHost?: string | null;
-    smtpPort?: number | null;
-    smtpFrom?: string | null;
-    smtpUser?: string | null;
-    smtpPass?: string | null;
-};
-export type WhitelistItemReadable = {
+export type WhitelistItem = {
     readonly id?: string;
     readonly organizationId?: string;
     value: string;
 };
-export type WhitelistItemWritable = {
-    value: string;
-};
-export type OAuthProviderReadable = {
+export type OAuthProvider = {
     readonly id?: string;
     readonly organizationId?: string;
     type: 'google' | 'apple' | 'microsoft' | 'github';
@@ -77,13 +46,7 @@ export type OAuthProviderReadable = {
     clientId: string | null;
     clientSecret: string | null;
 };
-export type OAuthProviderWritable = {
-    type: 'google' | 'apple' | 'microsoft' | 'github';
-    useOwnCredentials?: boolean;
-    clientId: string | null;
-    clientSecret: string | null;
-};
-export type OrganizationReadable = {
+export type Organization = {
     readonly id?: string;
     tenantId: string;
     name: string;
@@ -97,19 +60,9 @@ export type OrganizationReadable = {
     readonly organizationSettingsId?: string;
     readonly created?: string;
     readonly updated?: string;
-    settings?: OrganizationSettingsReadable;
-    whitelistItems?: Array<WhitelistItemReadable>;
-    oAuthProviders?: Array<OAuthProviderReadable>;
-};
-export type OrganizationWritable = {
-    tenantId: string;
-    name: string;
-    logo?: string | null;
-    customDomain?: string | null;
-    overrideParentSettings?: boolean;
-    settings?: OrganizationSettingsWritable;
-    whitelistItems?: Array<WhitelistItemWritable>;
-    oAuthProviders?: Array<OAuthProviderWritable>;
+    settings?: OrganizationSettings;
+    whitelistItems?: Array<WhitelistItem>;
+    oAuthProviders?: Array<OAuthProvider>;
 };
 export type Role = {
     id?: 'Admin' | 'OrganizationAdmin' | 'FinancialAdmin' | 'UserAdmin';
@@ -119,9 +72,10 @@ export type Role = {
         name?: string;
     }>;
 };
-export type TenantReadable = {
+export type Tenant = {
     readonly id?: string;
     readonly tenantId?: string;
+    formId: string;
     name: string;
     logo?: string | null;
     readonly clientSecret?: string;
@@ -130,7 +84,7 @@ export type TenantReadable = {
     readonly organizationSettingsId?: string;
     readonly created?: string;
     readonly updated?: string;
-    readonly internalUsers?: Array<InternalUserReadable & {
+    readonly internalUsers?: Array<InternalUser & {
         user: {
             readonly id?: string;
             /**
@@ -156,17 +110,10 @@ export type TenantReadable = {
     } & {
         role: Role;
     }>;
-    readonly invitedUsers?: Array<InvitedUserReadable>;
-    settings?: OrganizationSettingsReadable;
+    readonly invitedUsers?: Array<InvitedUser>;
+    settings?: OrganizationSettings;
 };
-export type TenantWritable = {
-    formId: string;
-    name: string;
-    logo?: string | null;
-    overrideParentSettings?: boolean;
-    settings?: OrganizationSettingsWritable;
-};
-export type UserReadable = {
+export type User = {
     readonly id?: string;
     /**
      * An email address unique for this user.
@@ -195,22 +142,7 @@ export type UserReadable = {
         readonly updated?: string;
     }>;
 };
-export type UserWritable = {
-    /**
-     * An email address unique for this user.
-     */
-    email: string;
-    /**
-     * Flag whether this user has verified their email address.
-     */
-    verified?: boolean;
-    /**
-     * Flag whether this user is blocked.
-     */
-    blocked?: boolean;
-    organizationId: string;
-};
-export type ApiKeyReadable = {
+export type ApiKey = {
     readonly id?: string;
     /**
      * Foreign key to a tenant or an organization.
@@ -227,16 +159,6 @@ export type ApiKeyReadable = {
     readonly created?: string;
     readonly updated?: string;
     readonly lastUsed?: string;
-};
-export type ApiKeyWritable = {
-    /**
-     * Foreign key to a tenant or an organization.
-     */
-    organizationId: string;
-    /**
-     * The human-readable name of the API key.
-     */
-    name: string;
 };
 export type DeleteApiV1InvitedUserByIdData = {
     body?: never;
@@ -352,7 +274,7 @@ export type PostApiV1InvitedUserResponses = {
     /**
      * An invited admin object
      */
-    200: InvitedUserReadable;
+    200: InvitedUser;
 };
 export type PostApiV1InvitedUserResponse = PostApiV1InvitedUserResponses[keyof PostApiV1InvitedUserResponses];
 export type DeleteApiV1InternalUserByTenantIdByUserIdData = {
@@ -471,7 +393,7 @@ export type PostApiV1InternalUserByTenantIdByUserIdResponses = {
     /**
      * An internal user object
      */
-    200: InternalUserReadable;
+    200: InternalUser;
 };
 export type PostApiV1InternalUserByTenantIdByUserIdResponse = PostApiV1InternalUserByTenantIdByUserIdResponses[keyof PostApiV1InternalUserByTenantIdByUserIdResponses];
 export type DeleteApiV1OrganizationByIdData = {
@@ -586,7 +508,7 @@ export type GetApiV1OrganizationByIdResponses = {
     /**
      * An organization object with whitelist items, OAuth providers and settings
      */
-    200: OrganizationReadable;
+    200: Organization;
 };
 export type GetApiV1OrganizationByIdResponse = GetApiV1OrganizationByIdResponses[keyof GetApiV1OrganizationByIdResponses];
 export type PostApiV1OrganizationByIdData = {
@@ -674,7 +596,7 @@ export type PostApiV1OrganizationByIdResponses = {
     /**
      * An organization object with whitelist items, OAuth providers and settings
      */
-    200: OrganizationReadable;
+    200: Organization;
 };
 export type PostApiV1OrganizationByIdResponse = PostApiV1OrganizationByIdResponses[keyof PostApiV1OrganizationByIdResponses];
 export type PostApiV1OrganizationData = {
@@ -761,7 +683,7 @@ export type PostApiV1OrganizationResponses = {
     /**
      * An organization object with whitelist items, OAuth providers and settings
      */
-    200: OrganizationReadable;
+    200: Organization;
 };
 export type PostApiV1OrganizationResponse = PostApiV1OrganizationResponses[keyof PostApiV1OrganizationResponses];
 export type GetApiV1OrganizationByIdRotateSecretData = {
@@ -991,14 +913,14 @@ export type GetApiV1TenantByIdResponses = {
     /**
      * A tenant object with settings, internal and invited users.
      */
-    200: TenantReadable;
+    200: Tenant;
 };
 export type GetApiV1TenantByIdResponse = GetApiV1TenantByIdResponses[keyof GetApiV1TenantByIdResponses];
 export type PostApiV1TenantByIdData = {
     body?: {
         name?: string;
         logo?: string | null;
-        settings?: OrganizationSettingsWritable;
+        settings?: OrganizationSettings;
     };
     path: {
         id: string;
@@ -1053,7 +975,7 @@ export type PostApiV1TenantByIdResponses = {
     /**
      * A tenant object with settings, internal and invited users.
      */
-    200: TenantReadable;
+    200: Tenant;
 };
 export type PostApiV1TenantByIdResponse = PostApiV1TenantByIdResponses[keyof PostApiV1TenantByIdResponses];
 export type DeleteApiV1UserByIdData = {
@@ -1168,7 +1090,7 @@ export type GetApiV1UserByIdResponses = {
     /**
      * A user object with all active connections
      */
-    200: UserReadable;
+    200: User;
 };
 export type GetApiV1UserByIdResponse = GetApiV1UserByIdResponses[keyof GetApiV1UserByIdResponses];
 export type PostApiV1UserByIdData = {
@@ -1235,7 +1157,7 @@ export type PostApiV1UserByIdResponses = {
     /**
      * A user object with all active connections
      */
-    200: UserReadable;
+    200: User;
 };
 export type PostApiV1UserByIdResponse = PostApiV1UserByIdResponses[keyof PostApiV1UserByIdResponses];
 export type DeleteApiV1UserByOrganizationIdByEmailData = {
@@ -1352,7 +1274,7 @@ export type GetApiV1UserByOrganizationIdByEmailResponses = {
     /**
      * A user object with all active connections
      */
-    200: UserReadable;
+    200: User;
 };
 export type GetApiV1UserByOrganizationIdByEmailResponse = GetApiV1UserByOrganizationIdByEmailResponses[keyof GetApiV1UserByOrganizationIdByEmailResponses];
 export type PostApiV1UserByOrganizationIdByEmailData = {
@@ -1420,7 +1342,7 @@ export type PostApiV1UserByOrganizationIdByEmailResponses = {
     /**
      * A user object with all active connections
      */
-    200: UserReadable;
+    200: User;
 };
 export type PostApiV1UserByOrganizationIdByEmailResponse = PostApiV1UserByOrganizationIdByEmailResponses[keyof PostApiV1UserByOrganizationIdByEmailResponses];
 export type PostApiV1UserData = {
@@ -1490,7 +1412,7 @@ export type PostApiV1UserResponses = {
     /**
      * A user object with all active connections
      */
-    200: UserReadable;
+    200: User;
 };
 export type PostApiV1UserResponse = PostApiV1UserResponses[keyof PostApiV1UserResponses];
 export type GetApiV1UsersByOrganizationIdData = {
@@ -1579,7 +1501,7 @@ export type GetApiV1UsersByOrganizationIdResponses = {
              */
             readonly totalEntities: number;
         };
-        data: Array<UserReadable>;
+        data: Array<User>;
     };
 };
 export type GetApiV1UsersByOrganizationIdResponse = GetApiV1UsersByOrganizationIdResponses[keyof GetApiV1UsersByOrganizationIdResponses];
@@ -1695,7 +1617,7 @@ export type GetApiV1ApiKeyByIdResponses = {
     /**
      * An API key object
      */
-    200: ApiKeyReadable;
+    200: ApiKey;
 };
 export type GetApiV1ApiKeyByIdResponse = GetApiV1ApiKeyByIdResponses[keyof GetApiV1ApiKeyByIdResponses];
 export type PostApiV1ApiKeyByIdData = {
@@ -1758,7 +1680,7 @@ export type PostApiV1ApiKeyByIdResponses = {
     /**
      * An API key object
      */
-    200: ApiKeyReadable;
+    200: ApiKey;
 };
 export type PostApiV1ApiKeyByIdResponse = PostApiV1ApiKeyByIdResponses[keyof PostApiV1ApiKeyByIdResponses];
 export type PostApiV1ApiKeyData = {
@@ -1823,7 +1745,7 @@ export type PostApiV1ApiKeyResponses = {
     /**
      * An API key object
      */
-    200: ApiKeyReadable;
+    200: ApiKey;
 };
 export type PostApiV1ApiKeyResponse = PostApiV1ApiKeyResponses[keyof PostApiV1ApiKeyResponses];
 export type GetApiV1ApiKeysByOrganizationIdData = {
@@ -1884,7 +1806,7 @@ export type GetApiV1ApiKeysByOrganizationIdResponses = {
     /**
      * An array with API key objects
      */
-    200: Array<ApiKeyReadable>;
+    200: Array<ApiKey>;
 };
 export type GetApiV1ApiKeysByOrganizationIdResponse = GetApiV1ApiKeysByOrganizationIdResponses[keyof GetApiV1ApiKeysByOrganizationIdResponses];
 export type ClientOptions = {
