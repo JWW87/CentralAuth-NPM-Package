@@ -8,6 +8,9 @@ export default defineConfig({
     {
       name: '@hey-api/typescript',
       readOnlyWriteOnlyBehavior: 'off',
-    }
+    },
+    {
+      name: '@hey-api/sdk',
+    },
   ]
 });
