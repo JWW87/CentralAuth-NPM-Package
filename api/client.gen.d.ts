@@ -1,5 +1,5 @@
 import type { ClientOptions } from './types.gen';
-import { type Config, type ClientOptions as DefaultClientOptions } from '@hey-api/client-fetch';
+import { type Config, type ClientOptions as DefaultClientOptions } from './client';
 /**
  * The `createClientConfig()` function will be called on client initialization
  * and the returned object will become the client's initial configuration.
@@ -9,4 +9,4 @@ import { type Config, type ClientOptions as DefaultClientOptions } from '@hey-ap
  * to ensure your client always has the correct values.
  */
 export type CreateClientConfig<T extends DefaultClientOptions = ClientOptions> = (override?: Config<DefaultClientOptions & T>) => Config<Required<DefaultClientOptions> & T>;
-export declare const client: import("@hey-api/client-fetch").Client;
+export declare const client: import("./client").Client;
