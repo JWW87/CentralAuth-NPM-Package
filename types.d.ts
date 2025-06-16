@@ -17,6 +17,7 @@ export type User = {
     organizationId: string | null;
     created: Date;
     updated: Date;
+    lastLogin: Date | null;
 };
 export type JWTPayload = {
     sessionId: string;

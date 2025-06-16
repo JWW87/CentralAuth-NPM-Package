@@ -21,6 +21,7 @@ export type User = {
   organizationId: string | null;
   created: Date;
   updated: Date;
+  lastLogin: Date | null;
 }
 
 //Type for the payload of the JWT
