@@ -26,7 +26,7 @@
     "swr": "^2.3.0"
   },
   "devDependencies": {
-    "@hey-api/openapi-ts": "^0.73.0",
+    "@hey-api/openapi-ts": "^0.76.0",
     "@types/node": "^24.0.1",
     "@types/react": "^19.0.0",
     "@types/simple-oauth2": "^5.0.7",
