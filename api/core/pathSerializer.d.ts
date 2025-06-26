@@ -19,9 +19,9 @@ type ObjectSeparatorStyle = ObjectStyle | MatrixStyle;
 interface SerializePrimitiveParam extends SerializePrimitiveOptions {
     value: string;
 }
-export declare const separatorArrayExplode: (style: ArraySeparatorStyle) => "." | ";" | "," | "&";
-export declare const separatorArrayNoExplode: (style: ArraySeparatorStyle) => "," | "|" | "%20";
-export declare const separatorObjectExplode: (style: ObjectSeparatorStyle) => "." | ";" | "," | "&";
+export declare const separatorArrayExplode: (style: ArraySeparatorStyle) => ";" | "," | "." | "&";
+export declare const separatorArrayNoExplode: (style: ArraySeparatorStyle) => "|" | "," | "%20";
+export declare const separatorObjectExplode: (style: ObjectSeparatorStyle) => ";" | "," | "." | "&";
 export declare const serializeArrayParam: ({ allowReserved, explode, name, style, value, }: SerializeOptions<ArraySeparatorStyle> & {
     value: unknown[];
 }) => string;

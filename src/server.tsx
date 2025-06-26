@@ -1,7 +1,6 @@
 import { randomUUID } from "crypto";
 import { IncomingMessage, ServerResponse } from "http";
 import { jwtDecrypt } from "jose";
-import { AuthorizationCode } from 'simple-oauth2';
 import { CallbackParams, CallbackParamsHTTP, ConstructorParams, DirectAuthenticationParams, DirectAuthenticationResponse, ErrorCode, ErrorObject, JWTPayload, LoginParams, LogoutParams, TokenResponse, User } from "./types";
 
 //Private method for parsing a cookie string in a request header
@@ -47,21 +46,6 @@ export class CentralAuthClass {
       this.unsafeIncludeUser = true;
       console.warn(`[CENTRALAUTH DEBUG] Unsafe ID token will be used for ${clientId || "CentralAuth"}.`);
     }
-  }
-
-  //Private method to get the Simple OAuth client
-  private getOAuthClient = () => {
-    return new AuthorizationCode({
-      client: {
-        id: this.clientId || "",
-        secret: this.secret,
-      },
-      auth: {
-        tokenHost: this.authBaseUrl,
-        tokenPath: '/api/v1/verify',
-        authorizePath: '/login',
-      }
-    })
   }
 
   //Private method to check whether all variable are set for a specific action
@@ -317,13 +301,16 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
     if (returnTo)
       callbackUrl.searchParams.set("return_to", returnTo);
 
-    //Get a new OAuth client
-    const client = this.getOAuthClient();
     //Construct the base URL for the OAuth login
     const authorizationUriParams: { [key: string]: string } = {
       redirect_uri: callbackUrl.toString()
     };
 
+    //Add the client ID when given
+    if (this.clientId)
+      authorizationUriParams.client_id = this.clientId;
+    //Add the response type, which is always "code"
+    authorizationUriParams.response_type = "code";
     //Add an error message when given
     if (config?.errorMessage)
       authorizationUriParams.error_message = config.errorMessage;
@@ -339,7 +326,10 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
     if (config?.embed)
       authorizationUriParams.embed = "1";
 
-    const authorizationUri = new URL(client.authorizeURL(authorizationUriParams));
+    const authorizationUri = new URL(`${this.authBaseUrl}/login`);
+    //Set the search parameters for the authorization URI
+    for (const [key, value] of Object.entries(authorizationUriParams))
+      authorizationUri.searchParams.set(key, value);
 
     if (this.debug)
       console.log(`[CENTRALAUTH DEBUG] Starting login procedure for client ${this.clientId || "CentralAuth"}, redirecting to ${authorizationUri.toString()}.`);
@@ -372,7 +362,7 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
     const url = new URL(req.url);
     const searchParams = url.searchParams;
     const returnTo = searchParams.get("return_to") || url.origin;
-    const code = searchParams.get("code");
+    const code = searchParams.get("code") as string;
     const state = searchParams.get("state");
     const errorCode = searchParams.get("error_code");
     const errorMessage = searchParams.get("error_message");
@@ -408,14 +398,28 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
       throw new ValidationError({ errorCode: "missingFields", message: "The session ID and/or verification state are missing in the callback URL." });
     }
 
-    //Get a new OAuth client
-    const client = this.getOAuthClient();
     //Get an access JWT based on the given code
-    const tokenObject = await client.getToken({
-      redirect_uri: this.callbackUrl,
-      code
-    });
-    const tokenResponse = tokenObject.token as TokenResponse;
+    const headers = new Headers();
+    headers.set("Content-Type", "application/x-www-form-urlencoded");
+    headers.set("Authorization", `Basic ${Buffer.from(`${this.clientId || ""}:${this.secret}`).toString("base64")}`);
+    const formData = new FormData();
+    formData.append("code", code);
+    formData.append("redirect_uri", this.callbackUrl);
+
+    const tokenObject = await fetch(`${this.authBaseUrl}/api/v1/verify`,
+      {
+        method: "POST",
+        body: formData,
+        headers
+      });
+
+    if (!tokenObject.ok) {
+      const error = await tokenObject.json() as ErrorObject;
+      throw new ValidationError(error);
+    }
+
+    //Parse the token response
+    const tokenResponse = await tokenObject.json() as TokenResponse;
     //Set the token in this object based on the unsafeIncludeUser flag
     this.token = this.unsafeIncludeUser ? tokenResponse.id_token : tokenResponse.access_token;
 
