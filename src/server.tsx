@@ -1,4 +1,3 @@
-import { randomUUID } from "crypto";
 import { IncomingMessage, ServerResponse } from "http";
 import { jwtDecrypt } from "jose";
 import { CallbackParams, CallbackParamsHTTP, ConstructorParams, DirectAuthenticationParams, DirectAuthenticationResponse, ErrorCode, ErrorObject, JWTPayload, LoginParams, LogoutParams, TokenResponse, User } from "./types";
@@ -266,7 +265,7 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
     //Set the body for the direct authentication request
     const body = {
       email: config.email,
-      state: config.state || randomUUID(),
+      state: config.state || crypto.randomUUID(),
       redirect_uri: callbackUrl.toString(),
       translations: config.translations
     }
@@ -318,7 +317,7 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
     if (config?.email)
       authorizationUriParams.email = config.email;
     //Add OAuth state when given, otherwise fall back to a random state
-    authorizationUriParams.state = config?.state || randomUUID();
+    authorizationUriParams.state = config?.state || crypto.randomUUID();
     //Add translations when given
     if (config?.translations)
       authorizationUriParams.translations = Buffer.from(JSON.stringify(config.translations)).toString("base64");
