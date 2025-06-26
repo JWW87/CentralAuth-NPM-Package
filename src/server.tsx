@@ -399,8 +399,8 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
 
     //Get an access JWT based on the given code
     const headers = new Headers();
-    headers.set("Content-Type", "application/x-www-form-urlencoded");
     headers.set("Authorization", `Basic ${Buffer.from(`${this.clientId || ""}:${this.secret}`).toString("base64")}`);
+
     const formData = new FormData();
     formData.append("code", code);
     formData.append("redirect_uri", this.callbackUrl);
