@@ -13,7 +13,8 @@
     "outDir": "./",
     "rootDirs": [
       "./src",
-      "./api"
+      "./api",
+      "./"
     ],
     "esModuleInterop": true,
     "moduleResolution": "node",
@@ -26,7 +27,8 @@
   },
   "include": [
     "src/*.tsx",
-    "api/*.ts"
+    "api/*.ts",
+    "./*.ts"
   ],
   "exclude": [
     "node_modules"

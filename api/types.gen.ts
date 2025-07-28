@@ -5,7 +5,7 @@ export type InvitedUser = {
     tenantId: string;
     email: string;
     roleId: 'Admin' | 'OrganizationAdmin' | 'FinancialAdmin' | 'UserAdmin';
-    readonly activated?: boolean;
+    readonly activated: boolean;
     readonly created?: string;
     readonly updated?: string;
     role: {
@@ -15,6 +15,7 @@ export type InvitedUser = {
 };
 
 export type InternalUser = {
+    readonly id?: string;
     readonly tenantId?: string;
     readonly userId?: string;
     roleId: 'Admin' | 'OrganizationAdmin' | 'FinancialAdmin' | 'UserAdmin';
@@ -89,10 +90,11 @@ export type Tenant = {
     logo?: string | null;
     readonly clientSecret?: string;
     readonly customDomain?: string;
-    overrideParentSettings?: boolean;
+    overrideParentSettings: boolean;
     readonly organizationSettingsId?: string;
     readonly created?: string;
     readonly updated?: string;
+    readonly deleted?: string | null;
     readonly internalUsers?: Array<InternalUser & {
         user: {
             readonly id?: string;
@@ -113,14 +115,40 @@ export type Tenant = {
              */
             blocked?: boolean;
             organizationId: string;
+            /**
+             * The date and time when this user was created.
+             */
             readonly created?: string;
+            /**
+             * The date and time when this user was last updated.
+             */
             readonly updated?: string;
+            /**
+             * The date and time when this user last logged in.
+             */
+            readonly lastLogin?: string | null;
         };
     } & {
         role: Role;
     }>;
     readonly invitedUsers?: Array<InvitedUser>;
     settings?: OrganizationSettings;
+    tenantData: {
+        readonly id?: string;
+        /**
+         * Indicates if the tenant is active or not
+         */
+        readonly active: boolean;
+        /**
+         * Indicates if the tenant is whitelabeled or not
+         */
+        whitelabel: boolean;
+        /**
+         * The tier of the tenant, used for billing and feature access
+         */
+        tier: 'free' | 'basic' | 'pro' | 'enterprise';
+        readonly tenantId?: string;
+    } | null;
 };
 
 export type User = {
@@ -142,8 +170,18 @@ export type User = {
      */
     blocked?: boolean;
     organizationId: string;
+    /**
+     * The date and time when this user was created.
+     */
     readonly created?: string;
+    /**
+     * The date and time when this user was last updated.
+     */
     readonly updated?: string;
+    /**
+     * The date and time when this user last logged in.
+     */
+    readonly lastLogin?: string | null;
     readonly connections?: Array<{
         id?: string;
         type?: 'email' | 'passkey' | 'google' | 'apple' | 'microsoft' | 'github';
@@ -987,6 +1025,16 @@ export type PostApiV1TenantByIdData = {
     body?: {
         name?: string;
         logo?: string | null;
+        tenantData?: {
+            /**
+             * Indicates if the tenant is whitelabeled or not
+             */
+            whitelabel?: boolean;
+            /**
+             * The tier of the tenant, used for billing and feature access
+             */
+            tier?: 'free' | 'basic' | 'pro' | 'enterprise';
+        };
         settings?: OrganizationSettings;
     };
     path: {

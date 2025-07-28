@@ -119,9 +119,12 @@ export type CallbackParamsHTTP = {
 
 //Enum for the different error messages
 export type ErrorCode = "genericError" |
+  "noPermission" |
+  "tooManyRequests" |
   "missingFields" |
   "sessionMissing" |
   "sessionNotVerified" |
+  "sessionExpired" |
   "sessionInactive" |
   "sessionInvalid" |
   "domainInvalid" |
@@ -129,18 +132,23 @@ export type ErrorCode = "genericError" |
   "loginAttemptMissing" |
   "loginAttemptExpired" |
   "loginAttemptInvalid" |
-  "sessionExpired" |
+  "passkeyDataMissing" |
+  "passkeyDataExpired" |
+  "passkeyDataInvalid" |
+  "passkeyWrongOrganization" |
   "callbackUrlInvalid" |
   "connectionMissing" |
   "organizationIdMissing" |
-  "secretMissing" |
-  "authBaseUrlMissing" |
   "callbackUrlMissing" |
   "tokenMissing" |
   "tokenInvalid" |
   "stateMissing" |
   "stateInvalid" |
-  "captchaInvalid";
+  "captchaInvalid" |
+  "entityMissing" |
+  "entityInvalid" |
+  "secretMissing" |
+  "authBaseUrlMissing";
 
 //Type for the validation errors
 export type ErrorObject = {
