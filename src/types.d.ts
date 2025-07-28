@@ -30,19 +30,21 @@ export type BasePaths = {
 };
 export type Translations = Partial<{
     emailAddress: string;
-    loginpageIntro: string;
+    loginPageIntro: string;
     loginPagePasskeyAuthentication: string;
     loginPagePasskeyRegistration: string;
     loginPagePasskeyIntro: string;
     loginPagePasskeyOrganizationWarning: string;
     loginPagePasskeyError: string;
-    loginpageEmailIntro: string;
+    loginPageEmailIntro: string;
     loginPageEmailError: string;
     loginPageCaptcha: string;
     loginPageCaptchaChallengeText: string;
     loginPageCaptchaPuzzleText: string;
     loginPageCaptchaLockText: string;
     loginPageCaptchaError: string;
+    loginPageAnotherWay: string;
+    loginPageOrWith: string;
     suspiciousActivityDetected: string;
     emailLinkSubject: string;
     emailCodeSubject: string;
@@ -59,6 +61,7 @@ export type Translations = Partial<{
     loginAttemptCodeBody: string;
     loginAttemptSuccess: string;
     loginAttemptError: string;
+    loginAttemptInteractMessage: string;
     undo: string;
 }>;
 export type LoginParams = {
