@@ -131,7 +131,6 @@ export type ErrorCode = "genericError" |
   "sessionInactive" |
   "sessionInvalid" |
   "domainInvalid" |
-  "verificationStateInvalid" |
   "loginAttemptMissing" |
   "loginAttemptExpired" |
   "loginAttemptInvalid" |
@@ -147,6 +146,8 @@ export type ErrorCode = "genericError" |
   "tokenInvalid" |
   "stateMissing" |
   "stateInvalid" |
+  "codeChallengeMissing" |
+  "codeChallengeInvalid" |
   "captchaInvalid" |
   "entityMissing" |
   "entityInvalid" |

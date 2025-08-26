@@ -4,6 +4,7 @@ export declare class ValidationError extends Error {
     private errorCode;
     constructor(error: ErrorObject);
 }
+export declare const hash: (string: string) => Promise<string>;
 export declare class CentralAuthClass {
     private clientId;
     private secret;

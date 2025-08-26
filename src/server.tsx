@@ -21,6 +21,15 @@ export class ValidationError extends Error {
   }
 }
 
+//Returns a SHA-256 hash of the input string
+export const hash = async (string: string): Promise<string> => {
+  const textEncoder = new TextEncoder();
+  const encodedString = textEncoder.encode(string);
+  const encodedHash = await crypto.subtle.digest("SHA-256", encodedString);
+  const base64Hash = Buffer.from(encodedHash).toString("base64url");
+  return base64Hash;
+}
+
 //Class for CentralAuth
 export class CentralAuthClass {
   private clientId: string | null;
@@ -325,6 +334,13 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
     if (config?.embed)
       authorizationUriParams.embed = "1";
 
+    //Set the code verifier to a random UUID and calculate the SHA256 hash as code challenge
+    //Store the code verifier in the cookie and set the code challenge as URI param to the login page
+    const codeVerifier = crypto.randomUUID();
+    const codeChallenge = await hash(codeVerifier);
+    authorizationUriParams.code_challenge = codeChallenge;
+    authorizationUriParams.code_challenge_method = "S256";
+
     const authorizationUri = new URL(`${this.authBaseUrl}/login`);
     //Set the search parameters for the authorization URI
     for (const [key, value] of Object.entries(authorizationUriParams))
@@ -333,8 +349,16 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
     if (this.debug)
       console.log(`[CENTRALAUTH DEBUG] Starting login procedure for client ${this.clientId || "CentralAuth"}, redirecting to ${authorizationUri.toString()}.`);
 
-    //Redirect to the authorization URI
-    return Response.redirect(authorizationUri.toString());
+    //Set the code verifier in the cookies and redirect user to the authorization URI
+    return new Response(null,
+      {
+        status: 302,
+        headers: {
+          "Location": authorizationUri.toString(),
+          "Set-Cookie": `code_verifier=${codeVerifier}; Path=/; HttpOnly; Max-Age=3600; SameSite=Lax; Secure`
+        }
+      }
+    );
   }
 
   //Public method for the callback procedure when returning from CentralAuth
@@ -359,12 +383,17 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
   //Will throw an error when the verification procedure fails or the user object could not be fetched
   protected processCallback = async (req: Request, onStateReceived?: CallbackParams["onStateReceived"]) => {
     const url = new URL(req.url);
+    const headerList = req.headers;
     const searchParams = url.searchParams;
     const returnTo = searchParams.get("return_to") || url.origin;
-    const code = searchParams.get("code") as string;
+    const sessionId = searchParams.get("code") as string;
     const state = searchParams.get("state");
     const errorCode = searchParams.get("error_code");
     const errorMessage = searchParams.get("error_message");
+
+    //Get the code verifier from the cookies
+    const cookies = parseCookie(headerList.get("cookie"));
+    const codeVerifier = cookies["code_verifier"];
 
     //If the state is given and an onStateReceived function is given, call it to verify the state
     if (state && onStateReceived) {
@@ -384,26 +413,21 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
       throw new ValidationError({ errorCode: errorCode as ErrorCode, message: errorMessage || "" });
     }
 
-    if (!code) {
+    if (!sessionId) {
       if (this.debug)
         console.warn(`[CENTRALAUTH DEBUG] Callback could not be processed for client ${this.clientId || "CentralAuth"}, missing code.`);
       throw new ValidationError({ errorCode: "missingFields", message: "The code is missing in the callback URL." });
-    }
-
-    const [sessionId, verificationState] = code.split("|");
-    if (!sessionId || !verificationState) {
-      if (this.debug)
-        console.warn(`[CENTRALAUTH DEBUG] Callback could not be processed for client ${this.clientId || "CentralAuth"}, missing session ID and/or verification state.`);
-      throw new ValidationError({ errorCode: "missingFields", message: "The session ID and/or verification state are missing in the callback URL." });
     }
 
     //Get an access JWT based on the given code
     const headers = new Headers();
     headers.set("Authorization", `Basic ${Buffer.from(`${this.clientId || ""}:${this.secret}`).toString("base64")}`);
 
+
     const formData = new FormData();
-    formData.append("code", code);
+    formData.append("code", sessionId);
     formData.append("redirect_uri", this.callbackUrl);
+    formData.append("code_verifier", codeVerifier);
 
     const tokenObject = await fetch(`${this.authBaseUrl}/api/v1/verify`,
       {

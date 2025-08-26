@@ -54,6 +54,46 @@ export type OAuthProvider = {
     clientSecret: string | null;
 };
 
+export type ThemeSettings = {
+    readonly id?: string;
+    /**
+     * ID of the organization these theme settings belong to
+     */
+    readonly organizationId?: string;
+    /**
+     * Layout of the login block on the login page
+     */
+    loginBlockLayout?: 'default' | 'compact';
+    /**
+     * Layout of the login page
+     */
+    loginPageLayout?: 'default' | 'alignLeft' | 'alignRight' | 'fullLeft' | 'fullRight' | 'compact';
+    /**
+     * URL of the image to use on the login page
+     */
+    imageUrl?: string | null;
+    /**
+     * Google Font name to use on the login page
+     */
+    customFont?: string | null;
+    /**
+     * Primary color used on the login page
+     */
+    primaryColor?: string;
+    /**
+     * Background color used on the login page
+     */
+    backgroundColor?: string;
+    /**
+     * Content color used on the login page
+     */
+    contentColor?: string;
+    /**
+     * Neutral color used on the login page
+     */
+    neutralColor?: string;
+};
+
 export type Organization = {
     readonly id?: string;
     tenantId: string;
@@ -63,6 +103,14 @@ export type Organization = {
      * The client secret key for the organization. When creating a new organization, the client secret will be readable once. After that, the client secret will be encrypted and cannot be retrieved.
      */
     readonly clientSecret?: string;
+    /**
+     * The new client secret key for the organization to be rotated.
+     */
+    readonly newClientSecret?: string;
+    /**
+     * The datetime when the new client secret key has been created.
+     */
+    readonly newClientSecretDate?: string;
     customDomain?: string | null;
     overrideParentSettings?: boolean;
     readonly organizationSettingsId?: string;
@@ -71,6 +119,7 @@ export type Organization = {
     settings?: OrganizationSettings;
     whitelistItems?: Array<WhitelistItem>;
     oAuthProviders?: Array<OAuthProvider>;
+    themeSettings?: ThemeSettings;
 };
 
 export type Role = {
@@ -82,14 +131,48 @@ export type Role = {
     }>;
 };
 
+export type TenantData = {
+    readonly id?: string;
+    /**
+     * Indicates if the tenant is active or not
+     */
+    readonly active: boolean;
+    /**
+     * The tier of the tenant, used for billing and feature access
+     */
+    tier: 'free' | 'basic' | 'pro' | 'enterprise';
+    /**
+     * The tier to be set at the start of the next billing period
+     */
+    nextTier?: 'free' | 'basic' | 'pro' | 'enterprise';
+    /**
+     * Custom subscription discount percentage for the tenant
+     */
+    readonly discountPercentage: number;
+    /**
+     * ID of the customer in Mollie
+     */
+    readonly customerId?: string | null;
+    /**
+     * ID of the mandate in Mollie
+     */
+    readonly mandateId?: string | null;
+    /**
+     * The start date of the subscription for the tenant
+     */
+    readonly subscriptionStart?: string;
+    readonly tenantId?: string;
+};
+
 export type Tenant = {
     readonly id?: string;
     readonly tenantId?: string;
     name: string;
     logo?: string | null;
-    readonly clientSecret?: string;
-    readonly customDomain?: string;
-    overrideParentSettings: boolean;
+    /**
+     * Indicates if the tenant is whitelabeled or not
+     */
+    whitelabel: boolean;
     readonly organizationSettingsId?: string;
     readonly created?: string;
     readonly updated?: string;
@@ -132,22 +215,7 @@ export type Tenant = {
     }>;
     readonly invitedUsers?: Array<InvitedUser>;
     settings?: OrganizationSettings;
-    tenantData: {
-        readonly id?: string;
-        /**
-         * Indicates if the tenant is active or not
-         */
-        readonly active: boolean;
-        /**
-         * Indicates if the tenant is whitelabeled or not
-         */
-        whitelabel: boolean;
-        /**
-         * The tier of the tenant, used for billing and feature access
-         */
-        tier: 'free' | 'basic' | 'pro' | 'enterprise';
-        readonly tenantId?: string;
-    } | null;
+    tenantData: TenantData;
 };
 
 export type User = {
@@ -190,6 +258,31 @@ export type User = {
     }>;
 };
 
+export type Paging = {
+    pager: {
+        /**
+         * Current page index in the pager, starting at 0
+         */
+        pageIndex?: number;
+        /**
+         * Total number of pages based on the limit per page
+         */
+        readonly pages: number;
+        /**
+         * Maximum number of entities on one page
+         */
+        limitPerPage?: number;
+        /**
+         * Total number of entities
+         */
+        readonly totalEntities: number;
+    };
+    /**
+     * Generic for the array of entities for one page of the pager
+     */
+    readonly data?: unknown;
+};
+
 export type ApiKey = {
     readonly id?: string;
     /**
@@ -209,22 +302,77 @@ export type ApiKey = {
     readonly lastUsed?: string;
 };
 
+export type ApiRequest = {
+    id: string;
+    /**
+     * The tenant ID this API request belongs to.
+     */
+    tenantId: string;
+    /**
+     * The API endpoint being requested.
+     */
+    endpoint: string;
+    /**
+     * The date and time when this API request was made.
+     */
+    readonly date: string;
+};
+
+export type AuditLog = {
+    id: string;
+    /**
+     * The tenant ID this audit log belongs to.
+     */
+    tenantId: string;
+    /**
+     * The type of actor that performed the action.
+     */
+    actorType: 'user' | 'apiKey' | 'authToken' | 'system';
+    /**
+     * The ID of the actor that performed the action.
+     */
+    actorId?: string | null;
+    /**
+     * The action performed on the target.
+     */
+    action: 'CREATE' | 'UPDATE' | 'UPSERT' | 'DELETE';
+    /**
+     * The type of the target model.
+     */
+    targetType: string;
+    /**
+     * The ID of the target model.
+     */
+    targetId: string;
+    /**
+     * The status of the action.
+     */
+    status: 'success' | 'failure';
+    /**
+     * The IP address of the actor.
+     */
+    ipAddress: string;
+    /**
+     * Additional details about the action, including query data and errors.
+     */
+    details?: {
+        [key: string]: unknown;
+    };
+    /**
+     * The date and time when this audit log was created.
+     */
+    readonly created: string;
+};
+
 export type TenantWritable = {
     formId: string;
     name: string;
     logo?: string | null;
-    overrideParentSettings: boolean;
+    /**
+     * Indicates if the tenant is whitelabeled or not
+     */
+    whitelabel: boolean;
     settings?: OrganizationSettings;
-    tenantData: {
-        /**
-         * Indicates if the tenant is whitelabeled or not
-         */
-        whitelabel: boolean;
-        /**
-         * The tier of the tenant, used for billing and feature access
-         */
-        tier: 'free' | 'basic' | 'pro' | 'enterprise';
-    } | null;
 };
 
 export type DeleteApiV1InvitedUserByIdData = {
@@ -672,6 +820,40 @@ export type PostApiV1OrganizationByIdData = {
         whitelistItems?: Array<{
             value: string;
         }>;
+        themeSettings?: {
+            /**
+             * Layout of the login block on the login page
+             */
+            loginBlockLayout?: 'default' | 'compact';
+            /**
+             * Layout of the login page
+             */
+            loginPageLayout?: 'default' | 'alignLeft' | 'alignRight' | 'fullLeft' | 'fullRight' | 'compact';
+            /**
+             * URL of the image to use on the login page
+             */
+            imageUrl?: string | null;
+            /**
+             * Google Font name to use on the login page
+             */
+            customFont?: string | null;
+            /**
+             * Primary color used on the login page
+             */
+            primaryColor?: string;
+            /**
+             * Background color used on the login page
+             */
+            backgroundColor?: string;
+            /**
+             * Content color used on the login page
+             */
+            contentColor?: string;
+            /**
+             * Neutral color used on the login page
+             */
+            neutralColor?: string;
+        };
         oAuthProviders?: Array<{
             type?: 'google' | 'apple' | 'microsoft' | 'github';
             useOwnCredentials?: boolean;
@@ -779,6 +961,40 @@ export type PostApiV1OrganizationData = {
             clientId: string | null;
             clientSecret: string | null;
         }>;
+        themeSettings?: {
+            /**
+             * Layout of the login block on the login page
+             */
+            loginBlockLayout?: 'default' | 'compact';
+            /**
+             * Layout of the login page
+             */
+            loginPageLayout?: 'default' | 'alignLeft' | 'alignRight' | 'fullLeft' | 'fullRight' | 'compact';
+            /**
+             * URL of the image to use on the login page
+             */
+            imageUrl?: string | null;
+            /**
+             * Google Font name to use on the login page
+             */
+            customFont?: string | null;
+            /**
+             * Primary color used on the login page
+             */
+            primaryColor?: string;
+            /**
+             * Background color used on the login page
+             */
+            backgroundColor?: string;
+            /**
+             * Content color used on the login page
+             */
+            contentColor?: string;
+            /**
+             * Neutral color used on the login page
+             */
+            neutralColor?: string;
+        };
     };
     path?: never;
     query?: never;
@@ -1126,16 +1342,10 @@ export type PostApiV1TenantByIdData = {
     body?: {
         name?: string;
         logo?: string | null;
-        tenantData?: {
-            /**
-             * Indicates if the tenant is whitelabeled or not
-             */
-            whitelabel?: boolean;
-            /**
-             * The tier of the tenant, used for billing and feature access
-             */
-            tier?: 'free' | 'basic' | 'pro' | 'enterprise';
-        };
+        /**
+         * Indicates if the tenant is whitelabeled or not
+         */
+        whitelabel?: boolean;
         settings?: OrganizationSettings;
     };
     path: {
@@ -1802,25 +2012,7 @@ export type GetApiV1UsersByOrganizationIdResponses = {
     /**
      * A pager object with users
      */
-    200: {
-        pager: {
-            /**
-             * Current page index in the pager, starting at 0
-             */
-            pageIndex?: number;
-            /**
-             * Total number of pages based on the limit per page
-             */
-            readonly pages: number;
-            /**
-             * Maximum number of entities on one page
-             */
-            limitPerPage?: number;
-            /**
-             * Total number of entities
-             */
-            readonly totalEntities: number;
-        };
+    200: Paging & {
         data: Array<User>;
     };
 };
@@ -2189,6 +2381,169 @@ export type GetApiV1ApiKeysByOrganizationIdResponses = {
 };
 
 export type GetApiV1ApiKeysByOrganizationIdResponse = GetApiV1ApiKeysByOrganizationIdResponses[keyof GetApiV1ApiKeysByOrganizationIdResponses];
+
+export type GetApiV1ApiRequestsByTenantIdData = {
+    body?: never;
+    path: {
+        tenantId: string;
+    };
+    query?: {
+        /**
+         * Start date for filtering requests (ISO format).
+         */
+        from?: string;
+    };
+    url: '/api/v1/api_requests/{tenantId}';
+};
+
+export type GetApiV1ApiRequestsByTenantIdErrors = {
+    /**
+     * Bad request
+     */
+    400: {
+        errorCode?: 'genericError' | 'noPermission' | 'tooManyRequests' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * No permission
+     */
+    403: {
+        errorCode?: 'genericError' | 'noPermission' | 'tooManyRequests' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Not found
+     */
+    404: {
+        errorCode?: 'genericError' | 'noPermission' | 'tooManyRequests' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Invalid method
+     */
+    405: {
+        errorCode?: 'genericError' | 'noPermission' | 'tooManyRequests' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Too many requests
+     */
+    429: {
+        errorCode?: 'genericError' | 'noPermission' | 'tooManyRequests' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Deployment error
+     */
+    502: unknown;
+    /**
+     * Service unavailable
+     */
+    503: unknown;
+    /**
+     * Gateway timeout
+     */
+    504: unknown;
+};
+
+export type GetApiV1ApiRequestsByTenantIdError = GetApiV1ApiRequestsByTenantIdErrors[keyof GetApiV1ApiRequestsByTenantIdErrors];
+
+export type GetApiV1ApiRequestsByTenantIdResponses = {
+    /**
+     * A list of API requests
+     */
+    200: Array<ApiRequest>;
+};
+
+export type GetApiV1ApiRequestsByTenantIdResponse = GetApiV1ApiRequestsByTenantIdResponses[keyof GetApiV1ApiRequestsByTenantIdResponses];
+
+export type GetApiV1AuditLogsByTenantIdData = {
+    body?: never;
+    path: {
+        tenantId: string;
+    };
+    query?: {
+        /**
+         * Current page index in the pager, starting at 0
+         */
+        pageIndex?: number;
+        /**
+         * Maximum number of entities on one page
+         */
+        limitPerPage?: number;
+        actorType?: 'user' | 'apiKey' | 'authToken' | 'system';
+        actorId?: string;
+        action?: 'CREATE' | 'UPDATE' | 'UPSERT' | 'DELETE';
+        targetType?: string;
+        targetId?: string;
+        status?: 'success' | 'failure';
+        ipAddress?: string;
+    };
+    url: '/api/v1/audit_logs/{tenantId}';
+};
+
+export type GetApiV1AuditLogsByTenantIdErrors = {
+    /**
+     * Bad request
+     */
+    400: {
+        errorCode?: 'genericError' | 'noPermission' | 'tooManyRequests' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * No permission
+     */
+    403: {
+        errorCode?: 'genericError' | 'noPermission' | 'tooManyRequests' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Not found
+     */
+    404: {
+        errorCode?: 'genericError' | 'noPermission' | 'tooManyRequests' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Invalid method
+     */
+    405: {
+        errorCode?: 'genericError' | 'noPermission' | 'tooManyRequests' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Too many requests
+     */
+    429: {
+        errorCode?: 'genericError' | 'noPermission' | 'tooManyRequests' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'verificationStateInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Deployment error
+     */
+    502: unknown;
+    /**
+     * Service unavailable
+     */
+    503: unknown;
+    /**
+     * Gateway timeout
+     */
+    504: unknown;
+};
+
+export type GetApiV1AuditLogsByTenantIdError = GetApiV1AuditLogsByTenantIdErrors[keyof GetApiV1AuditLogsByTenantIdErrors];
+
+export type GetApiV1AuditLogsByTenantIdResponses = {
+    /**
+     * A pager object with audit logs
+     */
+    200: Paging & {
+        data: Array<AuditLog>;
+    };
+};
+
+export type GetApiV1AuditLogsByTenantIdResponse = GetApiV1AuditLogsByTenantIdResponses[keyof GetApiV1AuditLogsByTenantIdResponses];
 
 export type ClientOptions = {
     baseUrl: 'https://centralauth.com' | (string & {});

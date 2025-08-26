@@ -96,7 +96,7 @@ export type CallbackParamsHTTP = {
     onStateReceived?: (req: Request, state: string) => Promise<boolean>;
     onAfterCallback?: (req: IncomingMessage, originalResponse: ServerResponse, responseToReturn: Response, user: User) => Promise<Response | void>;
 };
-export type ErrorCode = "genericError" | "noPermission" | "tooManyRequests" | "missingFields" | "sessionMissing" | "sessionNotVerified" | "sessionExpired" | "sessionInactive" | "sessionInvalid" | "domainInvalid" | "verificationStateInvalid" | "loginAttemptMissing" | "loginAttemptExpired" | "loginAttemptInvalid" | "passkeyDataMissing" | "passkeyDataExpired" | "passkeyDataInvalid" | "passkeyWrongOrganization" | "callbackUrlInvalid" | "connectionMissing" | "organizationIdMissing" | "callbackUrlMissing" | "tokenMissing" | "tokenInvalid" | "stateMissing" | "stateInvalid" | "captchaInvalid" | "entityMissing" | "entityInvalid" | "secretMissing" | "authBaseUrlMissing";
+export type ErrorCode = "genericError" | "noPermission" | "tooManyRequests" | "missingFields" | "sessionMissing" | "sessionNotVerified" | "sessionExpired" | "sessionInactive" | "sessionInvalid" | "domainInvalid" | "loginAttemptMissing" | "loginAttemptExpired" | "loginAttemptInvalid" | "passkeyDataMissing" | "passkeyDataExpired" | "passkeyDataInvalid" | "passkeyWrongOrganization" | "callbackUrlInvalid" | "connectionMissing" | "organizationIdMissing" | "callbackUrlMissing" | "tokenMissing" | "tokenInvalid" | "stateMissing" | "stateInvalid" | "codeChallengeMissing" | "codeChallengeInvalid" | "captchaInvalid" | "entityMissing" | "entityInvalid" | "secretMissing" | "authBaseUrlMissing";
 export type ErrorObject = {
     errorCode: ErrorCode;
     message?: string;
