@@ -365,13 +365,14 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
             this.token = this.unsafeIncludeUser ? tokenResponse.id_token : tokenResponse.access_token;
             //Populate the user data based on the token
             yield this.getUser(req.headers);
-            //Set the default response object
+            //Set the response object with the redirect and the cookies
+            const newHeaders = new Headers();
+            newHeaders.append("Location", returnTo);
+            newHeaders.append("Set-Cookie", `code_verifier= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax; Secure`);
+            newHeaders.append("Set-Cookie", `${this.unsafeIncludeUser ? "idToken" : "accessToken"}=${this.token}; Path=/; HttpOnly; Max-Age=${tokenResponse.expires_in || 100000000}; SameSite=Lax; Secure`);
             let res = new Response(null, {
                 status: 302,
-                headers: {
-                    "Location": returnTo,
-                    "Set-Cookie": `${this.unsafeIncludeUser ? "idToken" : "accessToken"}=${this.token}; Path=/; HttpOnly; Max-Age=${tokenResponse.expires_in || 100000000}; SameSite=Lax; Secure`
-                }
+                headers: newHeaders
             });
             //Set a cookie with the JWT and redirect to the returnTo URL
             return res;
