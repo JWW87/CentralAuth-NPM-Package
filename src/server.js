@@ -134,6 +134,8 @@ export class CentralAuthClass {
                 //Get the IP address and user agent from the headers
                 const ipAddress = this.getIPAddress(headers);
                 const userAgent = this.getUserAgent(headers);
+                //Get the device ID from the headers if set (only used for native apps)
+                const deviceId = headers.get("device-id");
                 this.checkData("user");
                 if (this.unsafeIncludeUser && user)
                     this.userData = user;
@@ -146,6 +148,9 @@ export class CentralAuthClass {
                     headers.set("user-agent", userAgent);
                     //Set the custom auth-ip header with the IP address of the current request
                     headers.set("auth-ip", ipAddress);
+                    //Set the device ID header if present
+                    if (deviceId)
+                        headers.set("device-id", deviceId);
                     //Construct the URL
                     const requestUrl = new URL(`${this.authBaseUrl}/api/v1/userinfo`);
                     const callbackUrl = new URL(this.callbackUrl);
