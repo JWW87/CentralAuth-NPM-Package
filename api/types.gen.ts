@@ -45,6 +45,19 @@ export type WhitelistItem = {
     value: string;
 };
 
+export type NativeAppRegistration = {
+    readonly id?: string;
+    /**
+     * Bundle ID or package name for the native app.
+     */
+    bundleId: string;
+    /**
+     * App link or universal link to open the app after authentication.
+     */
+    appLink: string;
+    readonly organizationId: string;
+};
+
 export type OAuthProvider = {
     readonly id?: string;
     readonly organizationId?: string;
@@ -118,6 +131,7 @@ export type Organization = {
     readonly updated?: string;
     settings?: OrganizationSettings;
     whitelistItems?: Array<WhitelistItem>;
+    appRegistrations?: Array<NativeAppRegistration>;
     oAuthProviders?: Array<OAuthProvider>;
     themeSettings?: ThemeSettings;
 };
@@ -820,6 +834,16 @@ export type PostApiV1OrganizationByIdData = {
         whitelistItems?: Array<{
             value: string;
         }>;
+        appRegistrations?: Array<{
+            /**
+             * Bundle ID or package name for the native app.
+             */
+            bundleId: string;
+            /**
+             * App link or universal link to open the app after authentication.
+             */
+            appLink: string;
+        }>;
         themeSettings?: {
             /**
              * Layout of the login block on the login page
@@ -954,6 +978,16 @@ export type PostApiV1OrganizationData = {
         };
         whitelistItems?: Array<{
             value: string;
+        }>;
+        appRegistrations?: Array<{
+            /**
+             * Bundle ID or package name for the native app.
+             */
+            bundleId: string;
+            /**
+             * App link or universal link to open the app after authentication.
+             */
+            appLink: string;
         }>;
         oAuthProviders?: Array<{
             type: 'google' | 'apple' | 'microsoft' | 'github';
