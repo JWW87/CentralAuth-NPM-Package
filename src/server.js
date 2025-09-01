@@ -65,7 +65,6 @@ export class CentralAuthClass {
         //Private method to get the decoded token
         //Can only be used after the token has been set in this object
         this.getDecodedToken = () => __awaiter(this, void 0, void 0, function* () {
-            this.checkData("callback");
             try {
                 //Decode the JWT
                 const textEncoder = new TextEncoder();
@@ -368,6 +367,7 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
             const tokenResponse = yield tokenObject.json();
             //Set the token in this object based on the unsafeIncludeUser flag
             this.token = this.unsafeIncludeUser ? tokenResponse.id_token : tokenResponse.access_token;
+            this.checkData("verify");
             //Populate the user data based on the token
             yield this.getUser(req.headers);
             //Set the response object with the redirect and the cookies
@@ -442,8 +442,6 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
                 });
             }
         });
-        if (debug)
-            console.log(`[CENTRALAUTH DEBUG] CentralAuth class instantiated for client ${clientId || "CentralAuth"}.`);
         this.clientId = clientId;
         this.secret = secret;
         this.authBaseUrl = authBaseUrl;

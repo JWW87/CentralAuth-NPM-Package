@@ -43,8 +43,6 @@ export class CentralAuthClass {
 
   //Constructor method to set all instance variable
   constructor({ clientId, secret, authBaseUrl, callbackUrl, debug, unsafeIncludeUser }: ConstructorParams) {
-    if (debug)
-      console.log(`[CENTRALAUTH DEBUG] CentralAuth class instantiated for client ${clientId || "CentralAuth"}.`);
     this.clientId = clientId;
     this.secret = secret;
     this.authBaseUrl = authBaseUrl;
@@ -92,8 +90,6 @@ export class CentralAuthClass {
   //Private method to get the decoded token
   //Can only be used after the token has been set in this object
   private getDecodedToken = async () => {
-    this.checkData("callback");
-
     try {
       //Decode the JWT
       const textEncoder = new TextEncoder();
@@ -450,6 +446,8 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
     const tokenResponse = await tokenObject.json() as TokenResponse;
     //Set the token in this object based on the unsafeIncludeUser flag
     this.token = this.unsafeIncludeUser ? tokenResponse.id_token : tokenResponse.access_token;
+
+    this.checkData("verify");
 
     //Populate the user data based on the token
     await this.getUser(req.headers);
