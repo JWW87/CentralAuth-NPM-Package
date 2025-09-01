@@ -73,18 +73,10 @@ export class CentralAuthClass {
             }
             catch (error) {
                 if (this.debug)
-                    console.warn(`[CENTRALAUTH DEBUG] Failed to decode token for client ${this.clientId || "CentralAuth"}: ${error.message}`);
+                    console.warn(`[CENTRALAUTH DEBUG] Failed to decode token for client ${this.clientId || "CentralAuth"}: ${error.message}`, `Token: ${this.token}`);
                 throw new ValidationError({ errorCode: error === null || error === void 0 ? void 0 : error.name, message: error === null || error === void 0 ? void 0 : error.message });
             }
         });
-        //Private method to set the payload of the JWT
-        // private setToken = async (payload: JWTPayload) => {
-        //   const textEncoder = new TextEncoder();
-        //   this.token = await new EncryptJWT(payload)
-        //     .setProtectedHeader({ alg: "dir", enc: "A256CBC-HS512" })
-        //     .setIssuedAt()
-        //     .encrypt(textEncoder.encode(this.secret));
-        // }
         //Private method to get the returnTo URL from the config object or current request
         this.getReturnToURL = (req, config) => {
             const url = new URL(req.url);
@@ -127,6 +119,8 @@ export class CentralAuthClass {
             if (this.userData)
                 return this.userData;
             else {
+                if (!this.token)
+                    return null;
                 //Get the decoded token
                 const jwtPayload = yield this.getDecodedToken();
                 const { user } = jwtPayload;
