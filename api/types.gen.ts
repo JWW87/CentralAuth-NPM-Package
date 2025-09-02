@@ -28,6 +28,9 @@ export type OrganizationSettings = {
     allowLocalhost?: boolean;
     checkReferrer?: boolean;
     hijackProtection?: boolean;
+    hijackProtectionIp?: boolean;
+    hijackProtectionUserAgent?: boolean;
+    hijackProtectionDeviceId?: boolean;
     autoLogin?: boolean;
     defaultLoginMethod?: 'local' | 'remote' | 'userPick';
     defaultLoginAttemptType?: 'link' | 'challenge' | 'code';
@@ -821,6 +824,9 @@ export type PostApiV1OrganizationByIdData = {
             allowLocalhost?: boolean;
             checkReferrer?: boolean;
             hijackProtection?: boolean;
+            hijackProtectionIp?: boolean;
+            hijackProtectionUserAgent?: boolean;
+            hijackProtectionDeviceId?: boolean;
             autoLogin?: boolean;
             defaultLoginMethod?: 'local' | 'remote' | 'userPick';
             defaultLoginAttemptType?: 'link' | 'challenge' | 'code';
@@ -966,6 +972,9 @@ export type PostApiV1OrganizationData = {
             allowLocalhost?: boolean;
             checkReferrer?: boolean;
             hijackProtection?: boolean;
+            hijackProtectionIp?: boolean;
+            hijackProtectionUserAgent?: boolean;
+            hijackProtectionDeviceId?: boolean;
             autoLogin?: boolean;
             defaultLoginMethod?: 'local' | 'remote' | 'userPick';
             defaultLoginAttemptType?: 'link' | 'challenge' | 'code';

@@ -367,8 +367,8 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
             //Set the response object with the redirect and the cookies
             const newHeaders = new Headers();
             newHeaders.append("Location", returnTo);
-            newHeaders.append("Set-Cookie", `code_verifier= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax; Secure`);
-            newHeaders.append("Set-Cookie", `${this.unsafeIncludeUser ? "idToken" : "accessToken"}=${this.token}; Path=/; HttpOnly; Max-Age=${tokenResponse.expires_in || 100000000}; SameSite=Lax; Secure`);
+            newHeaders.append("Set-Cookie", `${this.unsafeIncludeUser ? "idToken" : "accessToken"}=${this.token}; Path=/; HttpOnly; Max-Age=${typeof tokenResponse.expires_in == "number" ? tokenResponse.expires_in : 31536000}; SameSite=Lax; Secure`);
+            newHeaders.append("Set-Cookie", `code_verifier= ; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax; Secure`);
             let res = new Response(null, {
                 status: 302,
                 headers: newHeaders
