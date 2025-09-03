@@ -316,7 +316,7 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
     authorizationUriParams.response_type = "code";
     //Add an error message when given
     if (config?.errorMessage)
-      authorizationUriParams.error_message = config.errorMessage;
+      authorizationUriParams.error_description = config.errorMessage;
     //Add a default email address when given
     if (config?.email)
       authorizationUriParams.email = config.email;
@@ -383,8 +383,8 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
     const returnTo = searchParams.get("return_to") || url.origin;
     const sessionId = searchParams.get("code") as string;
     const state = searchParams.get("state");
-    const errorCode = searchParams.get("error_code");
-    const errorMessage = searchParams.get("error_message");
+    const errorCode = searchParams.get("error");
+    const errorMessage = searchParams.get("error_description");
 
     //Get the code verifier from the cookies
     const cookies = parseCookie(headerList.get("cookie"));
