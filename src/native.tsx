@@ -1,6 +1,6 @@
 import { CryptoDigestAlgorithm, CryptoEncoding, digestStringAsync, randomUUID } from "expo-crypto";
-import { openURL } from "expo-linking";
 import { deleteItemAsync, getItem, getItemAsync, setItemAsync } from 'expo-secure-store';
+import * as WebBrowser from "expo-web-browser";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { ValidationError } from "./server";
 import { CentralAuthContextInterface, CentralAuthProviderProps, ErrorCode, ErrorObject, ReactNativeCallbackParams, TokenResponse } from "./types";
@@ -92,8 +92,8 @@ export const useCentralAuth = () => {
     loginURL.searchParams.append("app_id", appId);
     loginURL.searchParams.append("device_id", deviceId || "");
 
-    //Open the URL
-    openURL(loginURL.toString());
+    //Open the URL in a Web Browser tab
+    await WebBrowser.openAuthSessionAsync(loginURL.toString(), callbackUrl);
   }, [clientId, authBaseUrl, callbackUrl, appId, deviceId]);
 
   //Handle the callback from CentralAuth

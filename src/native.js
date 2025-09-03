@@ -8,8 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { CryptoDigestAlgorithm, CryptoEncoding, digestStringAsync, randomUUID } from "expo-crypto";
-import { openURL } from "expo-linking";
 import { deleteItemAsync, getItem, getItemAsync, setItemAsync } from 'expo-secure-store';
+import * as WebBrowser from "expo-web-browser";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { ValidationError } from "./server";
 /**
@@ -90,8 +90,8 @@ export const useCentralAuth = () => {
         loginURL.searchParams.append("code_challenge_method", "S256");
         loginURL.searchParams.append("app_id", appId);
         loginURL.searchParams.append("device_id", deviceId || "");
-        //Open the URL
-        openURL(loginURL.toString());
+        //Open the URL in a Web Browser tab
+        yield WebBrowser.openAuthSessionAsync(loginURL.toString(), callbackUrl);
     }), [clientId, authBaseUrl, callbackUrl, appId, deviceId]);
     //Handle the callback from CentralAuth
     const handleCallback = useCallback((_a) => __awaiter(void 0, [_a], void 0, function* ({ code, errorCode, message }) {
