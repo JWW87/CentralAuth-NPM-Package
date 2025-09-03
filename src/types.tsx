@@ -182,6 +182,12 @@ export interface CentralAuthContextInterface {
   deviceId?: string | null;
   authBaseUrl: string;
   callbackUrl: string;
+  accessToken: string | null | undefined;
+  idToken: string | null | undefined;
+  setAccessToken: (token: string) => Promise<void>;
+  setIdToken: (token: string) => Promise<void>;
+  deleteAccessToken: () => Promise<void>;
+  deleteIdToken: () => Promise<void>;
 }
 
 export type CentralAuthProviderProps = {

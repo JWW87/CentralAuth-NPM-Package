@@ -34,39 +34,43 @@ export const hash = (string) => __awaiter(void 0, void 0, void 0, function* () {
         .replace(/=/g, '');
 });
 /**
- * Custom React hook for handling CentralAuth authentication in React Native applications.
+ * Custom React hook for managing CentralAuth authentication in React Native applications.
  *
- * This hook provides a complete authentication flow including login, logout, token management,
- * and callback handling for OAuth 2.0 with PKCE (Proof Key for Code Exchange).
+ * This hook provides authentication functionality including login, callback handling, and logout
+ * operations using OAuth 2.0 with PKCE (Proof Key for Code Exchange) flow.
  *
- * @returns An object containing authentication methods and token states
- * @returns {Function} login - Initiates the OAuth login flow by opening the authorization URL
- * @returns {Function} handleCallback - Processes the OAuth callback and exchanges code for tokens
- * @returns {Function} logout - Clears all stored tokens and logs out the user
- * @returns {Function} setAccessToken - Manually sets the access token in storage and state
- * @returns {Function} setIdToken - Manually sets the ID token in storage and state
- * @returns {Function} deleteAccessToken - Removes the access token from storage and state
- * @returns {Function} deleteIdToken - Removes the ID token from storage and state
- * @returns {string | null} accessToken - Current access token from state
- * @returns {string | null} idToken - Current ID token from state
+ * @returns An object containing authentication methods and state:
+ * - `login`: Initiates the OAuth login flow by generating PKCE parameters and opening the auth URL
+ * - `handleCallback`: Processes the OAuth callback with authorization code and exchanges it for tokens
+ * - `logout`: Clears stored access and ID tokens from both local state and secure storage
+ * - `accessToken`: Current access token value
+ * - `idToken`: Current ID token value
+ * - `setAccessToken`: Function to set the access token
+ * - `setIdToken`: Function to set the ID token
+ * - `deleteAccessToken`: Function to delete the access token
+ * - `deleteIdToken`: Function to delete the ID token
  *
- * @throws {ValidationError} When callback contains an error or verification fails
+ * @throws {ValidationError} When authentication fails or invalid parameters are provided
+ *
+ * @example
+ * ```tsx
+ * const { login, handleCallback, logout, accessToken } = useCentralAuth();
+ *
+ * // Initiate login
+ * await login();
+ *
+ * // Handle callback from deep link
+ * await handleCallback({ code: 'auth_code', errorCode: null, message: null });
+ *
+ * // Logout user
+ * await logout();
+ * ```
  */
 export const useCentralAuth = () => {
-    const [accessTokenState, setAccessTokenState] = useState();
-    const [idTokenState, setIdTokenState] = useState();
     //Get the auth context data
-    const centralAuthContextData = useContext(CentralAuthContext);
-    //Get the tokens from secure storage and set it in the state the first time this hook is used
-    useEffect(() => {
-        const accessTokenFromStorage = getItem("access_token");
-        const idTokenFromStorage = getItem("id_token");
-        setAccessTokenState(accessTokenFromStorage);
-        setIdTokenState(idTokenFromStorage);
-    }, []);
+    const { clientId, authBaseUrl, callbackUrl, appId, deviceId, accessToken, idToken, setAccessToken, setIdToken, deleteAccessToken, deleteIdToken } = useContext(CentralAuthContext);
+    // Handle login logic
     const login = useCallback(() => __awaiter(void 0, void 0, void 0, function* () {
-        // Handle login logic
-        const { clientId, authBaseUrl, callbackUrl, appId, deviceId } = centralAuthContextData;
         //Create a random state and store it in secure storage
         const state = randomUUID();
         yield setItemAsync("state", state);
@@ -88,29 +92,11 @@ export const useCentralAuth = () => {
         loginURL.searchParams.append("device_id", deviceId || "");
         //Open the URL
         openURL(loginURL.toString());
-    }), [centralAuthContextData]);
-    const setAccessToken = useCallback((token) => __awaiter(void 0, void 0, void 0, function* () {
-        yield setItemAsync("access_token", token);
-        setAccessTokenState(token);
-    }), []);
-    const setIdToken = useCallback((token) => __awaiter(void 0, void 0, void 0, function* () {
-        yield setItemAsync("id_token", token);
-        setIdTokenState(token);
-    }), []);
-    const deleteAccessToken = useCallback(() => __awaiter(void 0, void 0, void 0, function* () {
-        yield deleteItemAsync("access_token");
-        setAccessTokenState(null);
-    }), []);
-    const deleteIdToken = useCallback(() => __awaiter(void 0, void 0, void 0, function* () {
-        yield deleteItemAsync("id_token");
-        setIdTokenState(null);
-    }), []);
+    }), [clientId, authBaseUrl, callbackUrl, appId, deviceId]);
+    //Handle the callback from CentralAuth
     const handleCallback = useCallback((_a) => __awaiter(void 0, [_a], void 0, function* ({ code, errorCode, message }) {
-        //Handle the callback from CentralAuth
         if (message || !code)
             throw new ValidationError({ errorCode: errorCode, message });
-        //Verify the code in the callback URL
-        const { authBaseUrl, callbackUrl } = centralAuthContextData;
         //Get the code verifier from secure storage
         const codeVerifier = yield getItemAsync("code_verifier");
         const formData = new FormData();
@@ -132,12 +118,12 @@ export const useCentralAuth = () => {
         yield setIdToken(data.id_token);
         //Return the token response
         return data;
-    }), [centralAuthContextData, setAccessToken, setIdToken]);
+    }), [authBaseUrl, callbackUrl, setAccessToken, setIdToken]);
     const logout = useCallback(() => __awaiter(void 0, void 0, void 0, function* () {
         yield deleteAccessToken();
         yield deleteIdToken();
     }), [deleteAccessToken, deleteIdToken]);
-    return { login, handleCallback, logout, setAccessToken, setIdToken, deleteAccessToken, deleteIdToken, accessToken: accessTokenState, idToken: idTokenState };
+    return { login, handleCallback, logout, accessToken, idToken, setAccessToken, setIdToken, deleteAccessToken, deleteIdToken };
 };
 //Context provider for React Native apps
 export const CentralAuthContext = createContext({
@@ -146,8 +132,77 @@ export const CentralAuthContext = createContext({
     deviceId: null,
     authBaseUrl: "",
     callbackUrl: "",
+    accessToken: undefined,
+    idToken: undefined,
+    setAccessToken: function (token) {
+        throw new Error("Function not implemented.");
+    },
+    setIdToken: function (token) {
+        throw new Error("Function not implemented.");
+    },
+    deleteAccessToken: function () {
+        throw new Error("Function not implemented.");
+    },
+    deleteIdToken: function () {
+        throw new Error("Function not implemented.");
+    }
 });
+/**
+ * CentralAuth Provider component that manages authentication state and token storage.
+ *
+ * This component provides authentication context to its children, handling access tokens
+ * and ID tokens with secure storage persistence. It automatically loads stored tokens
+ * on initialization and provides methods to update and delete tokens.
+ *
+ * @param props - The provider configuration props
+ * @param props.clientId - The OAuth client identifier
+ * @param props.appId - The application identifier
+ * @param props.deviceId - The unique device identifier
+ * @param props.callbackUrl - The URL to redirect to after authentication
+ * @param props.authBaseUrl - The base URL for the authentication service
+ * @param props.children - React children components that will have access to the auth context
+ *
+ * @returns JSX element that provides authentication context to its children
+ *
+ * @example
+ * ```tsx
+ * <CentralAuthProvider
+ *   clientId="your-client-id"
+ *   appId="your-app-id"
+ *   deviceId="unique-device-id"
+ *   callbackUrl="https://yourapp.com/callback"
+ *   authBaseUrl="https://centralauth.com"
+ * >
+ *   <App />
+ * </CentralAuthProvider>
+ * ```
+ */
 export const CentralAuthProvider = ({ clientId, appId, deviceId, callbackUrl, authBaseUrl, children }) => {
-    return (React.createElement(CentralAuthContext.Provider, { value: { clientId, appId, deviceId, callbackUrl, authBaseUrl } }, children));
+    const [accessTokenState, setAccessTokenState] = useState();
+    const [idTokenState, setIdTokenState] = useState();
+    //Get the tokens from secure storage and set it in the state the first time the provider renders
+    useEffect(() => {
+        const accessTokenFromStorage = getItem("access_token");
+        const idTokenFromStorage = getItem("id_token");
+        setAccessTokenState(accessTokenFromStorage);
+        setIdTokenState(idTokenFromStorage);
+    }, []);
+    const setAccessToken = useCallback((token) => __awaiter(void 0, void 0, void 0, function* () {
+        yield setItemAsync("access_token", token);
+        setAccessTokenState(token);
+    }), []);
+    const setIdToken = useCallback((token) => __awaiter(void 0, void 0, void 0, function* () {
+        yield setItemAsync("id_token", token);
+        setIdTokenState(token);
+    }), []);
+    const deleteAccessToken = useCallback(() => __awaiter(void 0, void 0, void 0, function* () {
+        yield deleteItemAsync("access_token");
+        setAccessTokenState(null);
+    }), []);
+    const deleteIdToken = useCallback(() => __awaiter(void 0, void 0, void 0, function* () {
+        yield deleteItemAsync("id_token");
+        setIdTokenState(null);
+    }), []);
+    return (React.createElement(CentralAuthContext.Provider, { value: { clientId, appId, deviceId, callbackUrl, authBaseUrl, accessToken: accessTokenState, idToken: idTokenState, setAccessToken, setIdToken, deleteAccessToken, deleteIdToken } }, children));
 };
 //# sourceMappingURL=native.js.map
