@@ -1,10 +1,10 @@
 {
   "name": "centralauth",
-  "version": "0.2.14",
+  "version": "0.2.15",
   "description": "Official package for CentralAuth",
   "type": "module",
   "scripts": {
-    "build": "openapi-ts && npx tsc"
+    "build": "rm tsconfig.tsbuildinfo && openapi-ts && npx tsc"
   },
   "repository": {
     "type": "git",

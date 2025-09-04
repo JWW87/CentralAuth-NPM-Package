@@ -122,6 +122,7 @@ export type CallbackParamsHTTP = {
 
 export type ReactNativeCallbackParams = {
   code?: string;
+  state?: string;
 } & Partial<ErrorObject>
 
 //Enum for the different error messages

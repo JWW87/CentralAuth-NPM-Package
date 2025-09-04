@@ -97,12 +97,20 @@ export const useCentralAuth = () => {
   }, [clientId, authBaseUrl, callbackUrl, appId, deviceId]);
 
   //Handle the callback from CentralAuth
-  const handleCallback = useCallback(async ({ code, errorCode, message }: ReactNativeCallbackParams) => {
+  const handleCallback = useCallback(async ({ code, state, errorCode, message }: ReactNativeCallbackParams) => {
     if (message || !code)
       throw new ValidationError({ errorCode: errorCode as ErrorCode, message });
 
-    //Get the code verifier from secure storage
+    //Get the code verifier and state from secure storage
     const codeVerifier = await getItemAsync("code_verifier");
+    const storedState = await getItemAsync("state");
+
+    //Validate the state
+    if (!state || !storedState)
+      throw new ValidationError({ errorCode: "stateMissing", message: "State is missing" });
+    if (state !== storedState)
+      throw new ValidationError({ errorCode: "stateInvalid", message: "Invalid state" });
+
     const formData = new FormData();
     formData.append("code", code);
     formData.append("redirect_uri", callbackUrl);

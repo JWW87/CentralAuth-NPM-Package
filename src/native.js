@@ -94,11 +94,17 @@ export const useCentralAuth = () => {
         yield WebBrowser.openAuthSessionAsync(loginURL.toString(), callbackUrl);
     }), [clientId, authBaseUrl, callbackUrl, appId, deviceId]);
     //Handle the callback from CentralAuth
-    const handleCallback = useCallback((_a) => __awaiter(void 0, [_a], void 0, function* ({ code, errorCode, message }) {
+    const handleCallback = useCallback((_a) => __awaiter(void 0, [_a], void 0, function* ({ code, state, errorCode, message }) {
         if (message || !code)
             throw new ValidationError({ errorCode: errorCode, message });
-        //Get the code verifier from secure storage
+        //Get the code verifier and state from secure storage
         const codeVerifier = yield getItemAsync("code_verifier");
+        const storedState = yield getItemAsync("state");
+        //Validate the state
+        if (!state || !storedState)
+            throw new ValidationError({ errorCode: "stateMissing", message: "State is missing" });
+        if (state !== storedState)
+            throw new ValidationError({ errorCode: "stateInvalid", message: "Invalid state" });
         const formData = new FormData();
         formData.append("code", code);
         formData.append("redirect_uri", callbackUrl);
