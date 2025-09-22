@@ -7,7 +7,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+import Axios from "axios";
+import { setupCache } from 'axios-cache-interceptor';
 import { jwtDecrypt } from "jose";
+//Instantiate the Axios cache interceptor
+const instance = Axios.create();
+const axios = setupCache(instance, {
+    methods: ['get', 'post'],
+});
 //Private method for parsing a cookie string in a request header
 const parseCookie = (cookieString) => ((cookieString === null || cookieString === void 0 ? void 0 : cookieString.split(';').map(v => v.split('=')).reduce((acc, v) => {
     acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
@@ -31,7 +38,7 @@ export const hash = (string) => __awaiter(void 0, void 0, void 0, function* () {
 //Class for CentralAuth
 export class CentralAuthClass {
     //Constructor method to set all instance variable
-    constructor({ clientId, secret, authBaseUrl, callbackUrl, debug, unsafeIncludeUser }) {
+    constructor({ clientId, secret, authBaseUrl, callbackUrl, debug, cacheTTL, unsafeIncludeUser }) {
         //Private method to check whether all variable are set for a specific action
         //Will throw a ValidationError when a check fails
         this.checkData = (action) => {
@@ -116,6 +123,7 @@ export class CentralAuthClass {
         //Private method to get the user data from the ID token or the CentralAuth server
         //Will throw an error when the request fails
         this.getUser = (headers) => __awaiter(this, void 0, void 0, function* () {
+            var _a;
             if (this.userData)
                 return this.userData;
             else {
@@ -134,32 +142,34 @@ export class CentralAuthClass {
                     this.userData = user;
                 else {
                     //Get the user and session data from the CentralAuth server
-                    const headers = new Headers();
-                    headers.set("Content-Type", "text/plain");
-                    headers.set("Authorization", `Basic ${Buffer.from(`${this.clientId || ""}:${this.secret}`).toString("base64")}`);
-                    //Set the user agent to the user agent of the current request
-                    headers.set("user-agent", userAgent);
-                    //Set the custom auth-ip header with the IP address of the current request
-                    headers.set("auth-ip", ipAddress);
+                    const requestHeaders = {
+                        "Content-Type": "text/plain",
+                        "Authorization": `Basic ${Buffer.from(`${this.clientId || ""}:${this.secret}`).toString("base64")}`,
+                        "user-agent": userAgent, //Set the user agent to the user agent of the current request
+                        "auth-ip": ipAddress //Set the custom auth-ip header with the IP address of the current request
+                    };
                     //Set the device ID header if present
                     if (deviceId)
-                        headers.set("device-id", deviceId);
+                        requestHeaders["device-id"] = deviceId;
                     //Construct the URL
                     const requestUrl = new URL(`${this.authBaseUrl}/api/v1/userinfo`);
                     const callbackUrl = new URL(this.callbackUrl);
                     requestUrl.searchParams.set("domain", callbackUrl.origin);
-                    const response = yield fetch(requestUrl.toString(), {
-                        method: "POST",
-                        body: this.token,
-                        headers
-                    });
-                    if (!response.ok) {
-                        const error = yield response.json();
-                        if (this.debug)
-                            console.warn(`[CENTRALAUTH DEBUG] Failed to fetch user data from the server for client ${this.clientId || "CentralAuth"}: ${error.message}`);
-                        throw new ValidationError(error);
+                    try {
+                        const response = yield axios.post(requestUrl.toString(), this.token, {
+                            cache: {
+                                ttl: this.cacheTTL || 0
+                            },
+                            headers: requestHeaders
+                        });
+                        this.userData = response.data;
                     }
-                    this.userData = (yield response.json());
+                    catch (error) {
+                        const errorData = (_a = error.response) === null || _a === void 0 ? void 0 : _a.data;
+                        if (this.debug)
+                            console.warn(`[CENTRALAUTH DEBUG] Failed to fetch user data from the server for client ${this.clientId || "CentralAuth"}: ${(errorData === null || errorData === void 0 ? void 0 : errorData.message) || error.message}`);
+                        throw new ValidationError(errorData || { errorCode: "networkError", message: error.message });
+                    }
                 }
             }
         });
@@ -441,6 +451,7 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
         this.authBaseUrl = authBaseUrl;
         this.callbackUrl = callbackUrl;
         this.debug = debug;
+        this.cacheTTL = cacheTTL;
         if (unsafeIncludeUser) {
             this.unsafeIncludeUser = true;
             console.warn(`[CENTRALAUTH DEBUG] Unsafe ID token will be used for ${clientId || "CentralAuth"}.`);

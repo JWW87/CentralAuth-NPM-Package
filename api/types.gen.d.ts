@@ -149,9 +149,13 @@ export type BillingInfo = {
      */
     invoiceEmailAddress: string;
     /**
-     * Billing address for the invoices
+     * Billing address line 1 for the invoices
      */
     addressLine: string;
+    /**
+     * Billing address line 2 for the invoices
+     */
+    addressLine2?: string | null;
     /**
      * Zip or postal code for the invoices
      */

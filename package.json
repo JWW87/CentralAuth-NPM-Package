@@ -1,6 +1,6 @@
 {
   "name": "centralauth",
-  "version": "0.2.16",
+  "version": "0.2.17",
   "description": "Official package for CentralAuth",
   "type": "module",
   "scripts": {
@@ -20,28 +20,30 @@
   "author": "West IT",
   "license": "MIT",
   "dependencies": {
+    "axios": "^1.12.2",
+    "axios-cache-interceptor": "^1.8.3",
     "jose": "^6.1.0"
   },
   "peerDependencies": {
-    "react": "^18.0.0 || ^19.0.0",
-    "swr": "^2.0.0",
     "expo-crypto": ">=14.0.0",
     "expo-device": ">=7.0.0",
     "expo-linking": ">=7.0.0",
+    "expo-secure-store": ">=14.0.0",
     "expo-web-browser": ">=14.0.0",
-    "expo-secure-store": ">=14.0.0"
+    "react": "^18.0.0 || ^19.0.0",
+    "swr": "^2.0.0"
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "^0.78.3",
     "@types/node": "^24.0.4",
     "@types/react": "^19.1.8",
-    "typescript": "^5.8.3",
-    "react": "^19.1.0",
-    "swr": "^2.3.3",
     "expo-crypto": "^14.1.5",
     "expo-device": "^7.1.4",
     "expo-linking": "^7.1.7",
+    "expo-secure-store": "^14.2.3",
     "expo-web-browser": "^14.2.0",
-    "expo-secure-store": "^14.2.3"
+    "react": "^19.1.0",
+    "swr": "^2.3.3",
+    "typescript": "^5.8.3"
   }
 }

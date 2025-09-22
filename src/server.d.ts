@@ -11,10 +11,11 @@ export declare class CentralAuthClass {
     protected authBaseUrl: string;
     protected callbackUrl: string;
     private debug?;
+    private cacheTTL?;
     private unsafeIncludeUser?;
     private token?;
     protected userData?: User;
-    constructor({ clientId, secret, authBaseUrl, callbackUrl, debug, unsafeIncludeUser }: ConstructorParams);
+    constructor({ clientId, secret, authBaseUrl, callbackUrl, debug, cacheTTL, unsafeIncludeUser }: ConstructorParams);
     private checkData;
     private populateToken;
     private getDecodedToken;

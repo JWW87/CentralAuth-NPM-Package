@@ -1,6 +1,14 @@
+import Axios from "axios";
+import { setupCache } from 'axios-cache-interceptor';
 import { IncomingMessage, ServerResponse } from "http";
 import { jwtDecrypt } from "jose";
 import { CallbackParams, CallbackParamsHTTP, ConstructorParams, DirectAuthenticationParams, DirectAuthenticationResponse, ErrorCode, ErrorObject, JWTPayload, LoginParams, LogoutParams, TokenResponse, User } from "./types";
+
+//Instantiate the Axios cache interceptor
+const instance = Axios.create();
+const axios = setupCache(instance, {
+  methods: ['get', 'post'],
+});
 
 //Private method for parsing a cookie string in a request header
 const parseCookie = (cookieString: string | null) =>
@@ -37,17 +45,19 @@ export class CentralAuthClass {
   protected authBaseUrl: string;
   protected callbackUrl: string;
   private debug?: boolean;
+  private cacheTTL?: number;
   private unsafeIncludeUser?: boolean;
   private token?: string;
   protected userData?: User;
 
   //Constructor method to set all instance variable
-  constructor({ clientId, secret, authBaseUrl, callbackUrl, debug, unsafeIncludeUser }: ConstructorParams) {
+  constructor({ clientId, secret, authBaseUrl, callbackUrl, debug, cacheTTL, unsafeIncludeUser }: ConstructorParams) {
     this.clientId = clientId;
     this.secret = secret;
     this.authBaseUrl = authBaseUrl;
     this.callbackUrl = callbackUrl;
     this.debug = debug;
+    this.cacheTTL = cacheTTL;
     if (unsafeIncludeUser) {
       this.unsafeIncludeUser = true;
       console.warn(`[CENTRALAUTH DEBUG] Unsafe ID token will be used for ${clientId || "CentralAuth"}.`);
@@ -170,35 +180,36 @@ export class CentralAuthClass {
         this.userData = user;
       else {
         //Get the user and session data from the CentralAuth server
-        const headers = new Headers();
-        headers.set("Content-Type", "text/plain");
-        headers.set("Authorization", `Basic ${Buffer.from(`${this.clientId || ""}:${this.secret}`).toString("base64")}`);
-        //Set the user agent to the user agent of the current request
-        headers.set("user-agent", userAgent);
-        //Set the custom auth-ip header with the IP address of the current request
-        headers.set("auth-ip", ipAddress);
+        const requestHeaders: Record<string, string> = {
+          "Content-Type": "text/plain",
+          "Authorization": `Basic ${Buffer.from(`${this.clientId || ""}:${this.secret}`).toString("base64")}`,
+          "user-agent": userAgent, //Set the user agent to the user agent of the current request
+          "auth-ip": ipAddress //Set the custom auth-ip header with the IP address of the current request
+        };
+
         //Set the device ID header if present
-        if (deviceId) headers.set("device-id", deviceId);
+        if (deviceId) requestHeaders["device-id"] = deviceId;
 
         //Construct the URL
         const requestUrl = new URL(`${this.authBaseUrl}/api/v1/userinfo`);
         const callbackUrl = new URL(this.callbackUrl!);
         requestUrl.searchParams.set("domain", callbackUrl.origin);
 
-        const response = await fetch(requestUrl.toString(),
-          {
-            method: "POST",
-            body: this.token,
-            headers
+        try {
+          const response = await axios.post(requestUrl.toString(), this.token, {
+            cache: {
+              ttl: this.cacheTTL || 0
+            },
+            headers: requestHeaders
           });
-        if (!response.ok) {
-          const error = await response.json() as ErrorObject;
-          if (this.debug)
-            console.warn(`[CENTRALAUTH DEBUG] Failed to fetch user data from the server for client ${this.clientId || "CentralAuth"}: ${error.message}`);
-          throw new ValidationError(error);
-        }
 
-        this.userData = await response.json() as User;
+          this.userData = response.data as User;
+        } catch (error: any) {
+          const errorData = error.response?.data as ErrorObject;
+          if (this.debug)
+            console.warn(`[CENTRALAUTH DEBUG] Failed to fetch user data from the server for client ${this.clientId || "CentralAuth"}: ${errorData?.message || error.message}`);
+          throw new ValidationError(errorData || { errorCode: "networkError", message: error.message });
+        }
       }
     }
   }

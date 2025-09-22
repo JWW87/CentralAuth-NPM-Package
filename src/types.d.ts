@@ -6,6 +6,7 @@ export type ConstructorParams = {
     authBaseUrl: string;
     callbackUrl: string;
     debug?: boolean;
+    cacheTTL?: number;
     unsafeIncludeUser?: boolean;
 };
 export type User = {
