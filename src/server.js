@@ -8,14 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import Axios from "axios";
-import { setupCache } from 'axios-cache-interceptor/dev';
+import { buildMemoryStorage, buildStorage, setupCache } from 'axios-cache-interceptor';
 import { jwtDecrypt } from "jose";
-//Instantiate the Axios cache interceptor
-const instance = Axios.create();
-const axios = setupCache(instance, {
-    methods: ['get', 'post'],
-    debug: console.log
-});
 //Private method for parsing a cookie string in a request header
 const parseCookie = (cookieString) => ((cookieString === null || cookieString === void 0 ? void 0 : cookieString.split(';').map(v => v.split('=')).reduce((acc, v) => {
     acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
@@ -39,7 +33,9 @@ export const hash = (string) => __awaiter(void 0, void 0, void 0, function* () {
 //Class for CentralAuth
 export class CentralAuthClass {
     //Constructor method to set all instance variable
-    constructor({ clientId, secret, authBaseUrl, callbackUrl, debug, cacheTTL, unsafeIncludeUser }) {
+    constructor({ clientId, secret, authBaseUrl, callbackUrl, debug, cache, unsafeIncludeUser }) {
+        //Instantiate the Axios cache interceptor
+        this.instance = Axios.create();
         //Private method to check whether all variable are set for a specific action
         //Will throw a ValidationError when a check fails
         this.checkData = (action) => {
@@ -157,10 +153,7 @@ export class CentralAuthClass {
                     const callbackUrl = new URL(this.callbackUrl);
                     requestUrl.searchParams.set("domain", callbackUrl.origin);
                     try {
-                        const response = yield axios.post(requestUrl.toString(), this.token, {
-                            cache: {
-                                ttl: this.cacheTTL || 0
-                            },
+                        const response = yield this.axios.post(requestUrl.toString(), this.token, {
                             headers: requestHeaders
                         });
                         this.userData = response.data;
@@ -452,7 +445,12 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
         this.authBaseUrl = authBaseUrl;
         this.callbackUrl = callbackUrl;
         this.debug = debug;
-        this.cacheTTL = cacheTTL;
+        this.cache = cache;
+        this.axios = setupCache(this.instance, {
+            methods: ['get', 'post'],
+            ttl: (cache === null || cache === void 0 ? void 0 : cache.ttl) || 0,
+            storage: cache ? buildStorage(cache.storage) : buildMemoryStorage()
+        });
         if (unsafeIncludeUser) {
             this.unsafeIncludeUser = true;
             console.warn(`[CENTRALAUTH DEBUG] Unsafe ID token will be used for ${clientId || "CentralAuth"}.`);

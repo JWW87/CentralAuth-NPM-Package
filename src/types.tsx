@@ -1,5 +1,11 @@
+import { BuildStorage } from "axios-cache-interceptor";
 import { IncomingMessage, ServerResponse } from "http";
 import type { ComponentType, FC, ReactElement } from "react";
+
+export type CacheConfig = {
+  ttl: number;
+  storage: BuildStorage
+}
 
 //Type for the class constructor
 export type ConstructorParams = {
@@ -8,7 +14,7 @@ export type ConstructorParams = {
   authBaseUrl: string;
   callbackUrl: string;
   debug?: boolean;
-  cacheTTL?: number;
+  cache?: CacheConfig;
   unsafeIncludeUser?: boolean;
 }
 

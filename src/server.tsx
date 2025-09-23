@@ -1,15 +1,8 @@
 import Axios from "axios";
-import { setupCache } from 'axios-cache-interceptor/dev';
+import { AxiosCacheInstance, buildMemoryStorage, buildStorage, setupCache } from 'axios-cache-interceptor';
 import { IncomingMessage, ServerResponse } from "http";
 import { jwtDecrypt } from "jose";
-import { CallbackParams, CallbackParamsHTTP, ConstructorParams, DirectAuthenticationParams, DirectAuthenticationResponse, ErrorCode, ErrorObject, JWTPayload, LoginParams, LogoutParams, TokenResponse, User } from "./types";
-
-//Instantiate the Axios cache interceptor
-const instance = Axios.create();
-const axios = setupCache(instance, {
-  methods: ['get', 'post'],
-  debug: console.log
-});
+import { CacheConfig, CallbackParams, CallbackParamsHTTP, ConstructorParams, DirectAuthenticationParams, DirectAuthenticationResponse, ErrorCode, ErrorObject, JWTPayload, LoginParams, LogoutParams, TokenResponse, User } from "./types";
 
 //Private method for parsing a cookie string in a request header
 const parseCookie = (cookieString: string | null) =>
@@ -46,19 +39,28 @@ export class CentralAuthClass {
   protected authBaseUrl: string;
   protected callbackUrl: string;
   private debug?: boolean;
-  private cacheTTL?: number;
+  private cache?: CacheConfig;
   private unsafeIncludeUser?: boolean;
   private token?: string;
   protected userData?: User;
 
+  //Instantiate the Axios cache interceptor
+  private instance = Axios.create();
+  private axios: AxiosCacheInstance;
+
   //Constructor method to set all instance variable
-  constructor({ clientId, secret, authBaseUrl, callbackUrl, debug, cacheTTL, unsafeIncludeUser }: ConstructorParams) {
+  constructor({ clientId, secret, authBaseUrl, callbackUrl, debug, cache, unsafeIncludeUser }: ConstructorParams) {
     this.clientId = clientId;
     this.secret = secret;
     this.authBaseUrl = authBaseUrl;
     this.callbackUrl = callbackUrl;
     this.debug = debug;
-    this.cacheTTL = cacheTTL;
+    this.cache = cache;
+    this.axios = setupCache(this.instance, {
+      methods: ['get', 'post'],
+      ttl: cache?.ttl || 0,
+      storage: cache ? buildStorage(cache.storage) : buildMemoryStorage()
+    });
     if (unsafeIncludeUser) {
       this.unsafeIncludeUser = true;
       console.warn(`[CENTRALAUTH DEBUG] Unsafe ID token will be used for ${clientId || "CentralAuth"}.`);
@@ -197,10 +199,7 @@ export class CentralAuthClass {
         requestUrl.searchParams.set("domain", callbackUrl.origin);
 
         try {
-          const response = await axios.post(requestUrl.toString(), this.token, {
-            cache: {
-              ttl: this.cacheTTL || 0
-            },
+          const response = await this.axios.post(requestUrl.toString(), this.token, {
             headers: requestHeaders
           });
 
