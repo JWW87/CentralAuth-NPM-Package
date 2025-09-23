@@ -477,13 +477,11 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
     return res;
   }
 
-  //Public method to get the user data from the current request
+  //Public method to get the user data from the current request headers
   //This method wraps getUserData and returns a Response with the user data as JSON in the body
   //Will return a NULL response on error
-  public user = async (req: Request) => {
+  public user = async (headers: Headers) => {
     try {
-      const headers = req.headers;
-
       await this.getUserData(headers);
 
       //Return the user data as JSON
@@ -608,7 +606,7 @@ export class CentralAuthHTTPClass extends CentralAuthClass {
 
   //Overloaded method for user
   public userHTTP = async (req: IncomingMessage, res: ServerResponse) => {
-    const fetchResponse = await this.user(this.httpRequestToFetchRequest(req));
+    const fetchResponse = await this.user(this.httpRequestToFetchRequest(req).headers);
 
     await this.fetchResponseToHttpResponse(fetchResponse, res);
   }

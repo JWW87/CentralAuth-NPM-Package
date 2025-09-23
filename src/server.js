@@ -382,12 +382,11 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
             //Set a cookie with the JWT and redirect to the returnTo URL
             return res;
         });
-        //Public method to get the user data from the current request
+        //Public method to get the user data from the current request headers
         //This method wraps getUserData and returns a Response with the user data as JSON in the body
         //Will return a NULL response on error
-        this.user = (req) => __awaiter(this, void 0, void 0, function* () {
+        this.user = (headers) => __awaiter(this, void 0, void 0, function* () {
             try {
-                const headers = req.headers;
                 yield this.getUserData(headers);
                 //Return the user data as JSON
                 return Response.json(this.userData);
@@ -511,7 +510,7 @@ export class CentralAuthHTTPClass extends CentralAuthClass {
         });
         //Overloaded method for user
         this.userHTTP = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            const fetchResponse = yield this.user(this.httpRequestToFetchRequest(req));
+            const fetchResponse = yield this.user(this.httpRequestToFetchRequest(req).headers);
             yield this.fetchResponseToHttpResponse(fetchResponse, res);
         });
     }
