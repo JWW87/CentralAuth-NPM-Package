@@ -33,7 +33,7 @@ export declare class CentralAuthClass {
     login: (req: Request, config?: LoginParams) => Promise<Response>;
     callback: (req: Request, config?: CallbackParams) => Promise<Response>;
     protected processCallback: (req: Request, onStateReceived?: CallbackParams["onStateReceived"]) => Promise<Response>;
-    user: (headers: Headers) => Promise<Response>;
+    user: (req: Request) => Promise<Response>;
     logout: (req: Request, config?: LogoutParams) => Promise<Response>;
 }
 export declare class CentralAuthHTTPClass extends CentralAuthClass {

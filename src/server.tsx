@@ -93,9 +93,6 @@ export class CentralAuthClass {
 
   //Private method to populate the token, either from the cookie of the token bearer in the headers
   private populateToken = async (headers: Headers) => {//Populate the token from token bearer or cookie
-    console.log(headers?.get)
-    console.log(headers?.get("Authorization"))
-    console.log(headers?.get("cookie"))
     const authHeader = headers.get("Authorization");
     if (authHeader)
       await this.setTokenFromTokenBearer(headers);
@@ -477,11 +474,13 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
     return res;
   }
 
-  //Public method to get the user data from the current request headers
+  //Public method to get the user data from the current request
   //This method wraps getUserData and returns a Response with the user data as JSON in the body
   //Will return a NULL response on error
-  public user = async (headers: Headers) => {
+  public user = async (req: Request) => {
     try {
+      const headers = req.headers;
+
       await this.getUserData(headers);
 
       //Return the user data as JSON
@@ -606,7 +605,7 @@ export class CentralAuthHTTPClass extends CentralAuthClass {
 
   //Overloaded method for user
   public userHTTP = async (req: IncomingMessage, res: ServerResponse) => {
-    const fetchResponse = await this.user(this.httpRequestToFetchRequest(req).headers);
+    const fetchResponse = await this.user(this.httpRequestToFetchRequest(req));
 
     await this.fetchResponseToHttpResponse(fetchResponse, res);
   }

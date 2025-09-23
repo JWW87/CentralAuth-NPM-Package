@@ -60,9 +60,6 @@ export class CentralAuthClass {
         };
         //Private method to populate the token, either from the cookie of the token bearer in the headers
         this.populateToken = (headers) => __awaiter(this, void 0, void 0, function* () {
-            console.log(headers === null || headers === void 0 ? void 0 : headers.get);
-            console.log(headers === null || headers === void 0 ? void 0 : headers.get("Authorization"));
-            console.log(headers === null || headers === void 0 ? void 0 : headers.get("cookie"));
             const authHeader = headers.get("Authorization");
             if (authHeader)
                 yield this.setTokenFromTokenBearer(headers);
@@ -383,11 +380,12 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
             //Set a cookie with the JWT and redirect to the returnTo URL
             return res;
         });
-        //Public method to get the user data from the current request headers
+        //Public method to get the user data from the current request
         //This method wraps getUserData and returns a Response with the user data as JSON in the body
         //Will return a NULL response on error
-        this.user = (headers) => __awaiter(this, void 0, void 0, function* () {
+        this.user = (req) => __awaiter(this, void 0, void 0, function* () {
             try {
+                const headers = req.headers;
                 yield this.getUserData(headers);
                 //Return the user data as JSON
                 return Response.json(this.userData);
@@ -511,7 +509,7 @@ export class CentralAuthHTTPClass extends CentralAuthClass {
         });
         //Overloaded method for user
         this.userHTTP = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            const fetchResponse = yield this.user(this.httpRequestToFetchRequest(req).headers);
+            const fetchResponse = yield this.user(this.httpRequestToFetchRequest(req));
             yield this.fetchResponseToHttpResponse(fetchResponse, res);
         });
     }
