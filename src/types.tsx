@@ -1,6 +1,11 @@
-import { BuildStorage } from "axios-cache-interceptor";
+import { CacheRequestConfig as AxiosCacheRequestConfig, MaybePromise as AxiosMaybePromise, NotEmptyStorageValue as AxiosNotEmptyStorageValue, StorageValue as AxiosStorageValue, BuildStorage } from "axios-cache-interceptor";
 import { IncomingMessage, ServerResponse } from "http";
 import type { ComponentType, FC, ReactElement } from "react";
+
+export type NotEmptyStorageValue = AxiosNotEmptyStorageValue;
+export type CacheRequestConfig = AxiosCacheRequestConfig;
+export type MaybePromise<T> = AxiosMaybePromise<T>;
+export type StorageValue = AxiosStorageValue;
 
 export type CacheConfig = {
   ttl: number;
