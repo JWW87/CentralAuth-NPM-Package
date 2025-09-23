@@ -93,6 +93,9 @@ export class CentralAuthClass {
 
   //Private method to populate the token, either from the cookie of the token bearer in the headers
   private populateToken = async (headers: Headers) => {//Populate the token from token bearer or cookie
+    console.log(headers?.get)
+    console.log(headers?.get("Authorization"))
+    console.log(headers?.get("cookie"))
     const authHeader = headers.get("Authorization");
     if (authHeader)
       await this.setTokenFromTokenBearer(headers);
