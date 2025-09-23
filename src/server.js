@@ -8,12 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import Axios from "axios";
-import { setupCache } from 'axios-cache-interceptor';
+import { setupCache } from 'axios-cache-interceptor/dev';
 import { jwtDecrypt } from "jose";
 //Instantiate the Axios cache interceptor
 const instance = Axios.create();
 const axios = setupCache(instance, {
     methods: ['get', 'post'],
+    debug: console.log
 });
 //Private method for parsing a cookie string in a request header
 const parseCookie = (cookieString) => ((cookieString === null || cookieString === void 0 ? void 0 : cookieString.split(';').map(v => v.split('=')).reduce((acc, v) => {

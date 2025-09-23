@@ -1,5 +1,5 @@
 import Axios from "axios";
-import { setupCache } from 'axios-cache-interceptor';
+import { setupCache } from 'axios-cache-interceptor/dev';
 import { IncomingMessage, ServerResponse } from "http";
 import { jwtDecrypt } from "jose";
 import { CallbackParams, CallbackParamsHTTP, ConstructorParams, DirectAuthenticationParams, DirectAuthenticationResponse, ErrorCode, ErrorObject, JWTPayload, LoginParams, LogoutParams, TokenResponse, User } from "./types";
@@ -8,6 +8,7 @@ import { CallbackParams, CallbackParamsHTTP, ConstructorParams, DirectAuthentica
 const instance = Axios.create();
 const axios = setupCache(instance, {
   methods: ['get', 'post'],
+  debug: console.log
 });
 
 //Private method for parsing a cookie string in a request header

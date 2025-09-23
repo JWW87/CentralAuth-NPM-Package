@@ -263,6 +263,58 @@ export type Tenant = {
     settings?: OrganizationSettings;
     tenantData: TenantData;
 };
+export type Invoice = {
+    readonly id: string;
+    readonly tenantDataId: string;
+    /**
+     * ID of the payment in Mollie
+     */
+    readonly paymentId?: string | null;
+    /**
+     * External ID of the invoice in e-Boekhouden
+     */
+    readonly invoiceId?: number | null;
+    /**
+     * The tier of the tenant for this invoice
+     */
+    tier: 'free' | 'basic' | 'pro' | 'enterprise';
+    /**
+     * The currency of the invoice
+     */
+    currency: 'EUR' | 'USD' | 'GBP';
+    /**
+     * Amount of the subscription in the invoice
+     */
+    readonly subscriptionAmount: number;
+    /**
+     * Number of MAU's for the period of this invoice
+     */
+    readonly monthlyActiveUsers: number;
+    /**
+     * Amount of the MAU in the invoice
+     */
+    readonly monthlyActiveUserAmount: number;
+    /**
+     * The tier used for calculating the amount of the MAU
+     */
+    monthlyActiveUserTier: 'free' | 'basic' | 'pro' | 'enterprise';
+    /**
+     * Discount percentage for the invoice
+     */
+    readonly discountPercentage: number;
+    /**
+     * Status of the payment
+     */
+    status: 'open' | 'pending' | 'authorized' | 'paid' | 'canceled' | 'failed' | 'expired' | 'chargeback';
+    readonly startDate: string;
+    readonly endDate: string;
+    /**
+     * URL to download the invoice PDF
+     */
+    readonly downloadUrl?: string | null;
+    readonly created: string;
+    readonly updated: string;
+};
 export type User = {
     readonly id?: string;
     /**
@@ -1422,6 +1474,71 @@ export type PostApiV1TenantByIdResponses = {
     200: Tenant;
 };
 export type PostApiV1TenantByIdResponse = PostApiV1TenantByIdResponses[keyof PostApiV1TenantByIdResponses];
+export type GetApiV1InvoicesByTenantIdData = {
+    body?: never;
+    path: {
+        tenantId: string;
+    };
+    query?: never;
+    url: '/api/v1/invoices/{tenantId}';
+};
+export type GetApiV1InvoicesByTenantIdErrors = {
+    /**
+     * Bad request
+     */
+    400: {
+        errorCode?: 'genericError' | 'noPermission' | 'tooManyRequests' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'codeChallengeMissing' | 'codeChallengeInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * No permission
+     */
+    403: {
+        errorCode?: 'genericError' | 'noPermission' | 'tooManyRequests' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'codeChallengeMissing' | 'codeChallengeInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Not found
+     */
+    404: {
+        errorCode?: 'genericError' | 'noPermission' | 'tooManyRequests' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'codeChallengeMissing' | 'codeChallengeInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Invalid method
+     */
+    405: {
+        errorCode?: 'genericError' | 'noPermission' | 'tooManyRequests' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'codeChallengeMissing' | 'codeChallengeInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Too many requests
+     */
+    429: {
+        errorCode?: 'genericError' | 'noPermission' | 'tooManyRequests' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'codeChallengeMissing' | 'codeChallengeInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Deployment error
+     */
+    502: unknown;
+    /**
+     * Service unavailable
+     */
+    503: unknown;
+    /**
+     * Gateway timeout
+     */
+    504: unknown;
+};
+export type GetApiV1InvoicesByTenantIdError = GetApiV1InvoicesByTenantIdErrors[keyof GetApiV1InvoicesByTenantIdErrors];
+export type GetApiV1InvoicesByTenantIdResponses = {
+    /**
+     * All invoices for this tenant
+     */
+    200: Array<Invoice>;
+};
+export type GetApiV1InvoicesByTenantIdResponse = GetApiV1InvoicesByTenantIdResponses[keyof GetApiV1InvoicesByTenantIdResponses];
 export type DeleteApiV1UserByIdData = {
     body?: never;
     path: {

@@ -225,6 +225,23 @@ export const postApiV1TenantById = (options) => {
         ], url: '/api/v1/tenant/{id}' }, options), { headers: Object.assign({ 'Content-Type': 'application/json' }, options.headers) }));
 };
 /**
+ * Get all invoices for a tenant
+ */
+export const getApiV1InvoicesByTenantId = (options) => {
+    var _a;
+    return ((_a = options.client) !== null && _a !== void 0 ? _a : _heyApiClient).get(Object.assign({ security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'accessToken',
+                type: 'apiKey'
+            }
+        ], url: '/api/v1/invoices/{tenantId}' }, options));
+};
+/**
  * Delete a user
  * Note that a user can create a new user object by logging in again. It is not necessary to create a new user object first.
  */
