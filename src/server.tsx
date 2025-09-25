@@ -220,11 +220,11 @@ export class CentralAuthClass {
   //Private method to populate the token argument from the cookie in the session
   private setTokenFromCookie = async (headers: Headers) => {
     const cookies = parseCookie(headers.get("cookie"));
-    //Check for a accessToken or idToken in the cookies based on the unsafeIncludeUser flag
-    if (this.unsafeIncludeUser && cookies["idToken"])
-      this.token = cookies["idToken"];
+    //Check for a access_token or id_token in the cookies based on the unsafeIncludeUser flag
+    if (this.unsafeIncludeUser && cookies["id_token"])
+      this.token = cookies["id_token"];
     else
-      this.token = cookies["accessToken"];
+      this.token = cookies["access_token"];
   }
 
   //Private method to populate the token argument from the JWT in the token bearer header
@@ -463,7 +463,7 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
     //Set the response object with the redirect and the cookies
     const newHeaders = new Headers();
     newHeaders.append("Location", returnTo);
-    newHeaders.append("Set-Cookie", `${this.unsafeIncludeUser ? "idToken" : "accessToken"}=${this.token}; Path=/; HttpOnly; Max-Age=${typeof tokenResponse.expires_in == "number" ? tokenResponse.expires_in : 31536000}; SameSite=Lax; Secure`);
+    newHeaders.append("Set-Cookie", `${this.unsafeIncludeUser ? "id_token" : "access_token"}=${this.token}; Path=/; HttpOnly; Max-Age=${typeof tokenResponse.expires_in == "number" ? tokenResponse.expires_in : 31536000}; SameSite=Lax; Secure`);
     newHeaders.append("Set-Cookie", `code_verifier= ; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax; Secure`);
 
     let res = new Response(null,
@@ -493,7 +493,7 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
         console.warn(`[CENTRALAUTH DEBUG] Error fetching user data from cache or CentralAuth server or validation error for client ${this.clientId || "CentralAuth"}: ${error?.message}`);
       return Response.json(null, {
         headers: {
-          "Set-Cookie": `${this.unsafeIncludeUser ? "idToken" : "accessToken"}= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax; Secure`
+          "Set-Cookie": `${this.unsafeIncludeUser ? "id_token" : "access_token"}= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax; Secure`
         }
       });
     }
@@ -534,7 +534,7 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
           status: 302,
           headers: {
             "Location": returnTo,
-            "Set-Cookie": `${this.unsafeIncludeUser ? "idToken" : "accessToken"}= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax; Secure`
+            "Set-Cookie": `${this.unsafeIncludeUser ? "id_token" : "accessToken"}= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax; Secure`
           }
         }
       );
