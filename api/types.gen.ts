@@ -128,6 +128,14 @@ export type Organization = {
      */
     readonly newClientSecretDate?: string;
     customDomain?: string | null;
+    /**
+     * Indicates if email connections are enabled for this organization.
+     */
+    emailConnectionEnabled?: boolean;
+    /**
+     * Indicates if passkey connections are enabled for this organization.
+     */
+    passkeyConnectionEnabled?: boolean;
     overrideParentSettings?: boolean;
     readonly organizationSettingsId?: string;
     readonly created?: string;
@@ -285,7 +293,7 @@ export type Invoice = {
      */
     readonly paymentId?: string | null;
     /**
-     * External ID of the invoice in e-Boekhouden
+     * External ID of the invoice
      */
     readonly invoiceId?: number | null;
     /**
@@ -301,7 +309,7 @@ export type Invoice = {
      */
     readonly subscriptionAmount: number;
     /**
-     * Number of MAU's for the period of this invoice
+     * Number of MAUs for the period of this invoice
      */
     readonly monthlyActiveUsers: number;
     /**
@@ -913,6 +921,14 @@ export type PostApiV1OrganizationByIdData = {
         name?: string;
         logo?: string | null;
         customDomain?: string | null;
+        /**
+         * Indicates if email connections are enabled for this organization.
+         */
+        emailConnectionEnabled?: boolean;
+        /**
+         * Indicates if passkey connections are enabled for this organization.
+         */
+        passkeyConnectionEnabled?: boolean;
         overrideParentSettings?: boolean;
         settings?: {
             maxSessionTime?: number;
@@ -1061,6 +1077,14 @@ export type PostApiV1OrganizationData = {
         name: string;
         logo?: string | null;
         customDomain?: string | null;
+        /**
+         * Indicates if email connections are enabled for this organization.
+         */
+        emailConnectionEnabled?: boolean;
+        /**
+         * Indicates if passkey connections are enabled for this organization.
+         */
+        passkeyConnectionEnabled?: boolean;
         overrideParentSettings?: boolean;
         settings?: {
             maxSessionTime?: number;
@@ -2158,7 +2182,7 @@ export type GetApiV1UsersByOrganizationIdData = {
          * Maximum number of entities on one page
          */
         limitPerPage?: number;
-        order?: 'id' | 'email' | 'verified' | 'blocked' | 'created' | 'updated';
+        order?: 'verified' | 'blocked' | 'created' | 'updated' | 'lastLogin';
         sort?: 'asc' | 'desc';
         search?: string;
     };

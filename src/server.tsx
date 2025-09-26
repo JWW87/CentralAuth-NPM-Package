@@ -534,7 +534,7 @@ window.addEventListener("message", ({data}) => document.getElementById("centrala
           status: 302,
           headers: {
             "Location": returnTo,
-            "Set-Cookie": `${this.unsafeIncludeUser ? "id_token" : "accessToken"}= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax; Secure`
+            "Set-Cookie": `${this.unsafeIncludeUser ? "id_token" : "access_token"}= ; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax; Secure`
           }
         }
       );
