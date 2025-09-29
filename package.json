@@ -34,7 +34,7 @@
     "swr": "^2.0.0"
   },
   "devDependencies": {
-    "@hey-api/openapi-ts": "^0.78.3",
+    "@hey-api/openapi-ts": "^0.84.3",
     "@types/node": "^24.0.4",
     "@types/react": "^19.1.8",
     "expo-crypto": "^14.1.5",
