@@ -1,7 +1,7 @@
-export type { Auth } from '../core/auth';
-export type { QuerySerializerOptions } from '../core/bodySerializer';
-export { formDataBodySerializer, jsonBodySerializer, urlSearchParamsBodySerializer, } from '../core/bodySerializer';
-export { buildClientParams } from '../core/params';
-export { createClient } from './client';
-export type { Client, ClientOptions, Config, CreateClientConfig, Options, OptionsLegacyParser, RequestOptions, RequestResult, ResponseStyle, TDataShape, } from './types';
-export { createConfig, mergeHeaders } from './utils';
+export type { Auth } from '../core/auth.gen';
+export type { QuerySerializerOptions } from '../core/bodySerializer.gen';
+export { formDataBodySerializer, jsonBodySerializer, urlSearchParamsBodySerializer, } from '../core/bodySerializer.gen';
+export { buildClientParams } from '../core/params.gen';
+export { createClient } from './client.gen';
+export type { Client, ClientOptions, Config, CreateClientConfig, Options, OptionsLegacyParser, RequestOptions, RequestResult, ResolvedRequestOptions, ResponseStyle, TDataShape, } from './types.gen';
+export { createConfig, mergeHeaders } from './utils.gen';

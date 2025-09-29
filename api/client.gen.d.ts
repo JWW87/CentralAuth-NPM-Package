@@ -1,5 +1,5 @@
-import type { ClientOptions } from './types.gen';
-import { type Config, type ClientOptions as DefaultClientOptions } from './client';
+import { type ClientOptions, type Config } from './client';
+import type { ClientOptions as ClientOptions2 } from './types.gen';
 /**
  * The `createClientConfig()` function will be called on client initialization
  * and the returned object will become the client's initial configuration.
@@ -8,5 +8,5 @@ import { type Config, type ClientOptions as DefaultClientOptions } from './clien
  * `setConfig()`. This is useful for example if you're using Next.js
  * to ensure your client always has the correct values.
  */
-export type CreateClientConfig<T extends DefaultClientOptions = ClientOptions> = (override?: Config<DefaultClientOptions & T>) => Config<Required<DefaultClientOptions> & T>;
+export type CreateClientConfig<T extends ClientOptions = ClientOptions2> = (override?: Config<ClientOptions & T>) => Config<Required<ClientOptions> & T>;
 export declare const client: import("./client").Client;

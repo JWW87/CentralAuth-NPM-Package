@@ -1,3 +1,6 @@
+export type ClientOptions = {
+    baseUrl: 'https://centralauth.com' | (string & {});
+};
 export type InvitedUser = {
     readonly id?: string;
     tenantId: string;
@@ -454,15 +457,155 @@ export type AuditLog = {
      */
     ipAddress: string;
     /**
-     * Additional details about the action, including query data and errors.
-     */
-    details?: {
-        [key: string]: unknown;
-    };
-    /**
      * The date and time when this audit log was created.
      */
     readonly created: string;
+};
+export type InvitedUserWritable = {
+    tenantId: string;
+    email: string;
+    roleId: 'Admin' | 'OrganizationAdmin' | 'FinancialAdmin' | 'UserAdmin';
+    role: {
+        name: string;
+    };
+};
+export type InternalUserWritable = {
+    roleId: 'Admin' | 'OrganizationAdmin' | 'FinancialAdmin' | 'UserAdmin';
+};
+export type OrganizationSettingsWritable = {
+    maxSessionTime?: number;
+    maxInactivityTime?: number;
+    allowLocalhost?: boolean;
+    checkReferrer?: boolean;
+    hijackProtection?: boolean;
+    hijackProtectionIp?: boolean;
+    hijackProtectionUserAgent?: boolean;
+    hijackProtectionDeviceId?: boolean;
+    autoLogin?: boolean;
+    defaultLoginMethod?: 'local' | 'remote' | 'userPick';
+    defaultLoginAttemptType?: 'link' | 'challenge' | 'code';
+    useGlobalSmtp?: boolean;
+    smtpHost?: string | null;
+    smtpPort?: number | null;
+    smtpFrom?: string | null;
+    smtpUser?: string | null;
+    smtpPass?: string | null;
+};
+export type WhitelistItemWritable = {
+    value: string;
+};
+export type NativeAppRegistrationWritable = {
+    /**
+     * Bundle ID or package name for the native app.
+     */
+    bundleId: string;
+    /**
+     * App link or universal link to open the app after authentication.
+     */
+    appLink: string;
+};
+export type OAuthProviderWritable = {
+    type: 'google' | 'apple' | 'microsoft' | 'github';
+    useOwnCredentials?: boolean;
+    clientId: string | null;
+    clientSecret: string | null;
+};
+export type ThemeSettingsWritable = {
+    /**
+     * Layout of the login block on the login page
+     */
+    loginBlockLayout?: 'default' | 'compact';
+    /**
+     * Layout of the login page
+     */
+    loginPageLayout?: 'default' | 'alignLeft' | 'alignRight' | 'fullLeft' | 'fullRight' | 'compact';
+    /**
+     * URL of the image to use on the login page
+     */
+    imageUrl?: string | null;
+    /**
+     * Google Font name to use on the login page
+     */
+    customFont?: string | null;
+    /**
+     * Primary color used on the login page
+     */
+    primaryColor?: string;
+    /**
+     * Background color used on the login page
+     */
+    backgroundColor?: string;
+    /**
+     * Content color used on the login page
+     */
+    contentColor?: string;
+    /**
+     * Neutral color used on the login page
+     */
+    neutralColor?: string;
+};
+export type OrganizationWritable = {
+    tenantId: string;
+    name: string;
+    logo?: string | null;
+    customDomain?: string | null;
+    /**
+     * Indicates if email connections are enabled for this organization.
+     */
+    emailConnectionEnabled?: boolean;
+    /**
+     * Indicates if passkey connections are enabled for this organization.
+     */
+    passkeyConnectionEnabled?: boolean;
+    overrideParentSettings?: boolean;
+    settings?: OrganizationSettingsWritable;
+    whitelistItems?: Array<WhitelistItemWritable>;
+    appRegistrations?: Array<NativeAppRegistrationWritable>;
+    oAuthProviders?: Array<OAuthProviderWritable>;
+    themeSettings?: ThemeSettingsWritable;
+};
+export type RoleWritable = {
+    name: string;
+    permissions: Array<{
+        name?: string;
+    }>;
+};
+export type BillingInfoWritable = {
+    /**
+     * The currency for the invoices
+     */
+    currency: 'EUR' | 'USD' | 'GBP';
+    /**
+     * Email address to send the invoices to
+     */
+    invoiceEmailAddress: string;
+    /**
+     * Billing address line 1 for the invoices
+     */
+    addressLine: string;
+    /**
+     * Billing address line 2 for the invoices
+     */
+    addressLine2?: string | null;
+    /**
+     * Zip or postal code for the invoices
+     */
+    zipPostalCode: string;
+    /**
+     * City for the invoices
+     */
+    city: string;
+    /**
+     * Country for the invoices
+     */
+    country: 'AF' | 'AL' | 'DZ' | 'AS' | 'AD' | 'AO' | 'AI' | 'AQ' | 'AG' | 'AR' | 'AM' | 'AW' | 'AU' | 'AT' | 'AZ' | 'BS' | 'BH' | 'BD' | 'BB' | 'BY' | 'BE' | 'BZ' | 'BJ' | 'BM' | 'BT' | 'BO' | 'BQ' | 'BA' | 'BW' | 'BV' | 'BR' | 'IO' | 'BN' | 'BG' | 'BF' | 'BI' | 'KH' | 'CM' | 'CA' | 'CV' | 'KY' | 'CF' | 'TD' | 'CL' | 'CN' | 'CX' | 'CC' | 'CO' | 'KM' | 'CG' | 'CD' | 'CK' | 'CR' | 'HR' | 'CU' | 'CW' | 'CY' | 'CZ' | 'CI' | 'DK' | 'DJ' | 'DM' | 'DO' | 'EC' | 'EG' | 'SV' | 'GQ' | 'ER' | 'EE' | 'SZ' | 'ET' | 'FK' | 'FO' | 'FJ' | 'FI' | 'FR' | 'GF' | 'PF' | 'TF' | 'GA' | 'GM' | 'GE' | 'DE' | 'GH' | 'GI' | 'GR' | 'GL' | 'GD' | 'GP' | 'GU' | 'GT' | 'GG' | 'GN' | 'GW' | 'GY' | 'HT' | 'HM' | 'VA' | 'HN' | 'HK' | 'HU' | 'IS' | 'IN' | 'ID' | 'IR' | 'IQ' | 'IE' | 'IM' | 'IT' | 'JM' | 'JP' | 'JE' | 'JO' | 'KZ' | 'KE' | 'KI' | 'KP' | 'KR' | 'KW' | 'KG' | 'LA' | 'LV' | 'LB' | 'LS' | 'LR' | 'LY' | 'LI' | 'LT' | 'LU' | 'MO' | 'MK' | 'MG' | 'MW' | 'MY' | 'MV' | 'ML' | 'MT' | 'MH' | 'MQ' | 'MR' | 'MU' | 'YT' | 'MX' | 'FM' | 'MD' | 'MC' | 'MN' | 'ME' | 'MS' | 'MA' | 'MZ' | 'MM' | 'NA' | 'NR' | 'NP' | 'NL' | 'NC' | 'NZ' | 'NI' | 'NE' | 'NG' | 'NU' | 'NF' | 'MP' | 'NO' | 'OM' | 'PK' | 'PW' | 'PS' | 'PA' | 'PG' | 'PY' | 'PE' | 'PH' | 'PN' | 'PL' | 'PT' | 'PR' | 'QA' | 'RO' | 'RW' | 'RE' | 'BL' | 'SH' | 'KN' | 'LC' | 'MF' | 'PM' | 'VC' | 'WS' | 'SM' | 'ST' | 'SA' | 'SN' | 'RS' | 'SC' | 'SL' | 'SG' | 'SX' | 'SK' | 'SI' | 'SB' | 'SO' | 'ZA' | 'GS' | 'SS' | 'ES' | 'LK' | 'SD' | 'SR' | 'SJ' | 'SE' | 'CH' | 'SY' | 'TW' | 'TJ' | 'TZ' | 'TH' | 'TL' | 'TG' | 'TK' | 'TO' | 'TT' | 'TN' | 'TR' | 'TM' | 'TC' | 'TV' | 'UG' | 'UA' | 'AE' | 'GB' | 'US' | 'UM' | 'UY' | 'UZ' | 'VU' | 'VE' | 'VN' | 'VG' | 'VI' | 'WF' | 'EH' | 'YE' | 'ZM' | 'ZW' | 'AX';
+    /**
+     * VAT number for the invoices
+     */
+    vatNumber: string;
+};
+export type TenantDataWritable = {
+    billingInfo: BillingInfoWritable;
 };
 export type TenantWritable = {
     formId: string;
@@ -472,8 +615,91 @@ export type TenantWritable = {
      * Indicates if the tenant is whitelabeled or not
      */
     whitelabel: boolean;
-    settings?: OrganizationSettings;
-    tenantData: TenantData;
+    settings?: OrganizationSettingsWritable;
+    tenantData: TenantDataWritable;
+};
+export type UserWritable = {
+    /**
+     * An email address unique for this user.
+     */
+    email: string;
+    /**
+     * Flag whether this user has verified their email address.
+     */
+    verified?: boolean;
+    /**
+     * Flag whether this user is blocked.
+     */
+    blocked?: boolean;
+    organizationId: string;
+};
+export type PagingWritable = {
+    pager: {
+        /**
+         * Current page index in the pager, starting at 0
+         */
+        pageIndex?: number;
+        /**
+         * Maximum number of entities on one page
+         */
+        limitPerPage?: number;
+    };
+};
+export type ApiKeyWritable = {
+    /**
+     * Foreign key to a tenant or an organization.
+     */
+    organizationId: string;
+    /**
+     * The human-readable name of the API key.
+     */
+    name: string;
+};
+export type ApiRequestWritable = {
+    id: string;
+    /**
+     * The tenant ID this API request belongs to.
+     */
+    tenantId: string;
+    /**
+     * The API endpoint being requested.
+     */
+    endpoint: string;
+};
+export type AuditLogWritable = {
+    id: string;
+    /**
+     * The tenant ID this audit log belongs to.
+     */
+    tenantId: string;
+    /**
+     * The type of actor that performed the action.
+     */
+    actorType: 'user' | 'apiKey' | 'authToken' | 'system';
+    /**
+     * The ID of the actor that performed the action.
+     */
+    actorId?: string | null;
+    /**
+     * The action performed on the target.
+     */
+    action: 'CREATE' | 'UPDATE' | 'UPSERT' | 'DELETE';
+    /**
+     * The type of the target model.
+     */
+    targetType: string;
+    /**
+     * The ID of the target model.
+     */
+    targetId: string;
+    /**
+     * The status of the action.
+     */
+    status: 'success' | 'failure';
+    /**
+     * The IP address of the actor.
+     */
+    ipAddress: string;
 };
 export type DeleteApiV1InvitedUserByIdData = {
     body?: never;
@@ -1433,7 +1659,7 @@ export type PostApiV1TenantByIdData = {
          * Indicates if the tenant is whitelabeled or not
          */
         whitelabel?: boolean;
-        settings?: OrganizationSettings;
+        settings?: OrganizationSettingsWritable;
     };
     path: {
         id: string;
@@ -2063,7 +2289,7 @@ export type GetApiV1UsersByOrganizationIdData = {
          * Maximum number of entities on one page
          */
         limitPerPage?: number;
-        order?: 'verified' | 'blocked' | 'created' | 'updated' | 'lastLogin';
+        order?: 'email' | 'verified' | 'blocked' | 'created' | 'updated' | 'lastLogin';
         sort?: 'asc' | 'desc';
         search?: string;
     };
@@ -2620,6 +2846,3 @@ export type GetApiV1AuditLogsByTenantIdResponses = {
     };
 };
 export type GetApiV1AuditLogsByTenantIdResponse = GetApiV1AuditLogsByTenantIdResponses[keyof GetApiV1AuditLogsByTenantIdResponses];
-export type ClientOptions = {
-    baseUrl: 'https://centralauth.com' | (string & {});
-};
