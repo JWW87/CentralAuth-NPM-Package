@@ -470,7 +470,7 @@ export const getApiV1ApiKeysByOrganizationId = (options) => {
 };
 /**
  * Get a list of API requests
- * Get a list of API requests made under the given tenant.
+ * Get a pager object with all API requests made under this tenant
  */
 export const getApiV1ApiRequestsByTenantId = (options) => {
     var _a;
@@ -503,5 +503,23 @@ export const getApiV1AuditLogsByTenantId = (options) => {
                 type: 'apiKey'
             }
         ], url: '/api/v1/audit_logs/{tenantId}' }, options));
+};
+/**
+ * Get a list of mail logs
+ * Get a pager object with all mail logs created under the organizations of a tenant
+ */
+export const getApiV1MailLogsByTenantId = (options) => {
+    var _a;
+    return ((_a = options.client) !== null && _a !== void 0 ? _a : client).get(Object.assign({ security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'accessToken',
+                type: 'apiKey'
+            }
+        ], url: '/api/v1/mail_logs/{tenantId}' }, options));
 };
 //# sourceMappingURL=sdk.gen.js.map

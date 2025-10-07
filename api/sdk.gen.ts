@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { DeleteApiV1ApiKeyByIdData, DeleteApiV1ApiKeyByIdErrors, DeleteApiV1ApiKeyByIdResponses, DeleteApiV1InternalUserByTenantIdByUserIdData, DeleteApiV1InternalUserByTenantIdByUserIdErrors, DeleteApiV1InternalUserByTenantIdByUserIdResponses, DeleteApiV1InvitedUserByIdData, DeleteApiV1InvitedUserByIdErrors, DeleteApiV1InvitedUserByIdResponses, DeleteApiV1OrganizationByIdData, DeleteApiV1OrganizationByIdErrors, DeleteApiV1OrganizationByIdResponses, DeleteApiV1TenantByIdData, DeleteApiV1TenantByIdErrors, DeleteApiV1TenantByIdResponses, DeleteApiV1UserByIdData, DeleteApiV1UserByIdErrors, DeleteApiV1UserByIdResponses, DeleteApiV1UserByOrganizationIdByEmailData, DeleteApiV1UserByOrganizationIdByEmailErrors, DeleteApiV1UserByOrganizationIdByEmailResponses, GetApiV1ApiKeyByIdData, GetApiV1ApiKeyByIdErrors, GetApiV1ApiKeyByIdResponses, GetApiV1ApiKeysByOrganizationIdData, GetApiV1ApiKeysByOrganizationIdErrors, GetApiV1ApiKeysByOrganizationIdResponses, GetApiV1ApiRequestsByTenantIdData, GetApiV1ApiRequestsByTenantIdErrors, GetApiV1ApiRequestsByTenantIdResponses, GetApiV1AuditLogsByTenantIdData, GetApiV1AuditLogsByTenantIdErrors, GetApiV1AuditLogsByTenantIdResponses, GetApiV1InvoicesByTenantIdData, GetApiV1InvoicesByTenantIdErrors, GetApiV1InvoicesByTenantIdResponses, GetApiV1OrganizationByIdData, GetApiV1OrganizationByIdErrors, GetApiV1OrganizationByIdResponses, GetApiV1OrganizationByIdRotateSecretData, GetApiV1OrganizationByIdRotateSecretErrors, GetApiV1OrganizationByIdRotateSecretResponses, GetApiV1TenantByIdData, GetApiV1TenantByIdErrors, GetApiV1TenantByIdResponses, GetApiV1UserByIdData, GetApiV1UserByIdErrors, GetApiV1UserByIdResponses, GetApiV1UserByOrganizationIdByEmailData, GetApiV1UserByOrganizationIdByEmailErrors, GetApiV1UserByOrganizationIdByEmailResponses, GetApiV1UsersByOrganizationIdData, GetApiV1UsersByOrganizationIdErrors, GetApiV1UsersByOrganizationIdResponses, PostApiV1ApiKeyByIdData, PostApiV1ApiKeyByIdErrors, PostApiV1ApiKeyByIdResponses, PostApiV1ApiKeyData, PostApiV1ApiKeyErrors, PostApiV1ApiKeyResponses, PostApiV1InternalUserByTenantIdByUserIdData, PostApiV1InternalUserByTenantIdByUserIdErrors, PostApiV1InternalUserByTenantIdByUserIdResponses, PostApiV1InvitedUserData, PostApiV1InvitedUserErrors, PostApiV1InvitedUserResponses, PostApiV1OrganizationByIdActivateSecretData, PostApiV1OrganizationByIdActivateSecretErrors, PostApiV1OrganizationByIdActivateSecretResponses, PostApiV1OrganizationByIdData, PostApiV1OrganizationByIdErrors, PostApiV1OrganizationByIdResponses, PostApiV1OrganizationData, PostApiV1OrganizationErrors, PostApiV1OrganizationResponses, PostApiV1TenantByIdData, PostApiV1TenantByIdErrors, PostApiV1TenantByIdResponses, PostApiV1UserByIdData, PostApiV1UserByIdErrors, PostApiV1UserByIdResponses, PostApiV1UserByOrganizationIdByEmailData, PostApiV1UserByOrganizationIdByEmailErrors, PostApiV1UserByOrganizationIdByEmailResponses, PostApiV1UserData, PostApiV1UserErrors, PostApiV1UserResponses } from './types.gen';
+import type { DeleteApiV1ApiKeyByIdData, DeleteApiV1ApiKeyByIdErrors, DeleteApiV1ApiKeyByIdResponses, DeleteApiV1InternalUserByTenantIdByUserIdData, DeleteApiV1InternalUserByTenantIdByUserIdErrors, DeleteApiV1InternalUserByTenantIdByUserIdResponses, DeleteApiV1InvitedUserByIdData, DeleteApiV1InvitedUserByIdErrors, DeleteApiV1InvitedUserByIdResponses, DeleteApiV1OrganizationByIdData, DeleteApiV1OrganizationByIdErrors, DeleteApiV1OrganizationByIdResponses, DeleteApiV1TenantByIdData, DeleteApiV1TenantByIdErrors, DeleteApiV1TenantByIdResponses, DeleteApiV1UserByIdData, DeleteApiV1UserByIdErrors, DeleteApiV1UserByIdResponses, DeleteApiV1UserByOrganizationIdByEmailData, DeleteApiV1UserByOrganizationIdByEmailErrors, DeleteApiV1UserByOrganizationIdByEmailResponses, GetApiV1ApiKeyByIdData, GetApiV1ApiKeyByIdErrors, GetApiV1ApiKeyByIdResponses, GetApiV1ApiKeysByOrganizationIdData, GetApiV1ApiKeysByOrganizationIdErrors, GetApiV1ApiKeysByOrganizationIdResponses, GetApiV1ApiRequestsByTenantIdData, GetApiV1ApiRequestsByTenantIdErrors, GetApiV1ApiRequestsByTenantIdResponses, GetApiV1AuditLogsByTenantIdData, GetApiV1AuditLogsByTenantIdErrors, GetApiV1AuditLogsByTenantIdResponses, GetApiV1InvoicesByTenantIdData, GetApiV1InvoicesByTenantIdErrors, GetApiV1InvoicesByTenantIdResponses, GetApiV1MailLogsByTenantIdData, GetApiV1MailLogsByTenantIdErrors, GetApiV1MailLogsByTenantIdResponses, GetApiV1OrganizationByIdData, GetApiV1OrganizationByIdErrors, GetApiV1OrganizationByIdResponses, GetApiV1OrganizationByIdRotateSecretData, GetApiV1OrganizationByIdRotateSecretErrors, GetApiV1OrganizationByIdRotateSecretResponses, GetApiV1TenantByIdData, GetApiV1TenantByIdErrors, GetApiV1TenantByIdResponses, GetApiV1UserByIdData, GetApiV1UserByIdErrors, GetApiV1UserByIdResponses, GetApiV1UserByOrganizationIdByEmailData, GetApiV1UserByOrganizationIdByEmailErrors, GetApiV1UserByOrganizationIdByEmailResponses, GetApiV1UsersByOrganizationIdData, GetApiV1UsersByOrganizationIdErrors, GetApiV1UsersByOrganizationIdResponses, PostApiV1ApiKeyByIdData, PostApiV1ApiKeyByIdErrors, PostApiV1ApiKeyByIdResponses, PostApiV1ApiKeyData, PostApiV1ApiKeyErrors, PostApiV1ApiKeyResponses, PostApiV1InternalUserByTenantIdByUserIdData, PostApiV1InternalUserByTenantIdByUserIdErrors, PostApiV1InternalUserByTenantIdByUserIdResponses, PostApiV1InvitedUserData, PostApiV1InvitedUserErrors, PostApiV1InvitedUserResponses, PostApiV1OrganizationByIdActivateSecretData, PostApiV1OrganizationByIdActivateSecretErrors, PostApiV1OrganizationByIdActivateSecretResponses, PostApiV1OrganizationByIdData, PostApiV1OrganizationByIdErrors, PostApiV1OrganizationByIdResponses, PostApiV1OrganizationData, PostApiV1OrganizationErrors, PostApiV1OrganizationResponses, PostApiV1TenantByIdData, PostApiV1TenantByIdErrors, PostApiV1TenantByIdResponses, PostApiV1UserByIdData, PostApiV1UserByIdErrors, PostApiV1UserByIdResponses, PostApiV1UserByOrganizationIdByEmailData, PostApiV1UserByOrganizationIdByEmailErrors, PostApiV1UserByOrganizationIdByEmailResponses, PostApiV1UserData, PostApiV1UserErrors, PostApiV1UserResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -640,7 +640,7 @@ export const getApiV1ApiKeysByOrganizationId = <ThrowOnError extends boolean = f
 
 /**
  * Get a list of API requests
- * Get a list of API requests made under the given tenant.
+ * Get a pager object with all API requests made under this tenant
  */
 export const getApiV1ApiRequestsByTenantId = <ThrowOnError extends boolean = false>(options: Options<GetApiV1ApiRequestsByTenantIdData, ThrowOnError>) => {
     return (options.client ?? client).get<GetApiV1ApiRequestsByTenantIdResponses, GetApiV1ApiRequestsByTenantIdErrors, ThrowOnError>({
@@ -678,6 +678,28 @@ export const getApiV1AuditLogsByTenantId = <ThrowOnError extends boolean = false
             }
         ],
         url: '/api/v1/audit_logs/{tenantId}',
+        ...options
+    });
+};
+
+/**
+ * Get a list of mail logs
+ * Get a pager object with all mail logs created under the organizations of a tenant
+ */
+export const getApiV1MailLogsByTenantId = <ThrowOnError extends boolean = false>(options: Options<GetApiV1MailLogsByTenantIdData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetApiV1MailLogsByTenantIdResponses, GetApiV1MailLogsByTenantIdErrors, ThrowOnError>({
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            },
+            {
+                in: 'cookie',
+                name: 'accessToken',
+                type: 'apiKey'
+            }
+        ],
+        url: '/api/v1/mail_logs/{tenantId}',
         ...options
     });
 };

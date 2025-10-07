@@ -166,7 +166,7 @@ export type BillingInfo = {
     /**
      * The currency for the invoices
      */
-    currency: 'EUR' | 'USD' | 'GBP';
+    currency: 'EUR' | 'USD' | 'GBP' | 'JPY' | 'CNY';
     /**
      * Email address to send the invoices to
      */
@@ -307,7 +307,7 @@ export type Invoice = {
     /**
      * The currency of the invoice
      */
-    currency: 'EUR' | 'USD' | 'GBP';
+    currency: 'EUR' | 'USD' | 'GBP' | 'JPY' | 'CNY';
     /**
      * Amount of the subscription in the invoice
      */
@@ -482,6 +482,57 @@ export type AuditLog = {
     readonly created: string;
 };
 
+export type MailLog = {
+    /**
+     * The unique identifier for the mail log.
+     */
+    readonly id: string;
+    /**
+     * The ID of the message in the email server, can be null if the email was not sent
+     */
+    messageId?: string | null;
+    /**
+     * The organization ID this mail log belongs to.
+     */
+    organizationId: string;
+    /**
+     * The recipient email address.
+     */
+    to: string;
+    /**
+     * The sender email address.
+     */
+    from: string;
+    /**
+     * The subject of the email.
+     */
+    subject: string;
+    /**
+     * The HTML body of the email. When the email was sent less than 15 minutes ago, the body is stripped for security reasons.
+     */
+    body: string;
+    /**
+     * Whether the email was sent successfully or not.
+     */
+    sent: boolean;
+    /**
+     * The time it took to get a response from the email server in milliseconds.
+     */
+    responseTime: number;
+    /**
+     * The response from the email server, can be null if the email was not sent.
+     */
+    response?: string | null;
+    /**
+     * The error message if the email was not sent, can be null if the email was sent successfully.
+     */
+    error?: string | null;
+    /**
+     * The date and time when this mail log was created.
+     */
+    readonly created: string;
+};
+
 export type InvitedUserWritable = {
     tenantId: string;
     email: string;
@@ -604,7 +655,7 @@ export type BillingInfoWritable = {
     /**
      * The currency for the invoices
      */
-    currency: 'EUR' | 'USD' | 'GBP';
+    currency: 'EUR' | 'USD' | 'GBP' | 'JPY' | 'CNY';
     /**
      * Email address to send the invoices to
      */
@@ -737,6 +788,49 @@ export type AuditLogWritable = {
      * The IP address of the actor.
      */
     ipAddress: string;
+};
+
+export type MailLogWritable = {
+    /**
+     * The ID of the message in the email server, can be null if the email was not sent
+     */
+    messageId?: string | null;
+    /**
+     * The organization ID this mail log belongs to.
+     */
+    organizationId: string;
+    /**
+     * The recipient email address.
+     */
+    to: string;
+    /**
+     * The sender email address.
+     */
+    from: string;
+    /**
+     * The subject of the email.
+     */
+    subject: string;
+    /**
+     * The HTML body of the email. When the email was sent less than 15 minutes ago, the body is stripped for security reasons.
+     */
+    body: string;
+    /**
+     * Whether the email was sent successfully or not.
+     */
+    sent: boolean;
+    /**
+     * The time it took to get a response from the email server in milliseconds.
+     */
+    responseTime: number;
+    /**
+     * The response from the email server, can be null if the email was not sent.
+     */
+    response?: string | null;
+    /**
+     * The error message if the email was not sent, can be null if the email was sent successfully.
+     */
+    error?: string | null;
 };
 
 export type DeleteApiV1InvitedUserByIdData = {
@@ -2865,9 +2959,14 @@ export type GetApiV1ApiRequestsByTenantIdData = {
     };
     query?: {
         /**
-         * Start date for filtering requests (ISO format).
+         * Current page index in the pager, starting at 0
          */
-        from?: string;
+        pageIndex?: number;
+        /**
+         * Maximum number of entities on one page
+         */
+        limitPerPage?: number;
+        endpoint?: string;
     };
     url: '/api/v1/api_requests/{tenantId}';
 };
@@ -2926,9 +3025,11 @@ export type GetApiV1ApiRequestsByTenantIdError = GetApiV1ApiRequestsByTenantIdEr
 
 export type GetApiV1ApiRequestsByTenantIdResponses = {
     /**
-     * A list of API requests
+     * A pager object with API requests
      */
-    200: Array<ApiRequest>;
+    200: Paging & {
+        data: Array<ApiRequest>;
+    };
 };
 
 export type GetApiV1ApiRequestsByTenantIdResponse = GetApiV1ApiRequestsByTenantIdResponses[keyof GetApiV1ApiRequestsByTenantIdResponses];
@@ -3020,3 +3121,88 @@ export type GetApiV1AuditLogsByTenantIdResponses = {
 };
 
 export type GetApiV1AuditLogsByTenantIdResponse = GetApiV1AuditLogsByTenantIdResponses[keyof GetApiV1AuditLogsByTenantIdResponses];
+
+export type GetApiV1MailLogsByTenantIdData = {
+    body?: never;
+    path: {
+        tenantId: string;
+    };
+    query?: {
+        /**
+         * Current page index in the pager, starting at 0
+         */
+        pageIndex?: number;
+        /**
+         * Maximum number of entities on one page
+         */
+        limitPerPage?: number;
+        organizationId?: string;
+        to?: string;
+        subject?: string;
+        sent?: boolean;
+    };
+    url: '/api/v1/mail_logs/{tenantId}';
+};
+
+export type GetApiV1MailLogsByTenantIdErrors = {
+    /**
+     * Bad request
+     */
+    400: {
+        errorCode?: 'genericError' | 'noPermission' | 'tooManyRequests' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'codeChallengeMissing' | 'codeChallengeInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * No permission
+     */
+    403: {
+        errorCode?: 'genericError' | 'noPermission' | 'tooManyRequests' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'codeChallengeMissing' | 'codeChallengeInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Not found
+     */
+    404: {
+        errorCode?: 'genericError' | 'noPermission' | 'tooManyRequests' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'codeChallengeMissing' | 'codeChallengeInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Invalid method
+     */
+    405: {
+        errorCode?: 'genericError' | 'noPermission' | 'tooManyRequests' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'codeChallengeMissing' | 'codeChallengeInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Too many requests
+     */
+    429: {
+        errorCode?: 'genericError' | 'noPermission' | 'tooManyRequests' | 'missingFields' | 'sessionMissing' | 'sessionNotVerified' | 'sessionExpired' | 'sessionInactive' | 'sessionInvalid' | 'domainInvalid' | 'loginAttemptMissing' | 'loginAttemptExpired' | 'loginAttemptInvalid' | 'passkeyDataMissing' | 'passkeyDataExpired' | 'passkeyDataInvalid' | 'passkeyWrongOrganization' | 'callbackUrlInvalid' | 'connectionMissing' | 'organizationIdMissing' | 'callbackUrlMissing' | 'tokenMissing' | 'tokenInvalid' | 'stateMissing' | 'stateInvalid' | 'codeChallengeMissing' | 'codeChallengeInvalid' | 'captchaInvalid' | 'entityMissing' | 'entityInvalid';
+        message?: string;
+    };
+    /**
+     * Deployment error
+     */
+    502: unknown;
+    /**
+     * Service unavailable
+     */
+    503: unknown;
+    /**
+     * Gateway timeout
+     */
+    504: unknown;
+};
+
+export type GetApiV1MailLogsByTenantIdError = GetApiV1MailLogsByTenantIdErrors[keyof GetApiV1MailLogsByTenantIdErrors];
+
+export type GetApiV1MailLogsByTenantIdResponses = {
+    /**
+     * A pager object with mail logs
+     */
+    200: Paging & {
+        data: Array<MailLog>;
+    };
+};
+
+export type GetApiV1MailLogsByTenantIdResponse = GetApiV1MailLogsByTenantIdResponses[keyof GetApiV1MailLogsByTenantIdResponses];
