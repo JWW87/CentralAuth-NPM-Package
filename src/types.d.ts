@@ -107,10 +107,6 @@ export type CallbackParamsHTTP = {
     onStateReceived?: (req: Request, state: string) => Promise<boolean>;
     onAfterCallback?: (req: IncomingMessage, originalResponse: ServerResponse, responseToReturn: Response, user: User) => Promise<Response | void>;
 };
-export type ReactNativeCallbackParams = {
-    code?: string;
-    state?: string;
-} & Partial<ErrorObject>;
 export type ErrorCode = "genericError" | "noPermission" | "tooManyRequests" | "missingFields" | "sessionMissing" | "sessionNotVerified" | "sessionExpired" | "sessionInactive" | "sessionInvalid" | "domainInvalid" | "loginAttemptMissing" | "loginAttemptExpired" | "loginAttemptInvalid" | "passkeyDataMissing" | "passkeyDataExpired" | "passkeyDataInvalid" | "passkeyWrongOrganization" | "callbackUrlInvalid" | "connectionMissing" | "organizationIdMissing" | "callbackUrlMissing" | "tokenMissing" | "tokenInvalid" | "stateMissing" | "stateInvalid" | "codeChallengeMissing" | "codeChallengeInvalid" | "captchaInvalid" | "entityMissing" | "entityInvalid" | "secretMissing" | "authBaseUrlMissing";
 export type ErrorObject = {
     errorCode: ErrorCode;
@@ -135,11 +131,3 @@ export interface CentralAuthContextInterface {
     deleteAccessToken: () => Promise<void>;
     deleteIdToken: () => Promise<void>;
 }
-export type CentralAuthProviderProps = {
-    clientId: string | null;
-    appId: string;
-    deviceId?: string | null;
-    authBaseUrl: string;
-    callbackUrl: string;
-    children: React.ReactNode;
-};

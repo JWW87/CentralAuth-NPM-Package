@@ -133,11 +133,6 @@ export type CallbackParamsHTTP = {
   onAfterCallback?: (req: IncomingMessage, originalResponse: ServerResponse, responseToReturn: Response, user: User) => Promise<Response | void>;
 }
 
-export type ReactNativeCallbackParams = {
-  code?: string;
-  state?: string;
-} & Partial<ErrorObject>
-
 //Enum for the different error messages
 export type ErrorCode = "genericError" |
   "noPermission" |
@@ -198,12 +193,3 @@ export interface CentralAuthContextInterface {
   deleteAccessToken: () => Promise<void>;
   deleteIdToken: () => Promise<void>;
 }
-
-export type CentralAuthProviderProps = {
-  clientId: string | null;
-  appId: string;
-  deviceId?: string | null;
-  authBaseUrl: string;
-  callbackUrl: string;
-  children: React.ReactNode;
-};

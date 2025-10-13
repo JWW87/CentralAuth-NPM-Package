@@ -1,5 +1,6 @@
 import React from "react";
-import { CentralAuthContextInterface, CentralAuthProviderProps, ReactNativeCallbackParams, TokenResponse } from "./types";
+import { CentralAuthProviderProps, ReactNativeCallbackParams } from "./react.types";
+import { CentralAuthContextInterface, TokenResponse } from "./types";
 /**
  * This function takes a string input, applies SHA256 hashing, and converts the result
  * to base64url encoding by replacing URL-unsafe characters and removing padding.

@@ -2,8 +2,9 @@ import { CryptoDigestAlgorithm, CryptoEncoding, digestStringAsync, randomUUID } 
 import { deleteItemAsync, getItem, getItemAsync, setItemAsync } from 'expo-secure-store';
 import * as WebBrowser from "expo-web-browser";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { CentralAuthProviderProps, ReactNativeCallbackParams } from "./react.types";
 import { ValidationError } from "./server";
-import { CentralAuthContextInterface, CentralAuthProviderProps, ErrorCode, ErrorObject, ReactNativeCallbackParams, TokenResponse } from "./types";
+import { CentralAuthContextInterface, ErrorCode, ErrorObject, TokenResponse } from "./types";
 
 /**
  * This function takes a string input, applies SHA256 hashing, and converts the result
