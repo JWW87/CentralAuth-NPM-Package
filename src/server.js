@@ -472,12 +472,22 @@ export class CentralAuthHTTPClass extends CentralAuthClass {
         };
         //Private method for converting a Fetch API response to an HTTP Response
         this.fetchResponseToHttpResponse = (fetchResponse, httpResponse) => __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
+            //Handle Set-Cookie headers separately since they can have multiple values
+            const setCookieHeaders = ((_b = (_a = fetchResponse.headers).getSetCookie) === null || _b === void 0 ? void 0 : _b.call(_a)) || [];
+            //Set all other headers
             const entries = fetchResponse.headers.entries();
-            const httpHeaders = {};
-            for (const entry of entries)
-                httpHeaders[entry[0]] = entry[1];
+            for (const [key, value] of entries) {
+                if (key.toLowerCase() !== 'set-cookie') {
+                    httpResponse.setHeader(key, value);
+                }
+            }
+            //Set all Set-Cookie headers
+            if (setCookieHeaders.length > 0) {
+                httpResponse.setHeader('Set-Cookie', setCookieHeaders);
+            }
             const body = yield fetchResponse.text();
-            httpResponse.writeHead(fetchResponse.status, httpHeaders).end(body);
+            httpResponse.writeHead(fetchResponse.status).end(body);
         });
         //Overloaded method for getUserData
         this.getUserDataHTTP = (req) => __awaiter(this, void 0, void 0, function* () {
