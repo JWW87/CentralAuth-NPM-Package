@@ -1,4 +1,5 @@
-import type { BasePaths, User, WithCentralAuthAutomaticLogin } from "./types";
+import type { WithCentralAuthAutomaticLogin } from "./react.types";
+import type { BasePaths, User } from "./types";
 export declare const useUser: (config?: Pick<BasePaths, "profilePath">) => {
     user: User | null | undefined;
     error: any;

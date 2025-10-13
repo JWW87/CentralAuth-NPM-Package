@@ -1,6 +1,5 @@
 import { CacheRequestConfig as AxiosCacheRequestConfig, MaybePromise as AxiosMaybePromise, NotEmptyStorageValue as AxiosNotEmptyStorageValue, StorageValue as AxiosStorageValue, BuildStorage } from "axios-cache-interceptor";
 import { IncomingMessage, ServerResponse } from "http";
-import type { ComponentType, FC, ReactElement } from "react";
 
 export type NotEmptyStorageValue = AxiosNotEmptyStorageValue;
 export type CacheRequestConfig = AxiosCacheRequestConfig;
@@ -185,11 +184,6 @@ export type TokenResponse = {
   expires_in: number | null;
   expires_at: string | null;
 }
-
-export type WithCentralAuthAutomaticLogin = <T extends { [key: string]: any }>(
-  Component: ComponentType<T>,
-  config?: Pick<BasePaths, "loginPath" | "profilePath"> & { PlaceholderComponent: ReactElement<any, any> }
-) => FC<T>;
 
 export interface CentralAuthContextInterface {
   clientId: string | null;

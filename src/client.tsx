@@ -2,7 +2,8 @@
 
 import { ReactElement, createElement, useEffect, useState } from "react";
 import useSWR from "swr";
-import type { BasePaths, User, WithCentralAuthAutomaticLogin } from "./types";
+import type { WithCentralAuthAutomaticLogin } from "./react.types";
+import type { BasePaths, User } from "./types";
 
 //React hook to declaratively get the currently logged in user via SWR. See https://swr.vercel.app for more info on SWR.
 //Param basePath can be used when the API route for /user is different from the default /api/auth/user
